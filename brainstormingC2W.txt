@@ -2,4 +2,4 @@ C2W base
 
 No momento do login seria feito algumas perguntas, primeiramente o nivel da pessoa da programação, [1 a 3] sendo 1 iniciante,2 uma pessoa que sabe o que é e 3 uma pessoa com um bom conhecimento
 Caso a pessoa seja iniciante, no primeiro acesso use a ia para gerar uma rotina para o primeiro uso, essa rotina será salva no banco de dados
-isso se aplica aos outros casos cada qual com seu nivel
+isso se aplica aos outros casos cada qual com seu nivel. Caso a pessoa conheça alguma linguagem, qual a sua preferida, O que você gosta de fazer, etc
