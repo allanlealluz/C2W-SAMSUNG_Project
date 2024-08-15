@@ -53,7 +53,7 @@ Certifique-se de ter os seguintes requisitos instalados:
 2. Acesse a pasta do projeto:
 
     ```bash
-    cd c2w
+    cd Projeto_Samsung
     ```
 
 3. Crie e ative o ambiente virtual:
