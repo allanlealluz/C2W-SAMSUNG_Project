@@ -1,3 +1,3 @@
 # Projeto_Samsung
 Samsung Innovation
-![Uploading img.png]()
+![Uploading “logo C2W” (2).png]()
