@@ -47,7 +47,7 @@ Certifique-se de ter os seguintes requisitos instalados:
 1. Clone o repositório:
 
     ```bash
-    git clone https://github.com/seu-usuario/c2w.git
+    git clone https://github.com/allanlealluz/Projeto_Samsung
     ```
 
 2. Acesse a pasta do projeto:
