@@ -7,21 +7,36 @@
     <!-- Incluindo o Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .hero-section {
-            background: url('https://via.placeholder.com/1920x600') no-repeat center center;
-            background-size: cover;
-            color: white;
-            padding: 60px 0;
+        body, html {
+            height: 100%;
+            margin: 0;
         }
-        .footer {
-            background-color: #f8f9fa;
-            padding: 20px 0;
+        .btn-enter {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn-enter:hover {
+            background-color: #0056b3;
+        }
+        .navbar, .footer {
+            background-color: #343a40;
+        }
+        .navbar-nav .nav-link, .footer p, .footer a {
+            color: white;
+        }
+        .container {
+            color: #fff;
         }
     </style>
 </head>
-<body>
+<body class="bg-dark">
     <!-- Cabeçalho -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-dark">
         <a class="navbar-brand" href="#">C2W</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -43,23 +58,14 @@
             </ul>
         </div>
     </nav>
-
-    <!-- Seção Hero -->
-    <header class="hero-section text-center">
-        <div class="row">
-        <div class="col-sm-3">
-            <img src="{{url_for('static',filename='img/logo.png')}}">
-        </div>
-    </div>
-        <div class="container">    
-            <h1 class="display-4">Bem-vindo ao C2W!</h1>
-            <p class="lead">Sua plataforma de ensino de qualidade. Aprenda e cresça com os melhores cursos.</p>
-            <a href="#" class="btn btn-primary btn-lg">Saiba Mais</a>
+    <header>
+        <div>
+            <img src="{{url_for('static',filename='img/logo.png')}}" style="width:100%;">
         </div>
     </header>
-
-    <!-- Seção Principal -->
-    <main class="container my-5">
+    <main class="container">
+        <h1 class="display-4 text-center">Bem-vindo ao C2W!</h1>
+        <p class="lead text-center">Sua plataforma de ensino de qualidade. Aprenda e cresça com os melhores cursos.</p>
         <div class="row">
             <div class="col-md-6">
                 <h2>Sobre o C2W</h2>
@@ -77,19 +83,6 @@
             </div>
         </div>
     </main>
-
-    <!-- Rodapé -->
-    <footer class="footer text-center">
-        <div class="container">
-            <p>&copy; 2024 C2W - Todos os direitos reservados.</p>
-            <p>
-                <a href="#">Privacidade</a> | 
-                <a href="#">Termos de Serviço</a>
-            </p>
-        </div>
-    </footer>
-
-    <!-- Incluindo o Bootstrap e jQuery JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
