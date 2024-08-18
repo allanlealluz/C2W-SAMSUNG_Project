@@ -45,14 +45,14 @@
 
     <div class="card col-md-4">
         <h2 class="text-center mb-4">Login - C2W</h2>
-        <form>
+        <form method="POST" action="/login">
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" placeholder="Digite seu email">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu email">
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Senha</label>
-                <input type="password" class="form-control" id="password" placeholder="Digite sua senha">
+                <input type="password" class="form-control" id="password" name="senha" placeholder="Digite sua senha">
             </div>
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary">Entrar</button>
