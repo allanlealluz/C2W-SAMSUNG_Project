@@ -45,18 +45,18 @@
 
     <div class="card col-md-4">
         <h2 class="text-center mb-4">Cadastro - C2W</h2>
-        <form>
+        <form method="POST">
             <div class="mb-3">
                 <label for="username" class="form-label">Nome de Usuário</label>
-                <input type="text" class="form-control" id="username" placeholder="Digite seu nome de usuário">
+                <input type="text" class="form-control" id="username" name="nome" placeholder="Digite seu nome de usuário">
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" placeholder="Digite seu email">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu email">
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Senha</label>
-                <input type="password" class="form-control" id="password" placeholder="Digite sua senha">
+                <input type="password" class="form-control" id="password" name="senha" placeholder="Digite sua senha">
             </div>
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary">Cadastrar</button>
