@@ -22,8 +22,8 @@
 - Programming Language: Python
 - Framework: Flask
 - Artificial Intelligence: [TensorFlow/PyTorch/OpenAI API/Other]
-- Database: [SQLite/PostgreSQL/MySQL]
-- Other Tools: Docker, Git
+- Database: SQLite
+- Other Tools: Git
 
 ## Features
 
