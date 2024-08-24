@@ -30,7 +30,7 @@ def index():
 def initiate_database():
     init_db()
     return "DATABASE CONNECTED"
-
+#pagina de cadastro
 @app.route("/cadastro", methods=["POST", "GET"])
 def cadastro():
     if request.method == "POST":
@@ -45,7 +45,7 @@ def cadastro():
         return jsonify({"message": "Usuario cadastrado com sucesso!"})
 
     return render_template("cadastro.html")
-
+#pagina de login
 @app.route("/login", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
