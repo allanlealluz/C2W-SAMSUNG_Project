@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
+from hashlib import sha256
 
 app = Flask(__name__)
 
@@ -36,13 +37,13 @@ def cadastro():
     if request.method == "POST":
         nome = request.form['nome']
         email = request.form['email']
-        senha = request.form['senha']
+        senha = sha256(request.form['senha'].encode('utf-8')).hexdigest()
 
         db = get_db()
         db.execute('INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)', (nome, email, senha))
         db.commit()
 
-        return jsonify({"message": "Usuario cadastrado com sucesso!"})
+        return render_template("login.html")
 
     return render_template("cadastro.html")
 #pagina de login
@@ -50,13 +51,13 @@ def cadastro():
 def login():
     if request.method == "POST":
         email = request.form['email']
-        senha = request.form['senha']
+        senha =  sha256(request.form['senha'].encode('utf-8')).hexdigest()
 
         db = get_db()
         user = db.execute('SELECT * FROM usuarios WHERE email = ?', (email,)).fetchone()
 
         if user and senha:
-            return jsonify({"message": "Login bem-sucedido!"})
+            return render_template("main.html")
         else:
             return jsonify({"message": "Credenciais invalidas!"})
 
