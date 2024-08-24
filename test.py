@@ -3,24 +3,29 @@ import sqlite3
 
 app = Flask(__name__)
 
+## Definir database
 DATABASE = 'database.db'
+
+# Conectar com a base de dados
 
 def get_db():
     db = sqlite3.connect(DATABASE)
     db.row_factory = sqlite3.Row
     return db
 
+#chama a função getdb e cria a tabela
 def init_db():
     with app.app_context():
         db = get_db()
         with app.open_resource('schema.sql', mode='r') as f:
             db.cursor().executescript(f.read())
         db.commit()
-
+#main page
 @app.route("/")
 def index():
     return render_template("home.html")
 
+#chama a init_db através da url
 @app.route("/initdb")
 def initiate_database():
     init_db()
