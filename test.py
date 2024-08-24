@@ -1,9 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, url_for, redirect
 import sqlite3
 from hashlib import sha256
 
 app = Flask(__name__)
-
+app.secret_key = "aaaa"
 ## Definir database
 DATABASE = 'database.db'
 
@@ -57,11 +57,18 @@ def login():
         user = db.execute('SELECT * FROM usuarios WHERE email = ?', (email,)).fetchone()
 
         if user and senha:
+            session["user"] = email
             return render_template("main.html")
         else:
             return jsonify({"message": "Credenciais invalidas!"})
 
     return render_template("login.html")
-
+@app.route('/main')
+def main_page():
+    # Verifica se o usuário está logado
+    if 'user' in session:
+        return render_template('main.html', user=session['user'])
+    else:
+        return redirect(url_for('login'))
 if __name__ == "__main__":
     app.run(debug=True)
