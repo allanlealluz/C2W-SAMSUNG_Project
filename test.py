@@ -7,7 +7,7 @@ app.secret_key = "aaaa"
 ## Definir database
 DATABASE = 'database.db'
 
-# Conectar com a base de dados
+# Conectar com a base de dados sqlite
 
 def get_db():
     db = sqlite3.connect(DATABASE)
