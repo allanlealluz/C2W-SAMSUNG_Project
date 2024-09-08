@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C2W - Ensino de Qualidade</title>
+    <title>C2W - Aprendendo Robótica e Programação</title>
     <!-- Incluindo o Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -36,9 +36,10 @@
 </head>
 <body class="bg-dark">
     <!-- Cabeçalho -->
-    <nav class="navbar navbar-dark">
+    <nav class="navbar navbar-dark navbar-expand-lg">
         <a class="navbar-brand" href="#">C2W</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -55,34 +56,51 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">Contato</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Professores</a>
+                </li>
             </ul>
         </div>
     </nav>
     <header>
         <div>
-            <a href="/cadastro"><img src="{{url_for('static',filename='img/logo.png')}}" style="width:100%;"></a>
+            <a href="/cadastro"><img src="{{ url_for('static', filename='img/logo.png') }}" style="width:100%;"></a>
         </div>
     </header>
     <main class="container">
         <h1 class="display-4 text-center">Bem-vindo ao C2W!</h1>
-        <p class="lead text-center">Sua plataforma de ensino de qualidade. Aprenda e cresça com os melhores cursos.</p>
+        <p class="lead text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
         <div class="row">
             <div class="col-md-6">
                 <h2>Sobre o C2W</h2>
-                <p>O C2W é uma plataforma inovadora de ensino que oferece cursos de alta qualidade em diversas áreas. Nossos cursos são projetados para proporcionar uma experiência de aprendizado rica e interativa.</p>
+                <p>O C2W é uma plataforma inovadora que facilita o ensino de robótica e programação para crianças do ensino fundamental. Com a colaboração de professores, oferecemos conteúdo interativo e personalizado para incentivar o aprendizado.</p>
             </div>
             <div class="col-md-6">
-                <h2>Nossos Cursos</h2>
+                <h2>Nossos Recursos</h2>
                 <ul>
-                    <li>Programação</li>
-                    <li>Design Gráfico</li>
-                    <li>Marketing Digital</li>
-                    <li>Gestão de Projetos</li>
-                    <li>FULL IA</li>
+                    <li>Cursos de Robótica Básica</li>
+                    <li>Introdução à Programação</li>
+                    <li>Projetos Interativos</li>
+                    <li>Análise de Desempenho</li>
+                    <li>Colaboração com Professores</li>
                 </ul>
             </div>
         </div>
+        <!-- Seção adicional para Professores -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <h2>Para Professores</h2>
+                <p>Professores podem contribuir com conteúdos e acompanhar o progresso dos alunos através de análises detalhadas, ajudando a personalizar o ensino de acordo com as necessidades de cada estudante.</p>
+            </div>
+        </div>
     </main>
+    <!-- Rodapé -->
+    <footer class="footer mt-auto py-3">
+        <div class="container text-center">
+            <span class="text-muted">© 2023 C2W - Todos os direitos reservados.</span>
+        </div>
+    </footer>
+    <!-- Scripts JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

@@ -58,6 +58,13 @@
                 <label for="password" class="form-label">Senha</label>
                 <input type="password" class="form-control" id="password" name="senha" placeholder="Digite sua senha">
             </div>
+            <div class="mb-3">
+                <label for="user_type" class="form-label">Você é:</label>
+                <select class="form-control" id="user_type" name="tipo" required>
+                    <option value="aluno">Aluno</option>
+                    <option value="professor">Professor</option>
+                </select>
+            </div>
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary">Cadastrar</button>
             </div>
