@@ -1,47 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C2W - Plataforma de Estudo</title>
+    <title>Dashboard do Aluno</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #121212;
             color: #e0e0e0;
-            padding-top: 20px;
+            margin: 0;
         }
-        .container {
-            margin-top: 20px;
-        }
-        .content-box {
+        .navbar {
             background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            margin-bottom: 20px;
         }
-        h1, h2 {
+        .navbar-brand, .nav-link {
+            color: #e0e0e0;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+        .card-title {
             color: #4a90e2;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="container">
-     <h1 class="text-center">Bem-vindo à C2W!</h1>
-     <p class="text-center">Aqui estão suas aulas geradas dinamicamente:</p>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">C2W - Aluno</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Meus Cursos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Progresso</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Perfil</a>
+                </li>
+            </ul>
+        </div>
     </div>
+</nav>
 
-    <div id="content-section" class="content-box">
-        <h2>Conteúdo da Aula</h2>
-        <p>{{ dynamic_content }}</p>
-    </div>
+<div class="container mt-4">
+    <h1 class="text-center">Bem-vindo, {{ user }}!</h1>
+    <p class="text-center">Aqui estão seus cursos ativos.</p>
 
-    <div id="next-lesson" class="content-box">
-        <h2>Próxima Aula</h2>
-        <p>{{ next_lesson_content }}</p>
+    <div class="row">
+        <!-- Exemplo de curso ativo -->
+        <div class="col-md-6">
+            <div class="card">
+                <h2 class="card-title">Curso de Programação</h2>
+                <p class="card-text">Progresso: 70%</p>
+                <a href="#" class="btn btn-primary">Continuar Curso</a>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <h2 class="card-title">Curso de Robótica</h2>
+                <p class="card-text">Progresso: 50%</p>
+                <a href="#" class="btn btn-primary">Continuar Curso</a>
+            </div>
+        </div>
     </div>
 </div>
 
