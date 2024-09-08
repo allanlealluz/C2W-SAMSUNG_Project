@@ -73,11 +73,16 @@ def login():
     return render_template("login.html")
 
 @app.route('/main')
-def main_page():
-    # Verifica se o usuário está logado
-    if 'user' in session:
-        return render_template('main.html', user=session['user'])
-    else:
-        return redirect(url_for('login'))
+@app.route('/dashboard_aluno')
+def dashboard_aluno():
+    if 'user' in session and session['tipo'] == 'aluno':
+        return render_template('dashboard_aluno.html', user=session['user'])
+    return redirect(url_for('login'))
+
+@app.route('/dashboard_professor')
+def dashboard_professor():
+    if 'user' in session and session['tipo'] == 'professor':
+        return render_template('dashboard_professor.html', user=session['user'])
+    return redirect(url_for('login'))
 if __name__ == "__main__":
     app.run(debug=True)
