@@ -71,6 +71,38 @@ def login():
             return jsonify({"message": "Credenciais inválidas!"})
 
     return render_template("login.html")
+@app.route("/robotica")
+def robotica():
+    return render_template("robotica.html")
+@app.route('/submit_response', methods=['POST'])
+def submit_response():
+    data = request.get_json()
+    user_response = data['response']
+    section = data['section']
+    
+    # Captura o ID do usuário logado
+    user_id = session['user_id']
+
+    # Armazena a resposta no banco de dados
+    db = get_db()
+    db.execute('INSERT INTO respostas (user_id, section, response) VALUES (?, ?, ?)', 
+               (user_id, section, user_response))
+    db.commit()
+
+    return jsonify({"message": "Resposta enviada com sucesso!"})
+
+@app.route('/log_time', methods=['POST'])
+def log_time():
+    user_id = session['user_id']
+    section_id = request.form['section_id']
+    time_spent = request.form['time_spent']  # Tempo gasto em segundos
+    
+    db = get_db()
+    db.execute('INSERT INTO tempo_aula (user_id, section_id, time_spent) VALUES (?, ?, ?)', 
+               (user_id, section_id, time_spent))
+    db.commit()
+    
+    return jsonify({"message": "Tempo registrado com sucesso!"})
 
 @app.route('/main')
 @app.route('/dashboard_aluno')

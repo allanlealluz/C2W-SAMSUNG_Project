@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula de Robótica - Módulo 1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .btn-primary {
+            background-color: #4a90e2;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+        .interaction {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container content">
+        <h1 class="text-center">Aula 1: Por que Robótica?</h1>
+        <p class="lead">Vamos aprender por que a robótica é uma ciência importante e como ela pode ser aplicada no dia a dia.</p>
+        
+        <!-- Seção 1: Introdução -->
+        <div class="section" id="section-1">
+            <h2>1. Introdução</h2>
+            <p>Aprender robótica?!? Como assim? Robôs não seriam apenas personagens de filmes, histórias e jogos ou então parte de grandes fábricas? Nesta aula, iremos compreender o que é robótica e perceber sua importância na escola.</p>
+            <button class="btn btn-primary" onclick="completeSection(1)">Marcar como Concluída</button>
+        </div>
+
+        <!-- Seção 2: Competências Gerais -->
+        <div class="section mt-4" id="section-2">
+            <h2>2. Competências Gerais</h2>
+            <ul>
+                <li>Exercitar a curiosidade intelectual.</li>
+                <li>Utilizar diferentes linguagens para se expressar.</li>
+                <li>Compreender e criar tecnologias digitais de forma crítica.</li>
+                <li>Agir com autonomia, responsabilidade e flexibilidade.</li>
+            </ul>
+            <button class="btn btn-primary" onclick="completeSection(2)">Marcar como Concluída</button>
+        </div>
+
+        <!-- Seção de Interação -->
+        <div class="interaction mt-5">
+            <h3>Interação</h3>
+            <p>Quais exemplos de robôs você conhece? Como você imagina que a robótica pode influenciar sua vida no futuro?</p>
+            <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
+            <button class="btn btn-primary" onclick="submitResponse()">Enviar Resposta</button>
+        </div>
+
+        <!-- Progresso do aluno -->
+        <div class="progress mt-5">
+            <h4>Progresso da Aula</h4>
+            <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>
+    </div>
+
+    <script>
+        let completedSections = 0;
+        const totalSections = 2;
+
+        // Função para completar a seção
+        function completeSection(sectionId) {
+            const section = document.getElementById(`section-${sectionId}`);
+            section.style.backgroundColor = '#d4edda';
+            completedSections++;
+            updateProgressBar();
+        }
+
+        // Função para atualizar a barra de progresso
+        function updateProgressBar() {
+            const progress = (completedSections / totalSections) * 100;
+            if(progress <= 100){
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('progress-bar').innerText = Math.round(progress) + '%';
+            }
+        }
+
+        // Função para enviar resposta
+        function submitResponse() {
+            const response = document.getElementById('user-response').value;
+            if (response.trim()) {
+                fetch('/submit_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ response: response, section: 1 })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(err => {
+                    console.error('Erro:', err);
+                });
+            } else {
+                alert('Por favor, escreva sua resposta antes de enviar.');
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
