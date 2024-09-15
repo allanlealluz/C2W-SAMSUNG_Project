@@ -94,14 +94,29 @@
         function completeSection(sectionId) {
             const section = document.getElementById(`section-${sectionId}`);
         
-            // Verifica se a seção já foi completada, evitando marcar mais de uma vez
             if (!section.getAttribute('data-completed')) {
                 section.style.backgroundColor = '#d4edda';
                 section.setAttribute('data-completed', 'true'); // Marca a seção como completa
                 completedSections++;
+        
+                // Envia o progresso ao servidor
+                fetch('/submit_response', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        section: sectionId,
+                        response: ""  // Se for só o progresso, sem resposta
+                    })
+                }).then(response => response.json())
+                .then(data => console.log(data.message))
+                .catch(error => console.error('Erro:', error));
+        
                 updateProgressBar();
             }
         }
+        
         
         // Função para atualizar a barra de progresso
         function updateProgressBar() {

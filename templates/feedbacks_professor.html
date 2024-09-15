@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso dos Alunos</title>
+</head>
+<body>
+    <h1>Progresso e Feedback dos Alunos</h1>
+
+    <h2>Respostas dos Alunos</h2>
+    <table border="1">
+        <tr>
+            <th>Nome do Aluno</th>
+            <th>Seção</th>
+            <th>Resposta</th>
+        </tr>
+        {% for resposta in respostas %}
+        <tr>
+            <td>{{ resposta['nome'] }}</td>
+            <td>{{ resposta['section'] }}</td>
+            <td>{{ resposta['response'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Progresso dos Alunos</h2>
+    <table border="1">
+        <tr>
+            <th>Nome do Aluno</th>
+            <th>Seção</th>
+            <th>Atividade Concluída</th>
+        </tr>
+        {% for prog in progresso %}
+        <tr>
+            <td>{{ prog['nome'] }}</td>
+            <td>{{ prog['section_id'] }}</td>
+            <td>{{ 'Sim' if prog['completou'] == 1 else 'Não' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

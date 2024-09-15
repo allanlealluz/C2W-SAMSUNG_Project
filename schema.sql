@@ -14,3 +14,11 @@ CREATE TABLE IF NOT EXISTS respostas (
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES usuarios(id)
 );
+CREATE TABLE IF NOT EXISTS progresso_atividades (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    section_id INTEGER NOT NULL,
+    completou BOOLEAN NOT NULL DEFAULT 0,
+    UNIQUE(user_id, section_id),
+    FOREIGN KEY(user_id) REFERENCES usuarios(id)
+);

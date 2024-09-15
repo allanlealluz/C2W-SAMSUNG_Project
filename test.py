@@ -79,20 +79,29 @@ def submit_data():
     return jsonify({"message": "Dados recebidos com sucesso!"}), 200
 @app.route('/submit_response', methods=['POST'])
 def submit_response():
-    if 'user' in session and session['tipo'] == 'aluno':
-        return jsonify({"message": "Usuário não autenticado!"}), 401
     data = request.get_json()
     user_response = data['response']
     section = data['section']
     
+    # Captura o ID do usuário logado
     user_id = session['user']
 
+    # Armazena a resposta no banco de dados
     db = get_db()
     db.execute('INSERT INTO respostas (user_id, section, response) VALUES (?, ?, ?)', 
                (user_id, section, user_response))
+
+    # Marcar a seção como concluída
+    db.execute('''
+        INSERT INTO progresso_atividades (user_id, section_id, completou)
+        VALUES (?, ?, 1)
+        ON CONFLICT(user_id, section_id) DO UPDATE SET completou=1
+    ''', (user_id, section))
+    
     db.commit()
 
-    return jsonify({"message": "Resposta enviada com sucesso!"})
+    return jsonify({"message": "Resposta enviada e progresso registrado com sucesso!"})
+
 @app.route('/main')
 @app.route('/dashboard_aluno')
 def dashboard_aluno():
@@ -105,5 +114,28 @@ def dashboard_professor():
     if 'user' in session and session['tipo'] == 'professor':
         return render_template('dashboard_professor.html', user=session['user'])
     return redirect(url_for('login'))
+@app.route('/dashboard_professor/feedbacks')
+def ver_feedbacks():
+    if 'user' in session and session['tipo'] == 'professor':
+        db = get_db()
+        
+        # Consultar as respostas dos alunos
+        respostas = db.execute('''
+            SELECT usuarios.nome, respostas.section, respostas.response
+            FROM respostas
+            JOIN usuarios ON respostas.user_id = usuarios.id
+        ''').fetchall()
+
+        # Consultar o progresso dos alunos
+        progresso = db.execute('''
+            SELECT usuarios.nome, progresso_atividades.section_id, progresso_atividades.completou
+            FROM progresso_atividades
+            JOIN usuarios ON progresso_atividades.user_id = usuarios.id
+        ''').fetchall()
+
+        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso)
+    
+    return redirect(url_for('login'))
+
 if __name__ == "__main__":
     app.run(debug=True)
