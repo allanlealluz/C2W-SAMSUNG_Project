@@ -51,7 +51,7 @@ def login():
         db = get_db()
         user = db.execute('SELECT * FROM usuarios WHERE email = ?', (email,)).fetchone()
         if user and user['senha'] == senha:
-            session["user"] = email
+            session["user"] = user['id']
             session["tipo"] = user['tipo']  # Salvando o tipo de usuário na sessão
             if user['tipo'] == 'professor':
                 return redirect(url_for('dashboard_professor'))
@@ -82,7 +82,6 @@ def submit_response():
     data = request.get_json()
     user_response = data['response']
     section = data['section']
-    
     # Captura o ID do usuário logado
     user_id = session['user']
 
@@ -105,8 +104,10 @@ def submit_response():
 @app.route('/main')
 @app.route('/dashboard_aluno')
 def dashboard_aluno():
+    db = get_db()
+    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchall()
     if 'user' in session and session['tipo'] == 'aluno':
-        return render_template('dashboard_aluno.html', user=session['user'])
+        return render_template('dashboard_aluno.html', user=data)
     return redirect(url_for('login'))
 
 @app.route('/dashboard_professor')
@@ -125,7 +126,7 @@ def ver_feedbacks():
             FROM respostas
             JOIN usuarios ON respostas.user_id = usuarios.id
         ''').fetchall()
-
+        valores = db.execute("SELECT * FROM respostas").fetchone()
         # Consultar o progresso dos alunos
         progresso = db.execute('''
             SELECT usuarios.nome, progresso_atividades.section_id, progresso_atividades.completou
@@ -133,7 +134,7 @@ def ver_feedbacks():
             JOIN usuarios ON progresso_atividades.user_id = usuarios.id
         ''').fetchall()
 
-        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso)
+        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso,valores=valores)
     
     return redirect(url_for('login'))
 

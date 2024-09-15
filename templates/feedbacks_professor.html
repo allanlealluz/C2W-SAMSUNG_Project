@@ -15,6 +15,10 @@
             <th>Seção</th>
             <th>Resposta</th>
         </tr>
+
+    {% if resposta == Null  %}
+        {% print("vazio") %}
+    {% endif %}
         {% for resposta in respostas %}
         <tr>
             <td>{{ resposta['nome'] }}</td>
