@@ -7,7 +7,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
             color: #343a40;
         }
         .content {
@@ -29,6 +28,24 @@
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid text-dark">
+            <a class="navbar-brand" href="#">C2W - Aluno</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Meus Cursos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Progresso</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Perfil</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container content">
         <h1 class="text-center">Aula 1: Por que Robótica?</h1>
         <p class="lead">Vamos aprender por que a robótica é uma ciência importante e como ela pode ser aplicada no dia a dia.</p>
@@ -37,7 +54,7 @@
         <div class="section" id="section-1">
             <h2>1. Introdução</h2>
             <p>Aprender robótica?!? Como assim? Robôs não seriam apenas personagens de filmes, histórias e jogos ou então parte de grandes fábricas? Nesta aula, iremos compreender o que é robótica e perceber sua importância na escola.</p>
-            <embed class="m-5" src="{{url_for('static',filename='Content/aula01_por_que_robotica_modulo1.pdf')}}">
+            <embed class="m-5" src="{{url_for('static',filename='Content/aula01_por_que_robotica_modulo1.pdf')}}" width="500px;"height="500px">
             <button class="btn btn-primary" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
 
@@ -54,18 +71,17 @@
         </div>
 
         <!-- Seção de Interação -->
-        <div class="interaction mt-5">
+        <div class="interaction mt-3" id="section-3">
             <form id="interactionForm" method="POST">
                 <h3>Interação</h3>
                 <p>Quais exemplos de robôs você conhece? Como você imagina que a robótica pode influenciar sua vida no futuro?</p>
                 <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
-                <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+                <button type="submit" class="btn btn-primary" onclick="completeSection(3)">Enviar Resposta</button>
             </form>
         </div>
 
         <!-- Progresso do aluno -->
         <div class="progress mt-5">
-            <h4>Progresso da Aula</h4>
             <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
         </div>
     </div>
@@ -73,21 +89,30 @@
     <script>
         let completedSections = 0;
         const totalSections = 3;
-
+        
         // Função para completar a seção
         function completeSection(sectionId) {
             const section = document.getElementById(`section-${sectionId}`);
-            section.style.backgroundColor = '#d4edda';
-            completedSections++;
-            updateProgressBar();
+        
+            // Verifica se a seção já foi completada, evitando marcar mais de uma vez
+            if (!section.getAttribute('data-completed')) {
+                section.style.backgroundColor = '#d4edda';
+                section.setAttribute('data-completed', 'true'); // Marca a seção como completa
+                completedSections++;
+                updateProgressBar();
+            }
         }
-
+        
         // Função para atualizar a barra de progresso
         function updateProgressBar() {
+            const progressBar = document.getElementById("progress-bar");
             const progress = (completedSections / totalSections) * 100;
-            if(progress <= 100){
-                document.getElementById('progress-bar').style.width = progress + '%';
-                document.getElementById('progress-bar').innerText = Math.round(progress) + '%';
+            progressBar.style.width = `${progress}%`;
+            progressBar.innerHTML = `${Math.round(progress)}%`;
+        
+            // Opcional: mostrar uma mensagem quando todas as seções forem concluídas
+            if (completedSections === totalSections) {
+                alert("Parabéns! Você concluiu todas as seções.");
             }
         }
 

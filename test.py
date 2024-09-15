@@ -62,7 +62,9 @@ def login():
     return render_template("login.html")
 @app.route("/robotica")
 def robotica():
-    return render_template("robotica.html")
+    if 'user' in session and session['tipo'] == 'aluno':
+        return render_template("robotica.html")
+    return redirect(url_for('login'))
 @app.route("/example")
 def example():
     return render_template("exampleFetch.html")
@@ -77,7 +79,7 @@ def submit_data():
     return jsonify({"message": "Dados recebidos com sucesso!"}), 200
 @app.route('/submit_response', methods=['POST'])
 def submit_response():
-    if 'user' not in session:
+    if 'user' in session and session['tipo'] == 'aluno':
         return jsonify({"message": "Usuário não autenticado!"}), 401
     data = request.get_json()
     user_response = data['response']
