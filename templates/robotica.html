@@ -55,10 +55,12 @@
 
         <!-- Seção de Interação -->
         <div class="interaction mt-5">
-            <h3>Interação</h3>
-            <p>Quais exemplos de robôs você conhece? Como você imagina que a robótica pode influenciar sua vida no futuro?</p>
-            <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
-            <button class="btn btn-primary" onclick="submitResponse()">Enviar Resposta</button>
+            <form id="interactionForm" method="POST">
+                <h3>Interação</h3>
+                <p>Quais exemplos de robôs você conhece? Como você imagina que a robótica pode influenciar sua vida no futuro?</p>
+                <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
+                <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+            </form>
         </div>
 
         <!-- Progresso do aluno -->
@@ -70,7 +72,7 @@
 
     <script>
         let completedSections = 0;
-        const totalSections = 2;
+        const totalSections = 3;
 
         // Função para completar a seção
         function completeSection(sectionId) {
@@ -89,16 +91,19 @@
             }
         }
 
-        // Função para enviar resposta
-        function submitResponse() {
+        // Função para enviar resposta via fetch
+        document.getElementById('interactionForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o comportamento padrão de recarregar a página
+            
             const response = document.getElementById('user-response').value;
+
             if (response.trim()) {
                 fetch('/submit_response', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ response: response, section: 1 })
+                    body: JSON.stringify({ response: response, section: 1 }) // Envia os dados como JSON
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -110,7 +115,7 @@
             } else {
                 alert('Por favor, escreva sua resposta antes de enviar.');
             }
-        }
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
