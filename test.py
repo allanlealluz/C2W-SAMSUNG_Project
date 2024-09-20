@@ -21,6 +21,7 @@ def init_db():
 #main page
 @app.route("/")
 def index():
+    init_db()
     return render_template("home.html")
 #chama a init_db através da url
 @app.route("/initdb")
