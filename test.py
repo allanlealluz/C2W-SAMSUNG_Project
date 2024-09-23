@@ -123,7 +123,7 @@ def update_progress():
 @app.route('/dashboard_aluno')
 def dashboard_aluno():
     db = get_db()
-    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchall()
+    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchone()
     if 'user' in session and session['tipo'] == 'aluno':
         return render_template('dashboard_aluno.html', user=data)
     return redirect(url_for('login'))
@@ -131,7 +131,7 @@ def dashboard_aluno():
 @app.route('/dashboard_professor')
 def dashboard_professor():
     db = get_db()
-    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchall()
+    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchone()
     if 'user' in session and session['tipo'] == 'professor':
         return render_template('dashboard_professor.html', user=data)
     return redirect(url_for('login'))
