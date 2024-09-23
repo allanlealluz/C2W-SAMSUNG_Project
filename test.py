@@ -130,8 +130,10 @@ def dashboard_aluno():
 
 @app.route('/dashboard_professor')
 def dashboard_professor():
+    db = get_db()
+    data = db.execute("SELECT nome FROM usuarios where id = ? ",(session['user'],)).fetchall()
     if 'user' in session and session['tipo'] == 'professor':
-        return render_template('dashboard_professor.html', user=session['user'])
+        return render_template('dashboard_professor.html', user=data)
     return redirect(url_for('login'))
 @app.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
