@@ -54,7 +54,7 @@
         <div class="section" id="section-1">
             <h2>1. Introdução</h2>
             <p>Aprender robótica?!? Como assim? Robôs não seriam apenas personagens de filmes, histórias e jogos ou então parte de grandes fábricas? Nesta aula, iremos compreender o que é robótica e perceber sua importância na escola.</p>
-            <embed class="m-5" src="{{url_for('static',filename='Content/aula01_por_que_robotica_modulo1.pdf')}}" width="500px;"height="500px">
+            <embed class="m-5" src="{{url_for('static',filename='Content/aula01_por_que_robotica_modulo1.pdf')}}" width="500px;" height="500px">
             <button class="btn btn-primary" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
 
@@ -76,7 +76,7 @@
                 <h3>Interação</h3>
                 <p>Quais exemplos de robôs você conhece? Como você imagina que a robótica pode influenciar sua vida no futuro?</p>
                 <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
-                <button type="submit" class="btn btn-primary" onclick="completeSection(3)">Enviar Resposta</button>
+                <button type="submit" class="btn btn-primary">Enviar Resposta</button>
             </form>
         </div>
 
@@ -100,15 +100,12 @@
                 completedSections++;
         
                 // Envia o progresso ao servidor
-                fetch('/submit_response', {
+                fetch('/submit_progress', { // Novo endpoint para enviar apenas o progresso
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        section: sectionId,
-                        response: ""  // Se for só o progresso, sem resposta
-                    })
+                    body: JSON.stringify({ section: sectionId })
                 }).then(response => response.json())
                 .then(data => console.log(data.message))
                 .catch(error => console.error('Erro:', error));
@@ -117,7 +114,6 @@
             }
         }
         
-        
         // Função para atualizar a barra de progresso
         function updateProgressBar() {
             const progressBar = document.getElementById("progress-bar");
@@ -125,7 +121,6 @@
             progressBar.style.width = `${progress}%`;
             progressBar.innerHTML = `${Math.round(progress)}%`;
         
-            // Opcional: mostrar uma mensagem quando todas as seções forem concluídas
             if (completedSections === totalSections) {
                 alert("Parabéns! Você concluiu todas as seções.");
             }
@@ -138,16 +133,17 @@
             const response = document.getElementById('user-response').value;
 
             if (response.trim()) {
-                fetch('/submit_response', {
+                fetch('/submit_response', { // Mantendo o endpoint original para as respostas
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ response: response, section: 1 }) // Envia os dados como JSON
+                    body: JSON.stringify({ response: response, section: 3 }) // Envia os dados como JSON
                 })
                 .then(res => res.json())
                 .then(data => {
                     alert(data.message);
+                    completeSection(3); // Chama a função para marcar a seção como concluída após a resposta
                 })
                 .catch(err => {
                     console.error('Erro:', err);

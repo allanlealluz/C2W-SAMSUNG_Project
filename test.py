@@ -77,11 +77,13 @@ def submit_data():
     # Você pode processar e armazenar esses dados no banco, se necessário
     # Retornar uma resposta JSON para o cliente
     return jsonify({"message": "Dados recebidos com sucesso!"}), 200
-@app.route('/submit_response', methods=['POST'])
-def submit_response():
+@app.route('/submit_response_text', methods=['POST'])
+def submit_response_text():
+    # Recebe a resposta do aluno em JSON
     data = request.get_json()
     user_response = data['response']
     section = data['section']
+    
     # Captura o ID do usuário logado
     user_id = session['user']
 
@@ -89,8 +91,22 @@ def submit_response():
     db = get_db()
     db.execute('INSERT INTO respostas (user_id, section, response) VALUES (?, ?, ?)', 
                (user_id, section, user_response))
+    
+    db.commit()
 
-    # Marcar a seção como concluída
+    return jsonify({"message": "Resposta enviada com sucesso!"}), 200
+
+@app.route('/update_progress', methods=['POST'])
+def update_progress():
+    # Recebe a seção que o aluno completou
+    data = request.get_json()
+    section = data['section']
+    
+    # Captura o ID do usuário logado
+    user_id = session['user']
+
+    # Atualiza o progresso do aluno no banco de dados
+    db = get_db()
     db.execute('''
         INSERT INTO progresso_atividades (user_id, section_id, completou)
         VALUES (?, ?, 1)
@@ -99,7 +115,8 @@ def submit_response():
     
     db.commit()
 
-    return jsonify({"message": "Resposta enviada e progresso registrado com sucesso!"})
+    return jsonify({"message": "Progresso atualizado com sucesso!"}), 200
+
 
 @app.route('/main')
 @app.route('/dashboard_aluno')
