@@ -100,7 +100,7 @@
                 completedSections++;
         
                 // Envia o progresso ao servidor
-                fetch('/submit_progress', { // Novo endpoint para enviar apenas o progresso
+                fetch('/update_progress', { // Endpoint correto para enviar o progresso
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -131,9 +131,9 @@
             event.preventDefault(); // Impede o comportamento padrão de recarregar a página
             
             const response = document.getElementById('user-response').value;
-
+        
             if (response.trim()) {
-                fetch('/submit_response', { // Mantendo o endpoint original para as respostas
+                fetch('/submit_response_text', { // Atualize o endpoint para a rota correta
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

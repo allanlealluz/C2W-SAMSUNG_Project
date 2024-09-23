@@ -20,7 +20,7 @@
 
         h2 {
             color: #333;
-            border-bottom: 2px solid#7b01a3;
+            border-bottom: 2px solid #7b01a3;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
@@ -85,45 +85,91 @@
                 margin-bottom: 5px;
             }
         }
+
+        #aula-selector {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Progresso e Feedback dos Alunos</h1>
 
-        <h2>Respostas dos Alunos</h2>
-        <table>
-            <tr>
-                <th>Nome do Aluno</th>
-                <th>Seção</th>
-                <th>Resposta</th>
-            </tr>
-
-            {% for resposta in respostas %}
-            <tr>
-                <td data-label="Nome do Aluno">{{ resposta['nome'] }}</td>
-                <td data-label="Seção">{{ resposta['section'] }}</td>
-                <td data-label="Resposta">{{ resposta['response'] }}</td>
-            </tr>
+        <label for="aula-selector">Selecione a Aula:</label>
+        <select id="aula-selector" onchange="filterAula()">
+            <option value="all">Todas as Aulas</option>
+            {% for aula in aulas %}
+            <option value="{{ aula }}">Aula {{ aula }}</option>
             {% endfor %}
+        </select>
+
+        <h2>Respostas dos Alunos</h2>
+        <table id="respostas">
+            <thead>
+                <tr>
+                    <th>Nome do Aluno</th>
+                    <th>Seção</th>
+                    <th>Resposta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resposta in respostas %}
+                <tr data-aula="{{ resposta['aula'] }}">
+                    <td data-label="Nome do Aluno">{{ resposta['nome'] }}</td>
+                    <td data-label="Seção">{{ resposta['section'] }}</td>
+                    <td data-label="Resposta">{{ resposta['response'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
 
         <h2>Progresso dos Alunos</h2>
-        <table>
-            <tr>
-                <th>Nome do Aluno</th>
-                <th>Seção</th>
-                <th>Atividade Concluída</th>
-            </tr>
-
-            {% for prog in progresso %}
-            <tr>
-                <td data-label="Nome do Aluno">{{ prog['nome'] }}</td>
-                <td data-label="Seção">{{ prog['section_id'] }}</td>
-                <td data-label="Atividade Concluída">{{ 'Sim' if prog['completou'] == 1 else 'Não' }}</td>
-            </tr>
-            {% endfor %}
+        <table id="progresso">
+            <thead>
+                <tr>
+                    <th>Nome do Aluno</th>
+                    <th>Seção</th>
+                    <th>Atividade Concluída</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prog in progresso %}
+                <tr data-aula="{{ prog['aula'] }}">
+                    <td data-label="Nome do Aluno">{{ prog['nome'] }}</td>
+                    <td data-label="Seção">{{ prog['section_id'] }}</td>
+                    <td data-label="Atividade Concluída">{{ 'Sim' if prog['completou'] == 1 else 'Não' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+
+    <script>
+        function filterAula() {
+            const aulaSelecionada = document.getElementById("aula-selector").value;
+            const respostaLinhas = document.querySelectorAll("#respostas tbody tr");
+            const progressoLinhas = document.querySelectorAll("#progresso tbody tr");
+
+            respostaLinhas.forEach(row => {
+                const aula = row.getAttribute('data-aula');
+                if (aulaSelecionada === 'all' || aula === aulaSelecionada) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            progressoLinhas.forEach(row => {
+                const aula = row.getAttribute('data-aula');
+                if (aulaSelecionada === 'all' || aula === aulaSelecionada) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+    </script>
 </body>
 </html>
