@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify, session, url_for, redirect
 import sqlite3
 from hashlib import sha256
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -72,6 +74,7 @@ def aula1():
 @app.route('/submit_response_text', methods=['POST'])
 def submit_response_text():
     # Recebe a resposta do aluno em JSON
+    
     data = request.get_json()
     user_response = data['response']
     section = data['section']
@@ -81,14 +84,14 @@ def submit_response_text():
 
     # Armazena a resposta no banco de dados
     db = get_db()
-    db.execute('INSERT INTO respostas (user_id, section, response) VALUES (?, ?, ?)', 
+    db.execute("INSERT INTO respostas (user_id, section, response,aula_id) VALUES (?, ?, ?, 1)", 
                (user_id, section, user_response))
     
     db.commit()
 
     return jsonify({"message": "Resposta enviada com sucesso!"}), 200
 
-@app.route('/update_progress', methods=['POST'])
+@app.route('/update_progress', methods=['POST',"GET"])
 def update_progress():
     # Recebe a seção que o aluno completou
     data = request.get_json()
@@ -100,8 +103,8 @@ def update_progress():
     # Atualiza o progresso do aluno no banco de dados
     db = get_db()
     db.execute('''
-        INSERT INTO progresso_atividades (user_id, section_id, completou)
-        VALUES (?, ?, 1)
+        INSERT INTO progresso_atividades (user_id, section_id, completou, aula_id)
+        VALUES (?, ?, 1, 1)
         ON CONFLICT(user_id, section_id) DO UPDATE SET completou=1
     ''', (user_id, section))
     
@@ -132,18 +135,18 @@ def ver_feedbacks():
         db = get_db()
         
         # Consultar as respostas dos alunos
-        respostas = db.execute('''
+        respostas = db.execute(''' 
             SELECT usuarios.nome, respostas.section, respostas.response
-            FROM respostas
+            FROM respostas 
             JOIN usuarios ON respostas.user_id = usuarios.id
-        ''').fetchone()
+        ''').fetchall()
         
         # Consultar o progresso dos alunos
-        progresso = db.execute('''
+        progresso = db.execute(''' 
             SELECT usuarios.nome, progresso_atividades.section_id, progresso_atividades.completou
-            FROM progresso_atividades
+            FROM progresso_atividades 
             JOIN usuarios ON progresso_atividades.user_id = usuarios.id
-        ''').fetchone()
+        ''').fetchall()
         
         # Gerar o gráfico de respostas dos alunos por seção
         fig, ax = plt.subplots()
