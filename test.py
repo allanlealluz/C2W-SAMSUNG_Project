@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, jsonify, session, url_for, redirect
 import sqlite3
 from hashlib import sha256
+import matplotlib.pyplot as plt
+import io
+import base64
 
 app = Flask(__name__)
 app.secret_key = "aaaa"
@@ -144,7 +147,18 @@ def ver_feedbacks():
         return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso,valores=valores)
     
     return redirect(url_for('login'))
-
+@app.route('/grafico')
+def grafico():
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3, 4, 5], [10, 20, 25, 30, 35])
+    
+    # Salvar o gráfico em uma imagem base64
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+    
+    return render_template('grafico.html', plot_url=plot_url)
 if __name__ == "__main__":
     app.run(debug=True)
  
