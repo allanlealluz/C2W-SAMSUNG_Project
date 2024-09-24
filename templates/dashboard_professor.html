@@ -1,47 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback dos Alunos</title>
+    <title>Dashboard do Professor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            color: #7b01a3;
+            margin-bottom: 40px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #7b01a3;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #5e0091;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            .button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Feedback dos Alunos</h1>
-
-    <h2>Respostas dos Alunos</h2>
-    <table border="1">
-        <tr>
-            <th>Nome</th>
-            <th>Seção</th>
-            <th>Resposta</th>
-        </tr>
-        {% for resposta in respostas %}
-        <tr>
-            <td>{{ resposta['nome'] }}</td>
-            <td>{{ resposta['section'] }}</td>
-            <td>{{ resposta['response'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <h2>Progresso dos Alunos</h2>
-    <table border="1">
-        <tr>
-            <th>Nome</th>
-            <th>Seção Completada</th>
-        </tr>
-        {% for pro in progresso %}
-        <tr>
-            <td>{{ pro['nome'] }}</td>
-            <td>{{ pro['section_id'] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    <h2>Gráfico de Respostas por Aluno</h2>
-    <img src="data:image/png;base64,{{ plot_respostas_url }}" alt="Gráfico de Respostas dos Alunos">
-
-    <h2>Gráfico de Progresso dos Alunos</h2>
-    <img src="data:image/png;base64,{{ plot_progresso_url }}" alt="Gráfico de Progresso dos Alunos">
+    <div class="container">
+        <h1>Dashboard do Professor</h1>
+        <h2>Bem vindo {{user['nome']}}</h2>
+        <a href="#" class="button">Turma Programação</a>
+        <a href="/dashboard_professor/feedbacks" class="button">Turma Robótica</a>
+    </div>
 </body>
 </html>
