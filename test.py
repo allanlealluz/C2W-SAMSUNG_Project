@@ -69,6 +69,7 @@ def aula1():
     if 'user' in session and session['tipo'] == 'aluno':
         return render_template("aula1.html")
     return redirect(url_for('login'))
+@app.route('/submit_response_text', methods=['POST'])
 def submit_response_text():
     # Recebe a resposta do aluno em JSON
     data = request.get_json()
@@ -135,30 +136,53 @@ def ver_feedbacks():
             SELECT usuarios.nome, respostas.section, respostas.response
             FROM respostas
             JOIN usuarios ON respostas.user_id = usuarios.id
-        ''').fetchall()
-        valores = db.execute("SELECT * FROM respostas").fetchone()
+        ''').fetchone()
+        
         # Consultar o progresso dos alunos
         progresso = db.execute('''
             SELECT usuarios.nome, progresso_atividades.section_id, progresso_atividades.completou
             FROM progresso_atividades
             JOIN usuarios ON progresso_atividades.user_id = usuarios.id
-        ''').fetchall()
+        ''').fetchone()
+        
+        # Gerar o gráfico de respostas dos alunos por seção
+        fig, ax = plt.subplots()
+        alunos = [resposta['nome'] for resposta in respostas]
+        quantidade_respostas = [respostas.count(resposta) for resposta in alunos]
+        
+        ax.bar(alunos, quantidade_respostas, color='blue')
+        ax.set_title('Quantidade de Respostas por Aluno')
+        ax.set_xlabel('Alunos')
+        ax.set_ylabel('Quantidade de Respostas')
+        
+        # Salvar o gráfico em uma imagem base64
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plot_respostas_url = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
 
-        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso,valores=valores)
+        # Gerar outro gráfico para o progresso
+        fig, ax = plt.subplots()
+        alunos_progresso = [pro['nome'] for pro in progresso]
+        progresso_alunos = [pro['completou'] for pro in progresso]
+        
+        ax.bar(alunos_progresso, progresso_alunos, color='green')
+        ax.set_title('Progresso dos Alunos por Seção')
+        ax.set_xlabel('Alunos')
+        ax.set_ylabel('Seções Completas')
+        
+        # Salvar o gráfico em uma imagem base64
+        img = io.BytesIO()
+        plt.savefig(img, format='png')
+        img.seek(0)
+        plot_progresso_url = base64.b64encode(img.getvalue()).decode()
+        plt.close(fig)
+
+        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso, plot_respostas_url=plot_respostas_url, plot_progresso_url=plot_progresso_url)
     
     return redirect(url_for('login'))
-@app.route('/grafico')
-def grafico():
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3, 4, 5], [10, 20, 25, 30, 35])
-    
-    # Salvar o gráfico em uma imagem base64
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode()
-    
-    return render_template('grafico.html', plot_url=plot_url)
+
 if __name__ == "__main__":
     app.run(debug=True)
  

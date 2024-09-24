@@ -138,7 +138,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ response: response, section: 3 }) // Envia os dados como JSON
+                    body: JSON.stringify({ response: response, section: 3, aula_id:1 }) // Envia os dados como JSON
                 })
                 .then(res => res.json())
                 .then(data => {
