@@ -62,23 +62,10 @@ def login():
             return jsonify({"message": "Credenciais inválidas!"})
     return render_template("login.html")
 @app.route("/robotica")
-def robotica():
+def aula1():
     if 'user' in session and session['tipo'] == 'aluno':
-        return render_template("robotica.html")
+        return render_template("aula1.html")
     return redirect(url_for('login'))
-@app.route("/example")
-def example():
-    return render_template("exampleFetch.html")
-@app.route('/submit_data', methods=['POST', "GET"])
-def submit_data():
-    # Pegar os dados enviados no JSON
-    data = request.get_json()
-    # Processar os dados (por exemplo, imprimir no console)
-    print("Dados recebidos:", data)
-    # Você pode processar e armazenar esses dados no banco, se necessário
-    # Retornar uma resposta JSON para o cliente
-    return jsonify({"message": "Dados recebidos com sucesso!"}), 200
-@app.route('/submit_response_text', methods=['POST'])
 def submit_response_text():
     # Recebe a resposta do aluno em JSON
     data = request.get_json()
@@ -160,3 +147,4 @@ def ver_feedbacks():
 
 if __name__ == "__main__":
     app.run(debug=True)
+ 
