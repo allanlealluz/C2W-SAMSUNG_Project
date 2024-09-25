@@ -1,0 +1,43 @@
+<!-- templates/criar_aula.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Criar Aula</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Criar Nova Aula</h2>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('teacher.criarAula') }}" method="POST">
+            <div class="form-group">
+                <label for="titulo">Título da Aula</label>
+                <input type="text" class="form-control" id="titulo" name="titulo" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea class="form-control" id="descricao" name="descricao" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="conteudo">Conteúdo da Aula</label>
+                <textarea class="form-control" id="conteudo" name="conteudo" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Criar Aula</button>
+            <!-- Corrigido o endpoint aqui -->
+            <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</body>
+</html>

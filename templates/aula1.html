@@ -132,7 +132,7 @@
             const response = document.getElementById('user-response').value;
         
             if (response.trim()) {
-                fetch('/submit_response_text', { // Atualize o endpoint para a rota correta
+                fetch('/responder_atividade', { // Atualize o endpoint para a rota correta
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

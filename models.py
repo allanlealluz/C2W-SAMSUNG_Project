@@ -43,4 +43,35 @@ def find_user_by_id(id):
     except sqlite3.Error as e:
         print(f"Erro ao buscar usuário por ID: {e}")
         return None
+def inserir_resposta(user_id, section, resposta, aula_id):
+    db = get_db()
+    if db is None:
+        return "erro"
+    try:
+        db.execute('INSERT INTO respostas (user_id, section, response, aula_id) VALUES (?, ?, ?, ?)', 
+                   (user_id, section, resposta, aula_id))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao inserir resposta: {e}")
 
+def atualizar_progresso(user_id, section_id, aula_id, completou):
+    db = get_db()
+    if db is None:
+        return "erro"
+    try:
+        db.execute('INSERT OR REPLACE INTO progresso_atividades (user_id, section_id, aula_id, completou) VALUES (?, ?, ?, ?)', 
+                   (user_id, section_id, aula_id, completou))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao atualizar progresso: {e}")
+
+def criar_aula(professor_id, titulo, descricao, conteudo_nome, topico):
+    db = get_db()
+    if db is None:
+        return None
+    try:
+        db.execute('INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome, topico) VALUES (?, ?, ?, ?, ?)', 
+                   (professor_id, titulo, descricao, conteudo_nome, topico))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao criar aula: {e}")

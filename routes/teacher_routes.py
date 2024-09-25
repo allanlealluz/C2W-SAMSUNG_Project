@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash
 from models import get_db, find_user_by_id
 from utils import generate_plot
+import sqlite3
 
 teacher_bp = Blueprint('teacher', __name__)
 
@@ -33,3 +34,30 @@ def ver_feedbacks():
         return render_template('feedbacks_professor.html', plot_respostas_url=plot_respostas_url)
     
     return redirect(url_for('auth.login'))
+@teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
+def criarAula():
+    if 'user' not in session or session['tipo'] != 'professor':
+        return redirect(url_for('auth.login'))  # Redireciona para o login se o usuário não for professor
+
+    if request.method == "POST":
+        titulo = request.form.get("titulo")
+        conteudo_nome = request.form.get("conteudo_nome")  # Obtenha o nome do conteúdo (se houver)
+        descricao = request.form.get("descricao")
+        topico = request.form.get("topico")  # Adiciona o tópico da aula
+
+        if not titulo or not descricao or not topico:
+            flash("Todos os campos são obrigatórios", "error")
+            return redirect(url_for('teacher.criarAula'))
+
+        db = get_db()
+        try:
+            db.execute('INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome, topico) VALUES (?, ?, ?, ?, ?)', 
+                       (session['user'], titulo, descricao, conteudo_nome, topico))
+            db.commit()
+            flash("Aula criada com sucesso!", "success")
+            return redirect(url_for('teacher.dashboard_professor'))  # Redireciona para o dashboard do professor
+        except sqlite3.Error as e:
+            flash(f"Erro ao criar a aula: {e}", "error")
+            return redirect(url_for('teacher.criarAula'))
+
+    return render_template("criarAula.html")
