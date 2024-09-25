@@ -1,5 +1,5 @@
 import sqlite3
-from flask import g
+from flask import g, current_app
 
 DATABASE = 'database.db'
 
@@ -14,6 +14,12 @@ def close_db(e=None):
     if db is not None:
         db.close()
 
+def init_db():
+    db = get_db()
+    with current_app.open_resource('schema.sql', mode='r') as f:
+        db.cursor().executescript(f.read())
+    db.commit()
+
 def create_user(nome, email, senha, tipo):
     db = get_db()
     db.execute('INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)', (nome, email, senha, tipo))
@@ -22,3 +28,8 @@ def create_user(nome, email, senha, tipo):
 def find_user(email):
     db = get_db()
     return db.execute('SELECT * FROM usuarios WHERE email = ?', (email,)).fetchone()
+
+def find_user_by_id(id):
+    db = get_db()
+    return db.execute('SELECT * FROM usuarios WHERE id = ?', (id,)).fetchall()
+

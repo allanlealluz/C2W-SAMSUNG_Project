@@ -2,8 +2,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from models import create_user, find_user
 from hashlib import sha256
-
+from models import find_user,create_user,find_user_by_id
 auth_bp = Blueprint('auth', __name__)
+student_bp = Blueprint('student', __name__)
 
 @auth_bp.route("/")
 def index():
@@ -31,3 +32,11 @@ def cadastro():
         create_user(nome, email, senha, tipo)
         return redirect(url_for('auth.login'))
     return render_template("cadastro.html")
+@student_bp.route("/dashboard_aluno")
+def dashboard_aluno():
+    user_id = session.get("user")
+    if not user_id:
+        return redirect(url_for('auth.login'))  # Redireciona para login se não estiver logado
+
+    user = find_user_by_id(user_id)  # Certifique-se de implementar essa função que busca o usuário pelo ID
+    return render_template("dashboard_aluno.html", user=user)

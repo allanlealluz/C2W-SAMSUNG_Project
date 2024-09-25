@@ -1,5 +1,5 @@
 # routes/student_routes.py
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, request
 from models import get_db
 
 student_bp = Blueprint('student', __name__)
