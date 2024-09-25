@@ -5,64 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Professor</title>
     <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <!-- Link para Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 20px;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: #121212;
+            color: #fff;
             height: 100vh;
         }
-
-        .container {
-            text-align: center;
+        .navbar {
+            background-color: #1e1e1e;
         }
-
+        .navbar-brand {
+            color: #7b01a3 !important;
+        }
+        .navbar-nav .nav-link {
+            color: #b3b3b3 !important;
+            transition: color 0.3s;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #4d4dff !important;
+        }
+        .container-custom {
+            background-color: rgba(20, 20, 20, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.7);
+            margin-top: 80px;
+        }
         h1 {
-            color: #7b01a3;
-            margin-bottom: 40px;
+            color: #4d4dff;
         }
-
-        .button {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
+        h2 {
+            color: #a29bfe;
+        }
+        .btn-custom {
+            background-color: #4d4dff;
+            color: #fff;
             border: none;
-            border-radius: 5px;
-            background-color: #7b01a3;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
         }
-
-        .button:hover {
-            background-color: #5e0091;
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 24px;
-            }
-
-            .button {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
+        .btn-custom:hover {
+            background-color: #3c3cff;
+            transform: scale(1.05);
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">C2W</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Início</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Criar_Aula">Criar Aula</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Sair</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container container-custom text-center mt-5">
         <h1>Dashboard do Professor</h1>
-        <h2>Bem vindo {{user['nome']}}</h2>
-        <a href="#" class="button">Turma Programação</a>
-        <a href="/dashboard_professor/feedbacks" class="button">Turma Robótica</a>
+        <h2>Bem-vindo, {{user['nome']}}</h2>
+        <a href="#" class="btn btn-custom btn-lg m-2">Turma de Programação</a>
+        <a href="/dashboard_professor/feedbacks" class="btn btn-custom btn-lg m-2">Turma de Robótica</a>
     </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

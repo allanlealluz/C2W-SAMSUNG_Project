@@ -30,3 +30,7 @@ def cadastro():
         create_user(nome, email, senha, tipo)
         return redirect(url_for('auth.login'))
     return render_template("cadastro.html")
+@auth_bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('auth.login'))

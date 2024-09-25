@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <title>Criar Aula</title>
 </head>
-<body>
+<body style="background-color: #f8f9fa;">
     <div class="container mt-5">
-        <h2>Criar Nova Aula</h2>
+        <h2 class="mb-4">Criar Nova Aula</h2>
         
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -34,8 +34,21 @@
                 <label for="conteudo">Conteúdo da Aula</label>
                 <textarea class="form-control" id="conteudo" name="conteudo" rows="5" required></textarea>
             </div>
+
+            <!-- Seção de Tópico com radio buttons -->
+            <div class="form-group">
+                <label>Tópico</label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="robotica" name="topico" value="Robótica" required>
+                    <label class="form-check-label" for="robotica">Robótica</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="programacao" name="topico" value="Programação" required>
+                    <label class="form-check-label" for="programacao">Programação</label>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">Criar Aula</button>
-            <!-- Corrigido o endpoint aqui -->
             <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary">Cancelar</a>
         </form>
     </div>
