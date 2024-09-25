@@ -8,7 +8,7 @@ student_bp = Blueprint('student', __name__)
 @student_bp.route('/dashboard_aluno')
 def dashboard_aluno():
     user_id = session.get("user")
-    if not user_id:
+    if not user_id:  
         return redirect(url_for('auth.login'))  # Redireciona para login se não estiver logado
 
     userData = find_user_by_id(user_id)
