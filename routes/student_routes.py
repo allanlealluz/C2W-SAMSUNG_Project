@@ -1,16 +1,18 @@
 # routes/student_routes.py
 from flask import Blueprint, render_template, session, redirect, url_for, request
-from models import get_db
+from models import get_db, find_user_by_id
+
 
 student_bp = Blueprint('student', __name__)
 
 @student_bp.route('/dashboard_aluno')
 def dashboard_aluno():
-    if 'user' in session and session['tipo'] == 'aluno':
-        db = get_db()
-        respostas = db.execute('SELECT * FROM respostas WHERE user_id = ?', (session['user'],)).fetchall()
-        return render_template('dashboard_aluno.html', respostas=respostas)
-    return redirect(url_for('auth.login'))
+    user_id = session.get("user")
+    if not user_id:
+        return redirect(url_for('auth.login'))  # Redireciona para login se não estiver logado
+
+    userData = find_user_by_id(user_id)
+    return render_template("dashboard_aluno.html", user=userData)
 
 @student_bp.route('/responder_atividade', methods=["POST", "GET"])
 def responder_atividade():
