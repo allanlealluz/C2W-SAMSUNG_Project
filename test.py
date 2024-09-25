@@ -136,55 +136,67 @@ def ver_feedbacks():
         
         # Consultar as respostas dos alunos
         respostas = db.execute(''' 
-            SELECT usuarios.nome, respostas.section, respostas.response
+            SELECT usuarios.nome, respostas.section, COUNT(respostas.response) as total_respostas
             FROM respostas 
             JOIN usuarios ON respostas.user_id = usuarios.id
+            GROUP BY usuarios.nome, respostas.section
         ''').fetchall()
         
         # Consultar o progresso dos alunos
         progresso = db.execute(''' 
-            SELECT usuarios.nome, progresso_atividades.section_id, progresso_atividades.completou
+            SELECT usuarios.nome, COUNT(progresso_atividades.section_id) as total_completou
             FROM progresso_atividades 
             JOIN usuarios ON progresso_atividades.user_id = usuarios.id
+            WHERE progresso_atividades.completou = 1
+            GROUP BY usuarios.nome
         ''').fetchall()
         
         # Gerar o gráfico de respostas dos alunos por seção
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 5))  # Tamanho ajustado do gráfico
         alunos = [resposta['nome'] for resposta in respostas]
-        quantidade_respostas = [respostas.count(resposta) for resposta in alunos]
+        quantidade_respostas = [resposta['total_respostas'] for resposta in respostas]
         
         ax.bar(alunos, quantidade_respostas, color='blue')
         ax.set_title('Quantidade de Respostas por Aluno')
         ax.set_xlabel('Alunos')
         ax.set_ylabel('Quantidade de Respostas')
+        plt.xticks(rotation=45)  # Gira os rótulos do eixo X para melhor visualização
         
         # Salvar o gráfico em uma imagem base64
         img = io.BytesIO()
+        plt.tight_layout()  # Ajusta layout para evitar sobreposição
         plt.savefig(img, format='png')
         img.seek(0)
         plot_respostas_url = base64.b64encode(img.getvalue()).decode()
         plt.close(fig)
 
         # Gerar outro gráfico para o progresso
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 5))  # Tamanho ajustado do gráfico
         alunos_progresso = [pro['nome'] for pro in progresso]
-        progresso_alunos = [pro['completou'] for pro in progresso]
+        progresso_alunos = [pro['total_completou'] for pro in progresso]
         
         ax.bar(alunos_progresso, progresso_alunos, color='green')
         ax.set_title('Progresso dos Alunos por Seção')
         ax.set_xlabel('Alunos')
         ax.set_ylabel('Seções Completas')
+        plt.xticks(rotation=45)  # Gira os rótulos do eixo X para melhor visualização
         
         # Salvar o gráfico em uma imagem base64
         img = io.BytesIO()
+        plt.tight_layout()  # Ajusta layout para evitar sobreposição
         plt.savefig(img, format='png')
         img.seek(0)
         plot_progresso_url = base64.b64encode(img.getvalue()).decode()
         plt.close(fig)
 
-        return render_template('feedbacks_professor.html', respostas=respostas, progresso=progresso, plot_respostas_url=plot_respostas_url, plot_progresso_url=plot_progresso_url)
+        return render_template('feedbacks_professor.html', 
+                               respostas=respostas, 
+                               progresso=progresso, 
+                               plot_respostas_url=plot_respostas_url, 
+                               plot_progresso_url=plot_progresso_url)
     
     return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
