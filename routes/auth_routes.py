@@ -17,7 +17,7 @@ def login():
             session["user"] = user['id']
             session["tipo"] = user['tipo']
             return redirect(url_for('teacher.dashboard_professor') if user['tipo'] == 'professor' else url_for('student.dashboard_aluno'))
-        return {"message": "Credenciais inválidas!"}, 401
+        return render_template("errorPage.html")
     return render_template("login.html")
 
 @auth_bp.route("/cadastro", methods=["POST", "GET"])
