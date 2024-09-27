@@ -90,7 +90,7 @@ def get_aulas(user_id):
     
     # Obtém a próxima aula não concluída
     aula = db.execute('''
-        SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo 
+        SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo_nome 
         FROM aulas 
         LEFT JOIN progresso_aulas 
         ON aulas.id = progresso_aulas.aula_id AND progresso_aulas.user_id = ?
