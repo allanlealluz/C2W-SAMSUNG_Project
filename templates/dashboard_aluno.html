@@ -73,9 +73,20 @@
 
         <div class="col-md-6">
             <div class="card">
-                <h2 class="card-title">Curso de Robótica</h2>
-                <p class="card-text">Progresso: 50%</p>
-                <a href="/robotica" class="btn btn-primary">Continuar Curso</a>
+                <!-- templates/dashboard_aluno.html -->
+        <h2>Bem-vindo, {{ user.nome }}</h2>
+        {% if aula %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ aula['titulo'] }}</h5>
+                <p class="card-text">{{ aula['descricao'] }}</p>
+                <a href="{{ url_for('student.ver_aula', aula_id=aula['id']) }}" class="btn btn-primary">Assistir Aula</a>
+            </div>
+        </div>
+    {% else %}
+        <p>Nenhuma aula disponível no momento.</p>
+    {% endif %}
+
             </div>
         </div>
     </div>

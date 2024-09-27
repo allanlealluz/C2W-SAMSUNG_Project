@@ -8,12 +8,11 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 CREATE TABLE IF NOT EXISTS aulas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    professor_id INTEGER NOT NULL,  -- ID do professor que criou a aula
-    titulo VARCHAR(255) NOT NULL,
+    professor_id INTEGER,
+    titulo TEXT NOT NULL,
     descricao TEXT,
-    conteudo_nome VARCHAR(255), -- Nome do conteúdo (caso seja PDF ou outro arquivo)
-    topico VARCHAR(255), -- Tópico da aula
-    FOREIGN KEY (professor_id) REFERENCES usuarios(id)
+    conteudo_nome TEXT,
+    topico TEXT
 );
 
 CREATE TABLE IF NOT EXISTS respostas (
@@ -27,12 +26,19 @@ CREATE TABLE IF NOT EXISTS respostas (
 );
 
 CREATE TABLE IF NOT EXISTS progresso_atividades (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     section_id INTEGER NOT NULL,
     aula_id INTEGER NOT NULL,
     completou BOOLEAN NOT NULL DEFAULT 0,
-    UNIQUE(user_id, section_id, aula_id),  -- Atualizando a restrição UNIQUE
+    PRIMARY KEY (user_id, section_id, aula_id),
+    FOREIGN KEY (user_id) REFERENCES usuarios (id),
+    FOREIGN KEY (aula_id) REFERENCES aulas (id)
+);
+CREATE TABLE progresso_aulas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    aula_id INTEGER NOT NULL,
+    concluida BOOLEAN DEFAULT 0,
     FOREIGN KEY(user_id) REFERENCES usuarios(id),
-    FOREIGN KEY(aula_id) REFERENCES aulas(id) -- Adicionando referência à tabela aulas
+    FOREIGN KEY(aula_id) REFERENCES aulas(id)
 );

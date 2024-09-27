@@ -1,0 +1,9 @@
+<!-- templates/ver_aula.html -->
+<h2>{{ aula.titulo }}</h2>
+<p>{{ aula.descricao }}</p>
+<div>
+    {{ aula.conteudo|safe }}
+</div>
+<form action="{{ url_for('student.concluir_aula', aula_id=aula.id) }}" method="POST">
+    <button type="submit">Concluir Aula</button>
+</form>

@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from models import create_user, find_user
+from models import create_user, find_user, verificar_tabelas, init_db
 from hashlib import sha256
 from models import find_user,create_user
 auth_bp = Blueprint('auth', __name__)
-
+init_db()
 @auth_bp.route("/")
 def index():
+    verificar_tabelas()
     return render_template("home.html")
 @auth_bp.route("/login", methods=["POST", "GET"])
 def login():
