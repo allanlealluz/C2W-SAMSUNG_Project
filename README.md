@@ -37,7 +37,7 @@
 Ensure you have the following requirements installed:
 
 - Python 3.8 or higher
-- Flask 2.0 or higher
+- Flask 3.0 or higher
 - [AI Tool: Matplotlib,Sklearn]
 - SQLite3
 
@@ -78,7 +78,7 @@ Ensure you have the following requirements installed:
 6. Run the project:
 
     ```bash
-    flask run
+    python app.py
     ```
 
 ## Usage
