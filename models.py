@@ -75,13 +75,13 @@ def atualizar_progresso(user_id, section_id, aula_id, completou):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar progresso: {e}")
 
-def criar_aula(professor_id, titulo, descricao, conteudo_nome, topico):
+def criar_aula(professor_id, titulo, descricao, conteudo_nome, topico, arquivo):
     db = get_db()
     if db is None:
         return None
     try:
-        db.execute('INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome, topico) VALUES (?, ?, ?, ?, ?)', 
-                   (professor_id, titulo, descricao, conteudo_nome, topico))
+        db.execute('INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome, topico, arquivo) VALUES (?, ?, ?, ?, ?, ?)', 
+                   (professor_id, titulo, descricao, conteudo_nome, topico, arquivo))
         db.commit()
     except sqlite3.Error as e:
         print(f"Erro ao criar aula: {e}")
@@ -90,7 +90,7 @@ def get_aulas(user_id):
     
     # Obtém a próxima aula não concluída
     aula = db.execute('''
-        SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo_nome 
+        SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo_nome, aulas.arquivo 
         FROM aulas 
         LEFT JOIN progresso_aulas 
         ON aulas.id = progresso_aulas.aula_id AND progresso_aulas.user_id = ?
