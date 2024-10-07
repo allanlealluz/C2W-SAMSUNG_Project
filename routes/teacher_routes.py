@@ -18,24 +18,35 @@ def dashboard_professor():
 def ver_feedbacks():
     if 'user' in session and session['tipo'] == 'professor':
         db = get_db()
-        respostas = db.execute(''' 
-            SELECT usuarios.nome, respostas.section, respostas.response
-            FROM respostas 
-            JOIN usuarios ON respostas.user_id = usuarios.id
+        
+        # Obtemos a quantidade de atividades completadas por cada aluno a partir de progresso_atividades
+        respostas = db.execute('''
+            SELECT usuarios.nome, COUNT(progresso_atividades.section_id) AS total_respostas
+            FROM progresso_atividades
+            JOIN usuarios ON progresso_atividades.user_id = usuarios.id
+            WHERE progresso_atividades.completou = 1
+            GROUP BY usuarios.nome
         ''').fetchall()
         
+        # Agora, organizamos os dados para o gráfico
         respostas_por_aluno = {}
         for resposta in respostas:
             nome = resposta['nome']
-            if nome not in respostas_por_aluno:
-                respostas_por_aluno[nome] = 0
-            respostas_por_aluno[nome] += 1
+            total_respostas = resposta['total_respostas']
+            respostas_por_aluno[nome] = total_respostas
         
-        plot_respostas_url = generate_plot(respostas_por_aluno, 'Quantidade de Respostas por Aluno', 'Alunos', 'Respostas')
+        # Geramos o gráfico com base nos dados obtidos
+        plot_respostas_url = generate_plot(
+            respostas_por_aluno, 
+            'Quantidade de Atividades Completadas por Aluno', 
+            'Alunos', 
+            'Atividades Completadas'
+        )
 
         return render_template('feedbacks_professor.html', plot_respostas_url=plot_respostas_url)
     
     return redirect(url_for('auth.login'))
+
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}  # Extensões permitidas
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -71,6 +82,7 @@ def criarAula():
             conteudo_nome = filename
         else:
             flash("Formato de arquivo inválido ou nenhum arquivo foi enviado.", "error")
+            print("dale")
             return redirect(url_for('teacher.criarAula'))
 
         try:
