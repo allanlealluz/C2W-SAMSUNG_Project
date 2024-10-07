@@ -95,8 +95,7 @@ def get_aulas(user_id):
         LEFT JOIN progresso_aulas 
         ON aulas.id = progresso_aulas.aula_id AND progresso_aulas.user_id = ?
         WHERE progresso_aulas.id IS NULL
-        ORDER BY aulas.id ASC 
-        LIMIT 1
+        ORDER BY aulas.id
     ''', (user_id,)).fetchone()
     
     return aula
