@@ -1,3 +1,8 @@
+<<<<<<< HEAD
 Flask==2.2.2
 sqlite3
 
+=======
+Flask==3.0.3
+Matplotlib
+>>>>>>> d12bf2af22ed4bd22a0e553ae89ae572cb2bbecf

@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS aulas (
     titulo TEXT NOT NULL,
     descricao TEXT,
     conteudo_nome TEXT,
-    topico TEXT
+    topico TEXT,
+    arquivo TEXT
 );
 
 CREATE TABLE IF NOT EXISTS respostas (
@@ -42,3 +43,4 @@ CREATE TABLE progresso_aulas (
     FOREIGN KEY(user_id) REFERENCES usuarios(id),
     FOREIGN KEY(aula_id) REFERENCES aulas(id)
 );
+

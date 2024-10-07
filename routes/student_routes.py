@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from models import get_db, find_user_by_id, get_aulas
 
 student_bp = Blueprint('student', __name__)
@@ -81,3 +81,71 @@ def responder_atividade(aula_id):
         flash("Por favor, insira uma resposta.", "danger")
 
     return redirect(url_for('student.ver_aula', aula_id=aula_id))
+# Rota para atualizar o progresso do aluno em uma seção da aula
+@student_bp.route('/update_progress', methods=['POST'])
+def update_progress():
+    user_id = session.get("user")
+    if not user_id:
+        return jsonify({'error': 'Usuário não autenticado'}), 403
+
+    data = request.get_json()
+    section_id = data.get('section')
+    aula_id = data.get('aula_id')
+
+    if not section_id or not aula_id:
+        return jsonify({'error': 'Dados insuficientes para processar o progresso'}), 400
+
+    db = get_db()
+
+    try:
+        # Verifica se o progresso da seção já foi registrado
+        exists = db.execute(
+            'SELECT 1 FROM progresso_atividades WHERE user_id = ? AND aula_id = ? AND section_id = ?',
+            (user_id, aula_id, section_id)
+        ).fetchone()
+
+        if not exists:
+            # Insere o progresso da seção no banco de dados
+            db.execute(
+                'INSERT INTO progresso_atividades (user_id, aula_id, section_id, completou) VALUES (?, ?, ?, ?)',
+                (user_id, aula_id, section_id, 1)
+            )
+            db.commit()
+        else:
+            return jsonify({'message': 'Seção já foi marcada como concluída.'}), 200
+
+        # Verifica se todas as seções dessa aula foram concluídas
+        total_sections = db.execute(
+            'SELECT COUNT(*) FROM sections WHERE aula_id = ?',
+            (aula_id,)
+        ).fetchone()[0]
+
+        completed_sections = db.execute(
+            'SELECT COUNT(*) FROM progresso_atividades WHERE user_id = ? AND aula_id = ? AND completou = 1',
+            (user_id, aula_id)
+        ).fetchone()[0]
+
+        if completed_sections == total_sections:
+            # Marca a aula como concluída se todas as seções foram completadas
+            aula_exists = db.execute(
+                'SELECT 1 FROM progresso_aulas WHERE user_id = ? AND aula_id = ?',
+                (user_id, aula_id)
+            ).fetchone()
+
+            if not aula_exists:
+                db.execute(
+                    'INSERT INTO progresso_aulas (user_id, aula_id, concluida) VALUES (?, ?, ?)',
+                    (user_id, aula_id, 1)
+                )
+            else:
+                db.execute(
+                    'UPDATE progresso_aulas SET concluida = 1 WHERE user_id = ? AND aula_id = ?',
+                    (user_id, aula_id)
+                )
+
+            db.commit()
+
+        return jsonify({'message': 'Progresso atualizado com sucesso!'}), 200
+    except Exception as e:
+        db.rollback()  # Em caso de erro, reverte a operação
+        return jsonify({'error': str(e)}), 500

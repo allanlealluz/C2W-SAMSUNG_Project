@@ -1,6 +1,6 @@
 # C2W - Learning Platform with Artificial Intelligence
 ![Uploading](logoC2W2.png)
-**C2W** is an innovative learning platform developed using the **Flask** framework and powered by Artificial Intelligence to provide a personalized and effective learning experience. This project was created as part of the **Samsung Innovation Campus** with the aim of transforming education using advanced technologies.
+**C2W** is an innovative educational platform focused on teaching programming and robotics, developed using the Flask framework and powered by Artificial Intelligence. This project was created as part of the Samsung Innovation Campus and aims to transform education in schools and technical institutions by providing teachers with tools to effectively create and manage educational content.
 
 ## Table of Contents
 
@@ -21,8 +21,8 @@
 
 - Programming Language: Python
 - Framework: Flask
-- Artificial Intelligence: [TensorFlow/PyTorch/OpenAI API/Other]
-- Database: SQLite
+- Artificial Intelligence: [Matplotlib,Sklearn]
+- Database: SQLite3
 - Other Tools: Git
 
 ## Features
@@ -37,23 +37,22 @@
 Ensure you have the following requirements installed:
 
 - Python 3.8 or higher
-- Flask 2.0 or higher
-- [AI Tool: TensorFlow/PyTorch]
-- Docker (optional for deployment)
-- PostgreSQL/MySQL (or another database)
+- Flask 3.0 or higher
+- [AI Tool: Matplotlib,Sklearn]
+- SQLite3
 
 ## Installation
 
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/allanlealluz/Projeto_Samsung
+   https://github.com/allanlealluz/C2W-SAMSUNG_Project
     ```
 
 2. Navigate to the project directory:
 
     ```bash
-    cd Projeto_Samsung
+    cd C2W-SAMSUNG_Project
     ```
 
 3. Create and activate the virtual environment:
@@ -79,12 +78,12 @@ Ensure you have the following requirements installed:
 6. Run the project:
 
     ```bash
-    flask run
+    python app.py
     ```
 
 ## Usage
 
-After installation, access the platform at `http://localhost:5000`. Register and explore the available courses. The platform will monitor your progress and suggest new activities based on your performance.
+After installation, access the platform at `127.0.0.1:5000`. Register and explore the available courses. The platform will monitor your progress and suggest new activities based on your performance.
 
 ## Contributing
 
