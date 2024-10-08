@@ -51,20 +51,23 @@
         <h1 class="text-center">{{ aula.titulo }}</h1>
         <p class="lead">{{ aula.descricao }}</p>
         
-        <!-- Seção 1: Introdução -->
+        <!-- Seção 1: Exibição do Conteúdo do Arquivo -->
         <div class="section" id="section-1">
-            <h2>1. Introdução</h2>
-            <p>{{ aula.introducao }}</p>
-            <embed class="m-5" src="{{ url_for('static', filename='Content/aula01_por_que_robotica_modulo1.pdf') }}" width="500px;" height="500px">
-            <button class="btn btn-primary" onclick="completeSection(1)">Marcar como Concluída</button>
+            <h2>1. Conteúdo da Aula</h2>
+            <p>Abaixo está o conteúdo que foi carregado do banco de dados:</p>
+            <!-- Apresenta o arquivo armazenado -->
+            <embed class="m-5" src="{{ url_for('static', filename='uploads/aula.arquivo') }}" width="600px;" height="600px">
+            <button class="btn btn-primary mt-3" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
 
-        <!-- Seção 2: Competências Gerais -->
+        <!-- Seção 2: Perguntas Relacionadas ao Conteúdo -->
         <div class="section mt-4" id="section-2">
-            <h2>2. Competências Gerais</h2>
+            <h2>2. Responda às Perguntas</h2>
+            <p>Baseado no conteúdo apresentado, responda as seguintes perguntas:</p>
             <ul>
-                {% for competencia in aula.competencias %}
-                    <li>{{ competencia }}</li>
+                {% for pergunta in aula.perguntas %}
+                    <li>{{ pergunta }}</li>
+                    <textarea class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..." id="resposta_{{ loop.index }}"></textarea>
                 {% endfor %}
             </ul>
             <button class="btn btn-primary" onclick="completeSection(2)">Marcar como Concluída</button>
