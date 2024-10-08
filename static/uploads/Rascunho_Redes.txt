@@ -1,0 +1,87 @@
+
+1 e 2 Fisica/DataLink- IEEE 802.11 Wi-Fi
+https://www.skillset.com/questions/which-layer-s-of-the-osi-model-does-802-11-wi-fi-operate-in
+https://en.wikipedia.org/wiki/IEEE_802.11
+
+
+3 Rede - IP
+https://avinetworks.com/glossary/subnet-mask/
+https://www.certificationkits.com/cisco-tcpip/
+
+
+4 Transporte- TCP, UDP
+https://pt.wikipedia.org/wiki/Protocolo_de_Controle_de_Transmiss%C3%A3o
+https://pt.wikipedia.org/wiki/Protocolo_de_datagrama_do_usu%C3%A1rio
+ccna 200-301 official cert guide volume 2 pdf
+
+
+7 Aplicação - 
+HTTP e HTTPS
+URL
+DNS
+
+
+https://learningnetwork.cisco.com/s/article/list-of-protocols-pdf
+
+---------
+Estou detalhando mais a função e o funcionamento destes protocolos, e não estou tocando nas suas histórias. Para não esquecermos
+---------
+
+IEEE 802.11 Wifi
+Define os detalhes técnicos do endereço MAC do computador em os aplica na WAN, ou seja, ele trabalha nas duas primeiras camadas do modelo OSI.
+
+É um tipo de transporte Half Duplex
+
+Na camada física, ele define a frequência e o tipo e modulação usado nas ondas de rádio entre os pontos da rede.
+
+Já na camada 2, de Enlace, ele carrega os endereços MAC e BSSID, que são os dois endereços mais básicos de um ponto de uma rede
+
+
+
+
+IP - Ipv4 e IPv6
+
+Endereços IPs  
+
+Significa Internet Protocol, todo mundo aqui vai saber um pouco sobre isso.
+
+Os protocolos de IPv4 e IPv6 são muito similares. Para essa revisão geral, podemos ficar no simples, e dizer que o IPv6 é um IPv4 com mais abrangência para endereços, capaz de identificar unicamente muito mais nodos de uma rede do que seu antecessor
+
+Existem 3 fatores importantes para entender endereços IP. Subnets, Máscaras e o endereço IP em si
+
+Subnets são redes menores, feitas de partes do endereço IP total, de forma que permite que mais ou menos nodos em uma rede sejam criados, de acordo com a necessidade
+
+Máscaras são usadas para esconder subnets de camadas superiores das camadas inferiores
+
+Vou fazer um exemplo com uma rede e mandar para colocarem no PPT
+
+
+
+
+
+TCP 
+O protocolo TCP (Transmission Control Protocol) define uma trnasferência de arquivos entre dois pontos de uma rede, através de uma CONEXÃO, ou seja, é um protocolo orientado a conexão. Diferente do protocolo UDP, que veremos daqui a pouco.
+
+Isso significa que o TCP prioriza confiabilidade em sua conexão, e somente envia pacotes de dados quando ele tem certeza que eles tem uma rota até o destinatário, além disso, ele espera confirmações  do destinatário de que as informações foram recebidas sem erro, antes de continuar a comunicação.
+
+Isso garante uma segurança e consistência para comunicações usando TCP, e mesmo que a conexão caia ou pacotes sejam perdidos, o protocolo é capaz de entender esses erros e recuperar o que foi perdido, a custo de tempo e performance.
+
+
+
+
+UDP
+
+Já o protocolo UDP (User Datagram Protocol) é diferente, ele somente lê os endereços para onde seus pacotes devem ser enviados, e então os envia, sem se preocupar se as mensagens foram recebidas corretamente, ou se a conexão caiu em algum ponto. Isso permite uma performance mais ágil, e, em situações onde serviços de recuperação de erros ou controle de fluxo não são necessários, um protocolo UDP pode ser melhor, mesmo com sua menor confiabilidade.
+
+
+
+HTTP e HTTPS
+URL
+DNS
+
+
+
+
+
+
+
