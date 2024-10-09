@@ -78,23 +78,33 @@ def criarAula():
 def ver_feedbacks():
     if 'user' in session and session['tipo'] == 'professor':
         db = get_db()
-        respostas = db.execute(''' 
-            SELECT usuarios.nome, respostas.section, respostas.response
-            FROM respostas 
-            JOIN usuarios ON respostas.user_id = usuarios.id
-        ''').fetchall()
-        
-        # Organiza as respostas por aluno
-        respostas_por_aluno = {}
-        for resposta in respostas:
-            nome = resposta['nome']
-            if nome not in respostas_por_aluno:
-                respostas_por_aluno[nome] = 0
-            respostas_por_aluno[nome] += 1
-        
-        # Gera o gráfico com base nas respostas por aluno
-        plot_respostas_url = generate_plot(respostas_por_aluno, 'Quantidade de Respostas por Aluno', 'Alunos', 'Respostas')
+        user_id = session.get('user')  # ID do professor logado
 
-        return render_template('feedbacks_professor.html', plot_respostas_url=plot_respostas_url)
+        # Busca todas as aulas do professor
+        aulas = db.execute('''
+            SELECT id, titulo FROM aulas WHERE professor_id = ?
+        ''', (user_id,)).fetchall()
+
+        # Para cada aula, busca as respostas associadas
+        feedbacks = {}
+        for aula in aulas:
+            aula_id = aula['id']
+            titulo_aula = aula['titulo']
+            
+            # Consulta para buscar as respostas dos alunos para esta aula específica
+            respostas = db.execute('''
+                SELECT usuarios.nome, respostas.section, respostas.response
+                FROM respostas
+                JOIN usuarios ON respostas.user_id = usuarios.id
+                WHERE respostas.aula_id = ?
+            ''', (aula_id,)).fetchall()
+
+            feedbacks[titulo_aula] = respostas
+        
+        # Gera os gráficos por aula com base no número de respostas
+        respostas_por_aula = {aula['titulo']: len(feedbacks[aula['titulo']]) for aula in aulas}
+        plot_respostas_url = generate_plot(respostas_por_aula, 'Quantidade de Respostas por Aula', 'Aulas', 'Respostas')
+
+        return render_template('feedbacks_professor.html', feedbacks=feedbacks, plot_respostas_url=plot_respostas_url)
     
     return redirect(url_for('auth.login'))
