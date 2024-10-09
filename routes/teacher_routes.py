@@ -22,8 +22,8 @@ if not os.path.exists(UPLOAD_FOLDER):
 def dashboard_professor():
     user_id = session.get("user")
     if user_id and session['tipo'] == 'professor':
-         userData = find_user_by_id(user_id) 
-         return render_template('dashboard_professor.html',user=userData)
+        userData = find_user_by_id(user_id) 
+        return render_template('dashboard_professor.html', user=userData)
     return redirect(url_for('auth.login')) 
 
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
@@ -72,3 +72,29 @@ def criarAula():
             return redirect(url_for('teacher.criarAula'))
 
     return render_template("criarAula.html")
+
+# Nova rota para ver os feedbacks
+@teacher_bp.route('/dashboard_professor/feedbacks')
+def ver_feedbacks():
+    if 'user' in session and session['tipo'] == 'professor':
+        db = get_db()
+        respostas = db.execute(''' 
+            SELECT usuarios.nome, respostas.section, respostas.response
+            FROM respostas 
+            JOIN usuarios ON respostas.user_id = usuarios.id
+        ''').fetchall()
+        
+        # Organiza as respostas por aluno
+        respostas_por_aluno = {}
+        for resposta in respostas:
+            nome = resposta['nome']
+            if nome not in respostas_por_aluno:
+                respostas_por_aluno[nome] = 0
+            respostas_por_aluno[nome] += 1
+        
+        # Gera o gráfico com base nas respostas por aluno
+        plot_respostas_url = generate_plot(respostas_por_aluno, 'Quantidade de Respostas por Aluno', 'Alunos', 'Respostas')
+
+        return render_template('feedbacks_professor.html', plot_respostas_url=plot_respostas_url)
+    
+    return redirect(url_for('auth.login'))
