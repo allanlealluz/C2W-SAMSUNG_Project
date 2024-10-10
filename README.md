@@ -15,7 +15,7 @@
 
 ## About the Project
 
-**C2W** (Class to World) is an online learning platform that uses Artificial Intelligence to adapt educational content according to the student's learning style. The platform allows for the creation of personalized courses that are continuously optimized based on students' performance and preferences using machine learning algorithms.
+**C2W** (Class to World) is an online learning platform that uses Artificial Intelligence to adapt educational content according to the student's learning style. The platform allows for the creation of personalized courses that are continuously optimized based on students' performance and preferences using machine learning algorithms ad other stuff.
 
 ### Technologies Used
 
