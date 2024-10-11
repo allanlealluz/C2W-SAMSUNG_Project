@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C2W - Aprendendo Robótica e Programação</title>
-    <!-- Incluindo o Bootstrap CSS -->
+    <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
     <style>
@@ -12,69 +12,75 @@
             height: 100%;
             margin: 0;
         }
-        .btn-enter {
-            background-color: #007bff;
-            border: none;
+        .sidebar {
+            height: 100%;
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #2d2d2d;
+            padding-top: 20px;
+        }
+        .sidebar a {
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 18px;
             color: white;
-            font-size: 1.5rem;
-            padding: 15px 30px;
-            border-radius: 5px;
-            text-decoration: none;
+            display: block;
         }
-        .btn-enter:hover {
-            background-color: #0056b3;
+        .sidebar a:hover {
+            background-color: #575757;
+            color: #ffbf00;
         }
-        .navbar, .footer {
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            background-color: #f4f4f4;
+            height: 100%;
+        }
+        .logo-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .navbar-brand {
+            font-size: 3rem;
+            color: #ffbf00;
+        }
+        h1, h2, p {
+            color: #343a40;
+        }
+        .footer {
             background-color: #343a40;
-        }
-        .navbar-nav .nav-link, .footer p, .footer a {
             color: white;
         }
-        .container {
-            color: #fff;
+        /* Aumenta o tamanho da logo */
+        .logo-container img {
+            width: 800px; /* Novo tamanho maior */
         }
     </style>
 </head>
-<body class="bg-dark">
-    <!-- Cabeçalho -->
-    <nav class="navbar navbar-dark navbar-expand-lg">
-        <a class="navbar-brand" href="#">C2W</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" 
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Início <span class="sr-only">(página atual)</span></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Sobre</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Cursos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Contato</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Professores</a>
-                </li>
-            </ul>
+<body>
+
+    <!-- Navbar lateral -->
+    <div class="sidebar">
+        <a href="/">Início</a>
+        <a href="#">Sobre</a>
+        <a href="#">Cursos</a>
+        <a href="#">Contato</a>
+        <a href="#">Professores</a>
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="content">
+        <div class="logo-container">
+            <a href="/"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
         </div>
-    </nav>
-    <header>
-        <div>
-            <a href="/cadastro"><img src="{{ url_for('static', filename='img/logo.png') }}" style="width:100%;"></a>
-        </div>
-    </header>
-    <main class="container">
-        <h1 class="display-4 text-center">Bem-vindo ao C2W!</h1>
-        <p class="lead text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
+        <h1 class="text-center">Bem-vindo ao C2W!</h1>
+        <p class="text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
         <div class="row">
             <div class="col-md-6">
                 <h2>Sobre o C2W</h2>
-                <p>O C2W é uma plataforma inovadora que facilita o ensino de robótica e programação para crianças do ensino fundamental. Com a colaboração de professores, oferecemos conteúdo interativo e personalizado para incentivar o aprendizado.</p>
+                <p>O C2W é uma plataforma que facilita o ensino de robótica e programação para crianças, com colaboração de professores.</p>
             </div>
             <div class="col-md-6">
                 <h2>Nossos Recursos</h2>
@@ -87,20 +93,13 @@
                 </ul>
             </div>
         </div>
-        <!-- Seção adicional para Professores -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <h2>Para Professores</h2>
-                <p>Professores podem contribuir com conteúdos e acompanhar o progresso dos alunos através de análises detalhadas, ajudando a personalizar o ensino de acordo com as necessidades de cada estudante.</p>
-            </div>
-        </div>
-    </main>
+    </div>
+
     <!-- Rodapé -->
-    <footer class="footer mt-auto py-3">
-        <div class="container text-center">
-            <span class="text-muted">© 2024 C2W - Todos os direitos reservados.</span>
-        </div>
+    <footer class="footer text-center py-3">
+        <span>© 2024 C2W - Todos os direitos reservados.</span>
     </footer>
+
     <!-- Scripts JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
