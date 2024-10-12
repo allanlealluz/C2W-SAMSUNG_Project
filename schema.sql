@@ -1,3 +1,4 @@
+alter table aulas add perguntas text;
 CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -12,6 +13,7 @@ CREATE TABLE IF NOT EXISTS aulas (
     titulo TEXT NOT NULL,
     descricao TEXT,
     conteudo_nome TEXT,
+    perguntas TEXT,
     topico TEXT,
     arquivo TEXT
 );

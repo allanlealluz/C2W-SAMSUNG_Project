@@ -30,7 +30,7 @@
         }
         .sidebar a:hover {
             background-color: #575757;
-            color: #ffbf00;
+            color: #520085;
         }
         .content {
             margin-left: 220px;
@@ -44,7 +44,7 @@
         }
         .navbar-brand {
             font-size: 3rem;
-            color: #ffbf00;
+            color: #8000ff;
         }
         h1, h2, p {
             color: #343a40;
@@ -63,17 +63,18 @@
 
     <!-- Navbar lateral -->
     <div class="sidebar">
+        <h1 class="navbar navbar-brand">C2W</h1>
         <a href="/">Início</a>
         <a href="#">Sobre</a>
-        <a href="#">Cursos</a>
+        <a href="/cadastro">Cadastro</a>
         <a href="#">Contato</a>
-        <a href="#">Professores</a>
+        <a href="/login">login</a>
     </div>
 
     <!-- Conteúdo -->
     <div class="content">
         <div class="logo-container">
-            <a href="/"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
+            <a href="/cadastro"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
         </div>
         <h1 class="text-center">Bem-vindo ao C2W!</h1>
         <p class="text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>

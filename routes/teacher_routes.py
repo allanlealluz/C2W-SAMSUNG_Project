@@ -3,6 +3,7 @@ from models import get_db, find_user_by_id, criar_aula
 from utils import generate_plot
 import sqlite3
 import os
+import json
 from werkzeug.utils import secure_filename
 
 teacher_bp = Blueprint('teacher', __name__)
@@ -35,7 +36,10 @@ def criarAula():
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
         topico = request.form.get("topico")
-        user_id = session.get('user')  # Adiciona o tópico da aula
+        user_id = session.get('user')
+        
+        # Recebe as perguntas como uma lista
+        perguntas = request.form.getlist("perguntas[]")
 
         # Verifica se os campos obrigatórios foram preenchidos
         if not titulo or not descricao or not topico:
@@ -56,15 +60,18 @@ def criarAula():
                 # Aqui, você pode salvar o nome do arquivo ou o caminho no banco de dados
                 conteudo_nome = filename
             except Exception as e:
-                print('erro')
+                print('Erro ao salvar o arquivo:', e)
+                flash('Erro ao salvar o arquivo', 'error')
                 return redirect(url_for('teacher.criarAula'))
         else:
-            print("Formato de arquivo inválido ou nenhum arquivo foi enviado.", "error")
+            flash("Formato de arquivo inválido ou nenhum arquivo foi enviado.", "error")
             return redirect(url_for('teacher.criarAula'))
 
         try:
-            # Função criar_aula com o novo caminho para o arquivo
-            criar_aula(user_id, titulo, descricao, conteudo_nome, topico, filepath)
+            # Converte a lista de perguntas para JSON
+            perguntas_json = json.dumps(perguntas)
+            # Função criar_aula com o novo caminho para o arquivo e as perguntas
+            criar_aula(user_id, titulo, descricao, conteudo_nome, perguntas_json, topico, filename)
             flash("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))  # Redireciona para o dashboard do professor
         except sqlite3.Error as e:
@@ -72,6 +79,7 @@ def criarAula():
             return redirect(url_for('teacher.criarAula'))
 
     return render_template("criarAula.html")
+
 
 # Nova rota para ver os feedbacks
 @teacher_bp.route('/dashboard_professor/feedbacks')

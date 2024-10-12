@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ aula.titulo }}</title>
+    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -46,17 +47,18 @@
             </div>
         </div>
     </nav>
+
     <div class="container content">
         <!-- Dinamicamente alterado com variáveis -->
         <h1 class="text-center">{{ aula.titulo }}</h1>
         <p class="lead">{{ aula.descricao }}</p>
-        
+
         <!-- Seção 1: Exibição do Conteúdo do Arquivo -->
         <div class="section" id="section-1">
             <h2>1. Conteúdo da Aula</h2>
             <p>Abaixo está o conteúdo que foi carregado do banco de dados:</p>
             <!-- Apresenta o arquivo armazenado -->
-            <embed class="m-5" src="{{ url_for('static', filename='/uploads/aula.arquivo') }}" width="600px;" height="600px">
+            <embed class="m-5" src="{{ url_for('static', filename='/uploads/'+aula.arquivo) }}" width="600px;" height="600px">
             <button class="btn btn-primary mt-3" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
 
@@ -64,12 +66,13 @@
         <div class="section mt-4" id="section-2">
             <h2>2. Responda às Perguntas</h2>
             <p>Baseado no conteúdo apresentado, responda as seguintes perguntas:</p>
-            <ul>
-                {% for pergunta in aula.perguntas %}
-                    <li>{{ pergunta }}</li>
-                    <textarea class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..." id="resposta_{{ loop.index }}"></textarea>
-                {% endfor %}
-            </ul>
+            {% if aula.perguntas %}
+            {% for pergunta in aula.perguntas %}
+                <p>{{ pergunta }}</p>
+            {% endfor %}
+            {% else %}
+            <p>Não há perguntas nesta aula.</p>
+            {% endif %}
             <button class="btn btn-primary" onclick="completeSection(2)">Marcar como Concluída</button>
         </div>
 
@@ -114,7 +117,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ section: sectionId, aula_id: {{ aula.id }} })
-                }).then(response => response.json())
+                })
+                .then(response => response.json())
                 .then(data => console.log(data.message))
                 .catch(error => console.error('Erro:', error));
         
@@ -141,7 +145,7 @@
             const response = document.getElementById('user-response').value;
         
             if (response.trim()) {
-                fetch('{{ url_for("student.responder_atividade", aula_id=aula.id) }}', {
+                fetch(`/responder_aula/{{ aula.id }}`, {  // Corrige a URL
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -150,11 +154,11 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message);
+                    console.log("Resposta enviada com sucesso.");
                     completeSection(3); 
                 })
                 .catch(err => {
-                    console.error('Erro:', err);
+                    console.error('Erro ao enviar resposta:', err);
                 });
             } else {
                 alert('Por favor, escreva sua resposta antes de enviar.');

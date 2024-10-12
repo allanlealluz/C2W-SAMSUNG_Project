@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Aula</title>
+    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -59,6 +60,15 @@
             <textarea class="form-control" id="conteudo" name="conteudo" rows="5" placeholder="Detalhe o conteúdo principal da aula" required></textarea>
         </div>
         <div class="form-group">
+            <label for="questoes">Questões</label>
+            <div id="questoes_container">
+                <div class="questao-item">
+                    <input type="text" class="form-control mb-3" name="questoes[]" placeholder="Insira uma questão">
+                </div>
+            </div>
+            <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
+        </div>
+        <div class="form-group">
             <label>Tópico</label><br>
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" id="robotica" name="topico" value="Robótica" required>
@@ -76,7 +86,15 @@
         <button type="submit" class="btn btn-primary">Criar Aula</button>
         <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary ml-2">Cancelar</a>
     </form>
-    
+    <script>
+        document.getElementById('add_questao').addEventListener('click', function() {
+            const container = document.getElementById('questoes_container');
+            const newQuestion = document.createElement('div');
+            newQuestion.classList.add('questao-item');
+            newQuestion.innerHTML = '<input type="text" class="form-control mb-3" name="questoes[]" placeholder="Insira uma questão">';
+            container.appendChild(newQuestion);
+        });
+    </script>
 
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
