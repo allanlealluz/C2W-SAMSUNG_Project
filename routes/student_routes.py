@@ -26,6 +26,8 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
 
+    perguntas = aula['perguntas'].split(',')
+
     if request.method == "POST":
         # Verificar se há progresso e, se não, marcar aula como concluída
         progresso = db.execute(
@@ -40,9 +42,9 @@ def ver_aula(aula_id):
             flash("Aula concluída com sucesso!", "success")
         else:
             flash("Aula já foi concluída anteriormente.", "info")
-        return redirect(url_for('student.dashboard_aluno'))
+            return redirect(url_for('student.dashboard_aluno'))
 
-    return render_template('ver_aula.html', aula=aula)
+    return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
 
 
 # Rota para concluir a aula

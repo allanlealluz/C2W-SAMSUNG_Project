@@ -66,15 +66,12 @@
         <div class="section mt-4" id="section-2">
             <h2>2. Responda às Perguntas</h2>
             <p>Baseado no conteúdo apresentado, responda as seguintes perguntas:</p>
-            {% if aula.perguntas %}
-            {% for pergunta in aula.perguntas %}
+            {% for pergunta in perguntas %}
                 <p>{{ pergunta }}</p>
             {% endfor %}
-            {% else %}
-            <p>Não há perguntas nesta aula.</p>
-            {% endif %}
             <button class="btn btn-primary" onclick="completeSection(2)">Marcar como Concluída</button>
         </div>
+        
 
         <!-- Seção de Interação -->
         <div class="interaction mt-3" id="section-3">

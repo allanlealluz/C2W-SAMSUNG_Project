@@ -63,7 +63,7 @@
             <label for="questoes">Questões</label>
             <div id="questoes_container">
                 <div class="questao-item">
-                    <input type="text" class="form-control mb-3" name="questoes[]" placeholder="Insira uma questão">
+                    <input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão">
                 </div>
             </div>
             <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
@@ -91,7 +91,7 @@
             const container = document.getElementById('questoes_container');
             const newQuestion = document.createElement('div');
             newQuestion.classList.add('questao-item');
-            newQuestion.innerHTML = '<input type="text" class="form-control mb-3" name="questoes[]" placeholder="Insira uma questão">';
+            newQuestion.innerHTML = '<input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão">';
             container.appendChild(newQuestion);
         });
     </script>

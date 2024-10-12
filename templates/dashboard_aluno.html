@@ -77,6 +77,7 @@
                 {% if aula %}
                     <div class="card mt-3">
                         <div class="card-body">
+                            <h2 class="card-title">Curso de Robótica</h2>
                             <h5 class="card-title">{{ aula['titulo'] }}</h5>
                             <p class="card-text">{{ aula['descricao'] }}</p>
                             <a href="{{ url_for('student.ver_aula', aula_id=aula['id']) }}" class="btn btn-primary">Assistir Aula</a>
