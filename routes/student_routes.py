@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from models import get_db, find_user_by_id, get_aulas
+import json
 
 student_bp = Blueprint('student', __name__)
 
@@ -26,8 +27,7 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
 
-    perguntas = aula['perguntas'].split(',')
-
+    perguntas =  json.loads(aula['perguntas'])
     if request.method == "POST":
         # Verificar se há progresso e, se não, marcar aula como concluída
         progresso = db.execute(

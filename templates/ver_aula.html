@@ -75,12 +75,12 @@
 
         <!-- Seção de Interação -->
         <div class="interaction mt-3" id="section-3">
-            <form id="interactionForm" method="POST" action="{{ url_for('student.responder_atividade', aula_id=aula.id) }}">
-                <h3>Interação</h3>
+                {% for pergunta in perguntas %}
+                <h3>Interação pergunta {{ pergunta }}</h3>
                 <p>{{ aula.pergunta_interacao }}</p>
-                <textarea id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
+                <textarea name="respostas[]" id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
                 <button type="submit" class="btn btn-primary">Enviar Resposta</button>
-            </form>
+                {% endfor %}
         </div>
 
         <!-- Progresso do aluno -->
