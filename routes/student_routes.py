@@ -81,13 +81,13 @@ def responder_atividade(aula_id):
         return redirect(url_for('auth.login'))
 
     data = request.get_json()
-    respostas = data.get('respostas')  # Lista de respostas do frontend
+    respostas = request.form.getlist('respostas[]')  # Lista de respostas do frontend
 
     if not respostas:
         return jsonify({'error': 'Nenhuma resposta fornecida.'}), 400
 
     db = get_db()
-
+    respostas = json.dumps(respostas)
     # Itera sobre as respostas e as insere no banco de dados
     for pergunta_id, resposta in respostas.items():
         if resposta.strip():
