@@ -16,8 +16,6 @@
             height: 100%;
             width: 200px;
             position: fixed;
-            top: 0;
-            left: 0;
             background-color: #2d2d2d;
             padding-top: 20px;
         }
@@ -33,14 +31,10 @@
             color: #520085;
         }
         .content {
-            margin-left: 220px;
-            padding: 20px;
             background-color: #f4f4f4;
-            height: 100%;
         }
         .logo-container {
             text-align: center;
-            margin-top: 20px;
         }
         .navbar-brand {
             font-size: 3rem;
@@ -53,16 +47,12 @@
             background-color: #343a40;
             color: white;
         }
-        /* Aumenta o tamanho da logo */
-        .logo-container img {
-            width: 800px; /* Novo tamanho maior */
-        }
     </style>
 </head>
 <body>
 
     <!-- Navbar lateral -->
-    <div class="sidebar">
+    <div class="container sidebar">
         <h1 class="navbar navbar-brand">C2W</h1>
         <a href="/">Início</a>
         <a href="#">Sobre</a>
@@ -74,16 +64,18 @@
     <!-- Conteúdo -->
     <div class="content">
         <div class="logo-container">
-            <a href="/cadastro"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
+            <a href="/cadastro"><img class="img-fluid" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
         </div>
-        <h1 class="text-center">Bem-vindo ao C2W!</h1>
-        <p class="text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
-        <div class="row">
-            <div class="col-md-6">
+            <div class="container">
+            <h1 class="text-center">Bem-vindo ao C2W!</h1>
+            <p class="text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
+        </div>
+        <div class="container row">
+            <div class="container col-md-3">
                 <h2>Sobre o C2W</h2>
                 <p>O C2W é uma plataforma que facilita o ensino de robótica e programação para crianças, com colaboração de professores.</p>
             </div>
-            <div class="col-md-6">
+            <div class="container col-md-3">
                 <h2>Nossos Recursos</h2>
                 <ul>
                     <li>Cursos de Robótica Básica</li>

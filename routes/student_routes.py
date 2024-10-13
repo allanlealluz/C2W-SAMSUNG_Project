@@ -80,28 +80,34 @@ def responder_atividade(aula_id):
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    resposta = request.form.get('resposta')
-    if not resposta:
-        flash("Por favor, insira uma resposta.", "danger")
-        return redirect(url_for('student.ver_aula', aula_id=aula_id))
+    data = request.get_json()
+    respostas = data.get('respostas')  # Lista de respostas do frontend
+
+    if not respostas:
+        return jsonify({'error': 'Nenhuma resposta fornecida.'}), 400
 
     db = get_db()
-    
-    # Salvar a resposta no banco de dados
-    db.execute(
-        'INSERT INTO respostas_aulas (user_id, aula_id, resposta) VALUES (?, ?, ?)', 
-        (user_id, aula_id, resposta)
-    )
+
+    # Itera sobre as respostas e as insere no banco de dados
+    for pergunta_id, resposta in respostas.items():
+        if resposta.strip():
+            db.execute(
+                'INSERT INTO respostas (user_id, aula_id, section, response) VALUES (?, ?, ?, ?)',
+                (user_id, aula_id, pergunta_id, resposta)
+            )
+
     db.commit()
 
-    flash("Resposta enviada com sucesso!", "success")
-    return redirect(url_for('student.ver_aula', aula_id=aula_id))
+    return jsonify({'message': 'Respostas enviadas com sucesso!'}), 200
+
 
 
 # Rota para atualizar o progresso do aluno em uma seção da aula
-@student_bp.route('/update_progress', methods=['POST'])
+@student_bp.route('/update_progress', methods=['POST', 'GET'])
 def update_progress():
     user_id = session.get("user")
+
+    # Verifica se o usuário está autenticado
     if not user_id:
         return jsonify({'error': 'Usuário não autenticado'}), 403
 
@@ -109,11 +115,11 @@ def update_progress():
     section_id = data.get('section')
     aula_id = data.get('aula_id')
 
+    # Verifica se os dados necessários foram fornecidos
     if not section_id or not aula_id:
         return jsonify({'error': 'Dados insuficientes para processar o progresso'}), 400
 
     db = get_db()
-
     try:
         # Verifica se o progresso da seção já foi registrado
         exists = db.execute(
@@ -122,19 +128,20 @@ def update_progress():
         ).fetchone()
 
         if not exists:
-            # Insere o progresso da seção no banco de dados
+            print(f"Inserindo progresso para user_id: {user_id}, aula_id: {aula_id}, section_id: {section_id}")
             db.execute(
                 'INSERT INTO progresso_atividades (user_id, aula_id, section_id, completou) VALUES (?, ?, ?, ?)',
                 (user_id, aula_id, section_id, 1)
             )
             db.commit()
 
-        # Verifica se todas as seções dessa aula foram concluídas
+        # Verifica o número total de seções dessa aula na tabela 'respostas'
         total_sections = db.execute(
-            'SELECT COUNT(*) FROM sections WHERE aula_id = ?',
+            'SELECT COUNT(DISTINCT section) FROM respostas WHERE aula_id = ?',
             (aula_id,)
         ).fetchone()[0]
 
+        # Verifica quantas seções foram completadas pelo usuário nessa aula
         completed_sections = db.execute(
             'SELECT COUNT(*) FROM progresso_atividades WHERE user_id = ? AND aula_id = ? AND completou = 1',
             (user_id, aula_id)
@@ -157,11 +164,12 @@ def update_progress():
                     'UPDATE progresso_aulas SET concluida = 1 WHERE user_id = ? AND aula_id = ?',
                     (user_id, aula_id)
                 )
-
             db.commit()
 
         return jsonify({'message': 'Progresso atualizado com sucesso!'}), 200
 
     except Exception as e:
-        db.rollback()  # Em caso de erro, reverte a operação
-        return jsonify({'error': str(e)}), 500
+        db.rollback()  # Reverte a transação em caso de erro
+        print(f"Erro detectado: {e}")  # Log do erro para depuração
+        return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500
+

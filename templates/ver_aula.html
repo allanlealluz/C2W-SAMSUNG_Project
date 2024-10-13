@@ -111,14 +111,21 @@
                 fetch('/update_progress', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json'  // Define o tipo de conteúdo como JSON
                     },
-                    body: JSON.stringify({ section: sectionId, aula_id: {{ aula.id }} })
+                    body: JSON.stringify({
+                        section: sectionId,
+                        aula_id: {{aula.id}}
+                    })
                 })
                 .then(response => response.json())
-                .then(data => console.log(data.message))
-                .catch(error => console.error('Erro:', error));
-        
+                .then(data => {
+                    console.log('Progresso atualizado:', data);
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar progresso:', error);
+                });
+                   
                 updateProgressBar();
             }
         }
@@ -138,29 +145,42 @@
         // Função para enviar resposta via fetch
         document.getElementById('interactionForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Impede o comportamento padrão de recarregar a página
-            
-            const response = document.getElementById('user-response').value;
         
-            if (response.trim()) {
+            const respostas = {};
+            
+            // Assumindo que os inputs têm IDs como 'resposta-1', 'resposta-2', etc.
+            const perguntas = document.querySelectorAll('[data-pergunta-id]');
+            
+            perguntas.forEach(function(pergunta) {
+                const perguntaId = pergunta.getAttribute('data-pergunta-id');
+                const resposta = pergunta.value;
+                
+                if (resposta.trim()) {
+                    respostas[perguntaId] = resposta;  // Vincula o ID da pergunta à resposta
+                }
+            });
+        
+            if (Object.keys(respostas).length > 0) {
                 fetch(`/responder_aula/{{ aula.id }}`, {  // Corrige a URL
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ response: response, section: 3 })
+                    body: JSON.stringify({ respostas: respostas })
                 })
                 .then(res => res.json())
                 .then(data => {
-                    console.log("Resposta enviada com sucesso.");
-                    completeSection(3); 
+                    console.log("Respostas enviadas com sucesso.");
+                    alert('Respostas enviadas com sucesso!');
                 })
                 .catch(err => {
-                    console.error('Erro ao enviar resposta:', err);
+                    console.error('Erro ao enviar respostas:', err);
                 });
             } else {
-                alert('Por favor, escreva sua resposta antes de enviar.');
+                alert('Por favor, responda pelo menos uma pergunta antes de enviar.');
             }
         });
+        
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
