@@ -1,0 +1,19 @@
+body {
+    color: #343a40;
+}
+.content {
+    margin-top: 20px;
+}
+.btn-primary {
+    background-color: #4a90e2;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #357abd;
+}
+.interaction {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}

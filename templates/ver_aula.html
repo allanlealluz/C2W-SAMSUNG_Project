@@ -6,27 +6,7 @@
     <title>{{ aula.titulo }}</title>
     <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            color: #343a40;
-        }
-        .content {
-            margin-top: 20px;
-        }
-        .btn-primary {
-            background-color: #4a90e2;
-            border: none;
-        }
-        .btn-primary:hover {
-            background-color: #357abd;
-        }
-        .interaction {
-            background-color: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/ver_aula.css')}}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -76,13 +56,13 @@
 
         <!-- Seção de Interação -->
         <div class="interaction mt-3" id="section-3">
-                {% for pergunta in perguntas %}
+            {% for pergunta in perguntas %}
                 <h3>{{ pergunta }}</h3>
-                <p>{{ aula.pergunta_interacao }}</p>
-                <textarea name="respostas[]" id="user-response" class="form-control mb-3" rows="4" placeholder="Escreva sua resposta aqui..."></textarea>
-                <button type="submit" class="btn btn-primary">Enviar Resposta</button>
-                {% endfor %}
+                <textarea name="respostas[]" class="form-control mb-3" rows="4" data-pergunta-id="{{ pergunta.id }}" placeholder="Escreva sua resposta aqui..."></textarea>
+            {% endfor %}
+            <button id="submit-respostas" class="btn btn-primary" onclick="completeSection(3)">Enviar Respostas</button>
         </div>
+        
 
         <!-- Progresso do aluno -->
         <div class="progress mt-5">
@@ -96,94 +76,91 @@
     </div>
 
     <script>
-        let completedSections = 0;
-        const totalSections = 3;
-
-        // Função para completar a seção
-        function completeSection(sectionId) {
-            const section = document.getElementById(`section-${sectionId}`);
+            let completedSections = 0;
+            const totalSections = 3;
         
-            if (!section.getAttribute('data-completed')) {
-                section.style.backgroundColor = '#d4edda';
-                section.setAttribute('data-completed', 'true');
-                completedSections++;
+            // Função para completar a seção
+            function completeSection(sectionId) {
+                const section = document.getElementById(`section-${sectionId}`);
+            
+                if (!section.getAttribute('data-completed')) {
+                    section.style.backgroundColor = '#d4edda';
+                    section.setAttribute('data-completed', 'true');
+                    completedSections++;
         
-                // Envia o progresso ao servidor
-                fetch('/update_progress', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'  // Define o tipo de conteúdo como JSON
-                    },
-                    body: JSON.stringify({
-                        section: sectionId,
-                        aula_id: {{aula.id}}
+                    // Envia o progresso ao servidor
+                    fetch('/update_progress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'  // Define o tipo de conteúdo como JSON
+                        },
+                        body: JSON.stringify({
+                            section: sectionId,
+                            aula_id: {{aula.id}}
+                        })
                     })
-                });
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Progresso atualizado:', data);
-                })
-                .catch(error => {
-                    console.error('Erro ao atualizar progresso:', error);
-                });
-                   
-                updateProgressBar();
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Progresso atualizado:', data);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao atualizar progresso:', error);
+                    });
+                    
+                    updateProgressBar();
+                }
             }
-        }
+            // Função para enviar resposta via fetch
+            document.getElementById('submit-respostas').addEventListener('click', function(event) {
+                event.preventDefault();  // Impede o comportamento padrão de recarregar a página
 
-        // Função para atualizar a barra de progresso
-        function updateProgressBar() {
-            const progressBar = document.getElementById("progress-bar");
-            const progress = (completedSections / totalSections) * 100;
-            progressBar.style.width = `${progress}%`;
-            progressBar.innerHTML = `${Math.round(progress)}%`;
-        
-            if (completedSections === totalSections) {
-                alert("Parabéns! Você concluiu todas as seções.");
-            }
-        }
-
-        // Função para enviar resposta via fetch
-        document.getElementById('interactionForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Impede o comportamento padrão de recarregar a página
-        
-            const respostas = {};
-            
-            // Assumindo que os inputs têm IDs como 'resposta-1', 'resposta-2', etc.
-            const perguntas = document.querySelectorAll('[data-pergunta-id]');
-            
-            perguntas.forEach(function(pergunta) {
-                const perguntaId = pergunta.getAttribute('data-pergunta-id');
-                const resposta = pergunta.value;
+                const respostas = {};
                 
-                if (resposta.trim()) {
-                    respostas[perguntaId] = resposta;  // Vincula o ID da pergunta à resposta
+                // Assumindo que os inputs têm o atributo 'data-pergunta-id'
+                const perguntas = document.querySelectorAll('[data-pergunta-id]');
+                
+                perguntas.forEach(function(pergunta) {
+                    const perguntaId = pergunta.getAttribute('data-pergunta-id');
+                    const resposta = pergunta.value;
+                    
+                    if (resposta.trim()) {
+                        respostas[perguntaId] = resposta;  // Vincula o ID da pergunta à resposta
+                    }
+                });
+
+                if (Object.keys(respostas).length > 0) {
+                    fetch(`/responder_aula/{{ aula.id }}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ respostas: respostas })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log("Respostas enviadas com sucesso.");
+                        alert('Respostas enviadas com sucesso!');
+                    })
+                    .catch(err => {
+                        console.error('Erro ao enviar respostas:', err);
+                    });
+                } else {
+                    alert('Por favor, responda pelo menos uma pergunta antes de enviar.');
                 }
             });
-        
-            if (Object.keys(respostas).length > 0) {
-                fetch(`/responder_aula/{{ aula.id }}`, {  // Corrige a URL
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ respostas: respostas })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Respostas enviadas com sucesso.");
-                    alert('Respostas enviadas com sucesso!');
-                })
-                .catch(err => {
-                    console.error('Erro ao enviar respostas:', err);
-                });
-            } else {
-                alert('Por favor, responda pelo menos uma pergunta antes de enviar.');
-            }
-        });
-        
-    </script>
 
+            // Função para atualizar a barra de progresso
+            function updateProgressBar() {
+                const progressBar = document.getElementById("progress-bar");
+                const progress = (completedSections / totalSections) * 100;
+                progressBar.style.width = `${progress}%`;
+                progressBar.innerHTML = `${Math.round(progress)}%`;
+        
+                if (completedSections === totalSections) {
+                    alert("Parabéns! Você concluiu todas as seções.");
+                }
+            }
+        </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -80,17 +80,17 @@ def responder_atividade(aula_id):
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    data = request.get_json()
-    respostas = request.form.getlist('respostas[]')  # Lista de respostas do frontend
+    # Captura o JSON contendo as respostas
+    respostas = request.json.get('respostas', {})  # Certifique-se de que isso é um dicionário
 
     if not respostas:
         return jsonify({'error': 'Nenhuma resposta fornecida.'}), 400
 
     db = get_db()
-    respostas = json.dumps(respostas)
+
     # Itera sobre as respostas e as insere no banco de dados
     for pergunta_id, resposta in respostas.items():
-        if resposta.strip():
+        if resposta.strip():  # Ignora respostas vazias
             db.execute(
                 'INSERT INTO respostas (user_id, aula_id, section, response) VALUES (?, ?, ?, ?)',
                 (user_id, aula_id, pergunta_id, resposta)
@@ -99,6 +99,7 @@ def responder_atividade(aula_id):
     db.commit()
 
     return jsonify({'message': 'Respostas enviadas com sucesso!'}), 200
+
 
 
 
