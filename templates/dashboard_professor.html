@@ -5,51 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Professor</title>
     <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
-    <!-- Link para Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            color: #fff;
-            height: 100vh;
-        }
-        .navbar {
-            background-color: #1e1e1e;
-        }
-        .navbar-brand {
-            color: #7b01a3 !important;
-        }
-        .navbar-nav .nav-link {
-            color: #b3b3b3 !important;
-            transition: color 0.3s;
-        }
-        .navbar-nav .nav-link:hover {
-            color: #4d4dff !important;
-        }
-        .container-custom {
-            background-color: rgba(20, 20, 20, 0.9);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.7);
-            margin-top: 80px;
-        }
-        h1 {
-            color: #4d4dff;
-        }
-        h2 {
-            color: #a29bfe;
-        }
-        .btn-custom {
-            background-color: #4d4dff;
-            color: #fff;
-            border: none;
-            transition: background-color 0.3s, transform 0.2s;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
-        }
-        .btn-custom:hover {
-            background-color: #3c3cff;
-            transform: scale(1.05);
-        }
-    </style>
+    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/dashboard_professor.css')}}">
+
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
