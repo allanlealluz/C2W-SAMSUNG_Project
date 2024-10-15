@@ -75,16 +75,34 @@ def atualizar_progresso(user_id, section_id, aula_id, completou):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar progresso: {e}")
 
-def criar_aula(professor_id, titulo, descricao, conteudo_nome,perguntas, topico, arquivo):
+def criar_aula(professor_id, titulo, descricao, conteudo_nome, perguntas, topico, arquivo):
     db = get_db()
     if db is None:
         return None
+    
     try:
-        db.execute('INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome,perguntas, topico, arquivo) VALUES (?, ?, ?, ?,?, ?, ?)', 
-                   (professor_id, titulo, descricao, conteudo_nome,perguntas, topico, arquivo))
+        # Inserir a aula na tabela "aulas"
+        db.execute('''
+            INSERT INTO aulas (professor_id, titulo, descricao, conteudo_nome, topico, arquivo) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (professor_id, titulo, descricao, conteudo_nome, topico, arquivo))
+        
+        # Recupera o ID da aula recém-criada
+        aula_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
+        
+        # Insere cada pergunta associada à aula
+        for pergunta in perguntas:
+            db.execute('''
+                INSERT INTO perguntas (aula_id, texto) 
+                VALUES (?, ?)
+            ''', (aula_id, pergunta))
+        
         db.commit()
+        print("Aula e perguntas criadas com sucesso!")
     except sqlite3.Error as e:
+        db.rollback()  # Desfaz qualquer mudança em caso de erro
         print(f"Erro ao criar aula: {e}")
+        return None
 def get_aulas(user_id):
     db = get_db()
     

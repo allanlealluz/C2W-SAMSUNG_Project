@@ -93,26 +93,47 @@ def ver_feedbacks():
             SELECT id, titulo FROM aulas WHERE professor_id = ?
         ''', (user_id,)).fetchall()
 
-        # Para cada aula, busca as respostas associadas
         feedbacks = {}
+        progresso = {}
+
         for aula in aulas:
             aula_id = aula['id']
             titulo_aula = aula['titulo']
-            
+
             # Consulta para buscar as respostas dos alunos para esta aula específica
             respostas = db.execute('''
-                SELECT usuarios.nome, respostas.section, respostas.response
+                SELECT usuarios.nome, respostas.aula_id, perguntas.texto AS pergunta, respostas.resposta
                 FROM respostas
                 JOIN usuarios ON respostas.user_id = usuarios.id
+                JOIN perguntas ON respostas.pergunta_id = perguntas.id
                 WHERE respostas.aula_id = ?
             ''', (aula_id,)).fetchall()
 
+            # Armazena as respostas no feedbacks
             feedbacks[titulo_aula] = respostas
-        
+
+            # Consulta para buscar o progresso dos alunos nesta aula
+            progresso_aula = db.execute('''
+                SELECT usuarios.nome, COUNT(progresso_atividades.section_id) as secoes_completadas, 
+                (COUNT(progresso_atividades.section_id) * 100.0 / (SELECT COUNT(id) FROM perguntas WHERE aula_id = ?)) as progresso
+                FROM progresso_atividades
+                JOIN usuarios ON progresso_atividades.user_id = usuarios.id
+                WHERE progresso_atividades.aula_id = ? AND progresso_atividades.completou = 1
+                GROUP BY usuarios.nome
+            ''', (aula_id, aula_id)).fetchall()
+
+            # Armazena o progresso no dicionário progresso
+            progresso[titulo_aula] = progresso_aula
+
         # Gera os gráficos por aula com base no número de respostas
         respostas_por_aula = {aula['titulo']: len(feedbacks[aula['titulo']]) for aula in aulas}
         plot_respostas_url = generate_plot(respostas_por_aula, 'Quantidade de Respostas por Aula', 'Aulas', 'Respostas')
 
-        return render_template('feedbacks_professor.html', feedbacks=feedbacks, plot_respostas_url=plot_respostas_url)
+        # Gera gráfico de progresso dos alunos
+        progresso_por_aula = {aula['titulo']: sum([aluno['progresso'] for aluno in progresso[aula['titulo']]]) / len(progresso[aula['titulo']]) if progresso[aula['titulo']] else 0 for aula in aulas}
+        plot_progresso_url = generate_plot(progresso_por_aula, 'Progresso Médio por Aula', 'Aulas', 'Progresso (%)')
+
+        return render_template('feedbacks_professor.html', feedbacks=feedbacks, progresso=progresso, plot_respostas_url=plot_respostas_url, plot_progresso_url=plot_progresso_url)
     
     return redirect(url_for('auth.login'))
+
