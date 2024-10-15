@@ -103,6 +103,7 @@ def criar_aula(professor_id, titulo, descricao, conteudo_nome, perguntas, topico
         db.rollback()  # Desfaz qualquer mudança em caso de erro
         print(f"Erro ao criar aula: {e}")
         return None
+    
 def get_aulas(user_id):
     db = get_db()
     

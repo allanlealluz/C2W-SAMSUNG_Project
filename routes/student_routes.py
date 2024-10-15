@@ -29,7 +29,7 @@ def ver_aula(aula_id):
 
     # Buscar as perguntas com seus respectivos IDs
     perguntas = db.execute('SELECT id, texto FROM perguntas WHERE aula_id = ?', (aula_id,)).fetchall()
-
+    
     if request.method == "POST":
         # Coleta as respostas enviadas no formulário
         respostas = request.form.to_dict()  # Pega todas as respostas do formulário

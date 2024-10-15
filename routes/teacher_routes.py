@@ -68,10 +68,9 @@ def criarAula():
             return redirect(url_for('teacher.criarAula'))
 
         try:
-            # Converte a lista de perguntas para JSON
-            perguntas_json = json.dumps(perguntas)
+
             # Função criar_aula com o novo caminho para o arquivo e as perguntas
-            criar_aula(user_id, titulo, descricao, conteudo_nome, perguntas_json, topico, filename)
+            criar_aula(user_id, titulo, descricao, conteudo_nome, perguntas, topico, filename)
             flash("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))  # Redireciona para o dashboard do professor
         except sqlite3.Error as e:
