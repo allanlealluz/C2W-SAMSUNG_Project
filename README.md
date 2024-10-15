@@ -2,7 +2,7 @@
 
 ![C2W Logo](logoC2W2.png)
 
-**C2W** é uma plataforma inovadora criada para atender às necessidades de ensino de robótica e programação para alunos do ensino fundamental. Com a intermediação dos professores, a plataforma contribui com ambos, dispondo de um design UX intuitivo, ferramentas de estatística e uso de IA para predição e análise do desempenho dos alunos, fornecendo feedbacks valiosos para que os professores possam adequar seus conteúdos de maneira mais eficaz.
+**C2W** é uma plataforma inovadora criada para atender às necessidades de ensino de robótica e programação para alunos do ensino fundamental. A plataforma faz a intermediação entre professores e alunos, dispondo de um design UX intuitivo, ferramentas de estatística e uso de IA para predição e análise do desempenho dos alunos, fornecendo feedbacks valiosos para que os professores possam adequar seus conteúdos de maneira mais eficaz.
 
 ## Tabela de Conteúdos
 
@@ -18,7 +18,7 @@
 
 ## Sobre o Projeto
 
-**C2W** (Class to World) é uma plataforma de aprendizagem online que utiliza Inteligência Artificial para adaptar o conteúdo educacional de acordo com o estilo de aprendizagem do aluno. A plataforma permite a criação de cursos personalizados que são continuamente otimizados com base no desempenho e nas preferências dos alunos, utilizando algoritmos de aprendizado de máquina.
+**C2W** (Class to World) é uma plataforma de aprendizagem online que utiliza Inteligência Artificial para monitorar e analisar o desempenho dos alunos, fornecendo feedbacks detalhados para os professores. Dessa forma, os professores podem ajustar o conteúdo de ensino para atender melhor às necessidades dos alunos.
 
 ### Tecnologias Utilizadas
 
@@ -30,10 +30,10 @@
 
 ## Funcionalidades
 
-- **Cursos Personalizados:** A plataforma adapta o conteúdo e a dificuldade dos cursos com base no progresso dos alunos.
-- **Inteligência Artificial:** O sistema é alimentado por algoritmos de aprendizado de máquina que recomendam atividades e conteúdos com base no comportamento dos alunos.
-- **Gestão de Cursos:** Criação, edição e gestão de cursos para diversas áreas do conhecimento.
-- **Monitoramento de Progresso:** Relatórios detalhados sobre o desempenho dos alunos, com insights gerados por IA.
+- **Monitoramento Personalizado:** A plataforma adapta o acompanhamento do desempenho dos alunos com base no progresso de cada um.
+- **Inteligência Artificial:** O sistema é alimentado por algoritmos de aprendizado de máquina que analisam o comportamento dos alunos.
+- **Gestão de Cursos:** Ferramentas para auxiliar os professores na criação, edição e gestão de cursos.
+- **Análise de Desempenho:** Relatórios detalhados sobre o desempenho dos alunos, com insights gerados por IA.
 
 ## Requisitos
 
@@ -49,7 +49,7 @@ Certifique-se de ter os seguintes requisitos instalados:
 Clone o repositório:
 ```bash
 https://github.com/allanlealluz/C2W-SAMSUNG_Project
-
+  ```
 ## Installation
 
 1. Clone the repository:
