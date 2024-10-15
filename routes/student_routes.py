@@ -27,7 +27,9 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
 
-    perguntas =  json.loads(aula['perguntas'])
+    # Verifica se "perguntas" existe e não é None
+    perguntas = json.loads(aula['perguntas']) if 'perguntas' in aula and aula['perguntas'] else []
+    
     if request.method == "POST":
         # Verificar se há progresso e, se não, marcar aula como concluída
         progresso = db.execute(
@@ -45,6 +47,7 @@ def ver_aula(aula_id):
             return redirect(url_for('student.dashboard_aluno'))
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+
 
 
 # Rota para concluir a aula
