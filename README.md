@@ -90,28 +90,27 @@ https://github.com/allanlealluz/C2W-SAMSUNG_Project
     python app.py
     ```
 
-## Usage
+## Uso
+Após a instalação, acesse a plataforma em 127.0.0.1:5000. Registre-se e explore as ferramentas disponíveis. A plataforma monitorará o desempenho dos alunos e fornecerá feedbacks valiosos para os professores.
 
-After installation, access the platform at `127.0.0.1:5000`. Register and explore the available courses. The platform will monitor your progress and suggest new activities based on your performance.
+## Contribuição
+Contribuições são bem-vindas! Para contribuir:
 
-## Contributing
+Faça um fork do repositório.
 
-Contributions are welcome! To contribute:
+Crie uma branch para sua funcionalidade (git checkout -b feature/NovaFuncionalidade).
 
-1. Fork the repository.
-2. Create a branch for your feature (`git checkout -b feature/NewFeature`).
-3. Commit your changes (`git commit -m 'Add NewFeature'`).
-4. Push to the branch (`git push origin feature/NewFeature`).
-5. Open a Pull Request.
+Comite suas mudanças (git commit -m 'Adiciona NovaFuncionalidade').
 
-## License
+Faça um push para a branch (git push origin feature/NovaFuncionalidade).
 
-This project is licensed under the [MIT License](LICENSE).
+Abra um Pull Request.
 
-## Authors
+## Licença
+Este projeto é licenciado sob a Licença MIT.
 
-- **Allan Leal** - *Lead Developer* - [My LinkedIn](https://br.linkedin.com/in/allan-leal-programmer)
+## Autores
+Allan Leal - Desenvolvedor Principal - Meu LinkedIn
 
-## Acknowledgments
-
-Thanks to the **Samsung Innovation Campus** for the opportunity to develop this project and gain knowledge in AI and software development.
+## Agradecimentos
+Agradecimentos ao Samsung Innovation Campus pela oportunidade de desenvolver este projeto e adquirir conhecimentos em IA e desenvolvimento de software.
