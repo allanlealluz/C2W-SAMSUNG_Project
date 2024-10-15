@@ -50,10 +50,6 @@
             {% for pergunta in perguntas %}
                 <p>{{ pergunta.texto }}</p> <!-- Acessando a propriedade 'texto' diretamente -->
             {% endfor %}
-            <button class="btn btn-primary" onclick="completeSection(2)">Marcar como Concluída</button>
-        
-        
-
         <!-- Seção de Interação -->
         <form method="POST">
             {% for pergunta in perguntas %}
@@ -62,7 +58,7 @@
                     <input type="text" class="form-control" name="{{ pergunta.id }}" id="pergunta-{{ pergunta.id }}" placeholder="Digite sua resposta">
                 </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary">Enviar Respostas</button>
+            <button type="submit" class="btn btn-primary" onclick="completeSection(2)">Enviar Respostas</button>
         </form>
         
         
@@ -80,7 +76,7 @@
 
     <script>
             let completedSections = 0;
-            const totalSections = 3;
+            const totalSections = 2;
         
             // Função para completar a seção
             function completeSection(sectionId) {
