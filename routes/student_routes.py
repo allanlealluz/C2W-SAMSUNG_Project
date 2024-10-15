@@ -27,26 +27,26 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
 
-    # Verifica se "perguntas" existe e não é None
-    perguntas = json.loads(aula['perguntas']) if 'perguntas' in aula and aula['perguntas'] else []
-    
-    if request.method == "POST":
-        # Verificar se há progresso e, se não, marcar aula como concluída
-        progresso = db.execute(
-            'SELECT * FROM progresso_aulas WHERE user_id = ? AND aula_id = ?', 
-            (user_id, aula_id)
-        ).fetchone()
+    # Buscar as perguntas com seus respectivos IDs
+    perguntas = db.execute('SELECT id, texto FROM perguntas WHERE aula_id = ?', (aula_id,)).fetchall()
 
-        if not progresso:
-            db.execute('INSERT INTO progresso_aulas (user_id, aula_id, concluida) VALUES (?, ?, 1)', 
-                       (user_id, aula_id))
-            db.commit()
-            flash("Aula concluída com sucesso!", "success")
-        else:
-            flash("Aula já foi concluída anteriormente.", "info")
-            return redirect(url_for('student.dashboard_aluno'))
+    if request.method == "POST":
+        # Coleta as respostas enviadas no formulário
+        respostas = request.form.to_dict()  # Pega todas as respostas do formulário
+
+        for pergunta_id, resposta in respostas.items():
+            if resposta.strip():  # Ignora respostas vazias
+                db.execute(
+                    'INSERT INTO respostas (user_id, pergunta_id, resposta, aula_id) VALUES (?, ?, ?, ?)',
+                    (user_id, pergunta_id, resposta, aula_id)
+                )
+        db.commit()
+        flash("Respostas enviadas com sucesso!", "success")
+        return redirect(url_for('student.dashboard_aluno'))
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+
+
 
 
 
