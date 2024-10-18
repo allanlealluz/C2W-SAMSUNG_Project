@@ -52,9 +52,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for aluno, progresso_list in progresso.items() %}
-                    <p>{{ aluno }}: {{ progresso_list | join(', ') }}</p>
-                     {% endfor %}
+                    {% for titulo, progresso_aula in progresso.items() %}
+                        <tr>
+                            <th colspan="3">{{ titulo }}</th>
+                        </tr>
+                        {% for aluno in progresso_aula %}
+                        <tr>
+                            <td>{{ aluno['nome'] }}</td>
+                            <td>{{ aluno['secoes_completadas'] }}</td>
+                            <td>{{ aluno['progresso'] }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
         </section>
