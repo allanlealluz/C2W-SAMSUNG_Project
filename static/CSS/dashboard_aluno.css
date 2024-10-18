@@ -1,0 +1,28 @@
+body {
+    background-color: #f4f4f4; /* Fundo cinza claro para projetores */
+    color: #1e1e1e;
+    margin: 0;
+}
+.navbar {
+    background-color: #6a0dad; /* Alterado para violeta */
+}
+.navbar-brand, .nav-link {
+    color: #fff;
+}
+.card {
+    background-color: #ffffff; /* Fundo claro nos cartões */
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para destaque */
+}
+.card-title {
+    color: #6a0dad; /* Títulos dos cartões em violeta */
+}
+.btn-primary {
+    background-color: #6a0dad; /* Botões primários em violeta */
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #580a9a; /* Efeito hover em violeta mais escuro */
+}
