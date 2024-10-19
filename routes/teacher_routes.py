@@ -11,11 +11,9 @@ teacher_bp = Blueprint('teacher', __name__)
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}  # Extensões permitidas
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 
-# Função para verificar se a extensão do arquivo é permitida
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Garantir que a pasta de uploads existe
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -30,7 +28,7 @@ def dashboard_professor():
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
 def criarAula():
     if 'user' not in session or session['tipo'] != 'professor':
-        return redirect(url_for('auth.login'))  # Redireciona para o login se o usuário não for professor
+        return redirect(url_for('auth.login')) 
 
     if request.method == "POST":
         titulo = request.form.get("titulo")
@@ -38,26 +36,20 @@ def criarAula():
         topico = request.form.get("topico")
         user_id = session.get('user')
         
-        # Recebe as perguntas como uma lista
         perguntas = request.form.getlist("perguntas[]")
 
-        # Verifica se os campos obrigatórios foram preenchidos
         if not titulo or not descricao or not topico:
             flash("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criarAula'))
         
-        # Processa o arquivo enviado
         conteudo_file = request.files.get('file')
         if conteudo_file and allowed_file(conteudo_file.filename):
             print(f"Arquivo recebido: {conteudo_file.filename}")
             try:
-                # Cria um nome seguro para o arquivo
                 filename = secure_filename(conteudo_file.filename)
                 # Define o caminho completo para salvar o arquivo dentro de 'static/uploads'
                 filepath = os.path.join(UPLOAD_FOLDER, filename)
-                # Salva o arquivo na pasta 'static/uploads'
                 conteudo_file.save(filepath)
-                # Aqui, você pode salvar o nome do arquivo ou o caminho no banco de dados
                 conteudo_nome = filename
             except Exception as e:
                 print('Erro ao salvar o arquivo:', e)
@@ -69,10 +61,9 @@ def criarAula():
 
         try:
 
-            # Função criar_aula com o novo caminho para o arquivo e as perguntas
             criar_aula(user_id, titulo, descricao, conteudo_nome, perguntas, topico, filename)
             flash("Aula criada com sucesso!", "success")
-            return redirect(url_for('teacher.dashboard_professor'))  # Redireciona para o dashboard do professor
+            return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
             flash(f"Erro ao criar a aula: {e}", "error")
             return redirect(url_for('teacher.criarAula'))
@@ -80,14 +71,11 @@ def criarAula():
     return render_template("criarAula.html")
 
 
-# Nova rota para ver os feedbacks
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if 'user' in session and session['tipo'] == 'professor':
         db = get_db()
         user_id = session.get('user')  # ID do professor logado
-
-        # Busca todas as aulas do professor
         aulas = db.execute('''
             SELECT id, titulo FROM aulas WHERE professor_id = ?
         ''', (user_id,)).fetchall()
@@ -98,8 +86,6 @@ def ver_feedbacks():
         for aula in aulas:
             aula_id = aula['id']
             titulo_aula = aula['titulo']
-
-            # Consulta para buscar as respostas dos alunos para esta aula específica
             respostas = db.execute('''
                 SELECT usuarios.nome, respostas.aula_id, perguntas.texto AS pergunta, respostas.resposta
                 FROM respostas
@@ -108,10 +94,8 @@ def ver_feedbacks():
                 WHERE respostas.aula_id = ?
             ''', (aula_id,)).fetchall()
 
-            # Armazena as respostas no feedbacks
             feedbacks[titulo_aula] = respostas
 
-            # Consulta para buscar o progresso dos alunos nesta aula
             progresso_aula = db.execute('''
                 SELECT usuarios.nome, COUNT(progresso_atividades.section_id) as secoes_completadas, 
                 (COUNT(progresso_atividades.section_id) * 100.0 / (SELECT COUNT(id) FROM perguntas WHERE aula_id = ?)) as progresso
