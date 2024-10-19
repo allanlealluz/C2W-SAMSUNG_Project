@@ -1,0 +1,67 @@
+<!-- templates/criar_aula.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Aula</title>
+    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/criar_aula.css')}}">
+</head>
+<body>
+    <form action="{{ url_for('teacher.criarAula') }}" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="titulo">Título da Aula</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Insira o título da aula" required>
+        </div>
+        <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descrição breve sobre a aula" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="conteudo">Conteúdo da Aula</label>
+            <textarea class="form-control" id="conteudo" name="conteudo" rows="5" placeholder="Detalhe o conteúdo principal da aula" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="questoes">Questões</label>
+            <div id="questoes_container">
+                <div class="questao-item">
+                    <input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão">
+                </div>
+            </div>
+            <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
+        </div>
+        <div class="form-group">
+            <label>Tópico</label><br>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="robotica" name="topico" value="Robótica" required>
+                <label class="form-check-label" for="robotica">Robótica</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="programacao" name="topico" value="Programação" required>
+                <label class="form-check-label" for="programacao">Programação</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="file">Anexar arquivo</label>
+            <input type="file" class="form-control-file" id="file" name="file" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Criar Aula</button>
+        <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary ml-2">Cancelar</a>
+    </form>
+    <script>
+        document.getElementById('add_questao').addEventListener('click', function() {
+            const container = document.getElementById('questoes_container');
+            const newQuestion = document.createElement('div');
+            newQuestion.classList.add('questao-item');
+            newQuestion.innerHTML = '<input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão">';
+            container.appendChild(newQuestion);
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

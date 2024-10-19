@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback dos Alunos</title>
+    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/feedback_professor.css')}}">
+</head>
+<body>
+    <div class="container">
+        <h1>Feedback dos Alunos</h1>
+
+        <!-- Seção de Respostas dos Alunos -->
+        <section>
+            <h2>Respostas dos Alunos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Pergunta</th>
+                        <th>Resposta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for titulo, respostas_aula in feedbacks.items() %}
+                        <tr>
+                            <th colspan="3">{{ titulo }}</th>
+                        </tr>
+                        {% for resposta in respostas_aula %}
+                        <tr>
+                            <td>{{ resposta['nome'] }}</td>
+                            <td>{{ resposta['pergunta'] }}</td>
+                            <td>{{ resposta['resposta'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Seção de Progresso dos Alunos -->
+        <section>
+            <h2>Progresso dos Alunos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Seções Completadas</th>
+                        <th>Progresso (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for titulo, progresso_aula in progresso.items() %}
+                        <tr>
+                            <th colspan="3">{{ titulo }}</th>
+                        </tr>
+                        {% for aluno in progresso_aula %}
+                        <tr>
+                            <td>{{ aluno['nome'] }}</td>
+                            <td>{{ aluno['secoes_completadas'] }}</td>
+                            <td>{{ aluno['progresso'] }}%</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Gráfico de Respostas por Aluno -->
+        <section>
+            <h2>Gráfico de Respostas por Aula</h2>
+            <img src="data:image/png;base64,{{ plot_respostas_url }}" alt="Gráfico de Respostas dos Alunos">
+        </section>
+
+        <!-- Gráfico de Progresso dos Alunos -->
+        <section>
+            <h2>Gráfico de Progresso dos Alunos</h2>
+            <img src="data:image/png;base64,{{ plot_progresso_url }}" alt="Gráfico de Progresso dos Alunos">
+        </section>
+    </div>
+</body>
+</html>

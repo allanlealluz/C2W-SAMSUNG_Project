@@ -1,0 +1,44 @@
+
+body, html {
+    height: 100%;
+    margin: 0;
+}
+.sidebar {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    background-color: #2d2d2d;
+    padding-top: 20px;
+    overflow-y: auto;
+}
+.sidebar a {
+    padding: 15px 20px;
+    text-align: left;
+    font-size: 18px;
+    color: white;
+    display: block;
+}
+.sidebar a:hover {
+    background-color: #575757;
+    color: #520085;
+}
+.content {
+    margin-left: 220px;
+    background-color: #f4f4f4;
+    min-height: 100vh;
+    padding: 20px;
+}
+.logo-container {
+    text-align: center;
+}
+.navbar-brand {
+    font-size: 3rem;
+    color: #8000ff;
+}
+h1, h2, p {
+    color: #343a40;
+}
+.footer {
+    background-color: #343a40;
+    color: white;
+}
