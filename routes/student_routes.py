@@ -35,7 +35,6 @@ def ver_aula(aula_id):
                 )
         db.commit()
         flash("Respostas enviadas com sucesso!", "success")
-        return redirect(url_for('student.dashboard_aluno'))
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
 
