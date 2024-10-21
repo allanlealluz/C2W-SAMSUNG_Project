@@ -75,7 +75,7 @@ def responder_atividade(aula_id):
     db = get_db()
 
     for pergunta_id, resposta in respostas.items():
-        if resposta.strip():  # Ignora respostas vazias
+        if resposta.strip():
             db.execute(
                 'INSERT INTO respostas (user_id, aula_id, section, response) VALUES (?, ?, ?, ?)',
                 (user_id, aula_id, pergunta_id, resposta)
@@ -94,7 +94,7 @@ def update_progress():
     data = request.get_json()
     section_id = data.get('section')
     aula_id = data.get('aula_id')
-
+    print(f"section_id: {section_id}, aula_id: {aula_id}")
     if not section_id or not aula_id:
         return jsonify({'error': 'Dados insuficientes para processar o progresso'}), 400
 
@@ -143,5 +143,6 @@ def update_progress():
         return jsonify({'message': 'Progresso atualizado com sucesso!'}), 200
 
     except Exception as e:
-        db.rollback()  # Reverte a transação em caso de erro
+        print(f"Erro ao atualizar progresso: {str(e)}")
+        db.rollback() 
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500

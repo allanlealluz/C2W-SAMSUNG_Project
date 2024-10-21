@@ -116,6 +116,52 @@ def verificar_tabelas():
         print("Tabelas encontradas:", [tabela["name"] for tabela in tabelas])
     except sqlite3.Error as e:
         print(f"Erro ao verificar tabelas: {e}")
+def get_aulas_by_professor(user_id):
+    db = get_db()
+    try:
+        return db.execute("SELECT id, titulo FROM aulas WHERE professor_id = ?", (user_id,)).fetchall()
+    except sqlite3.Error as e:
+        print(f"Erro ao buscar aulas: {e}")
+        return None
+
+def get_respostas_by_aula(aula_id):
+    db = get_db()
+    try:
+        return db.execute("""
+            SELECT usuarios.nome, respostas.pergunta_id, respostas.resposta, perguntas.texto AS pergunta_texto
+            FROM respostas
+            JOIN usuarios ON respostas.user_id = usuarios.id
+            JOIN perguntas ON respostas.pergunta_id = perguntas.id
+            WHERE respostas.aula_id = ?
+        """, (aula_id,)).fetchall()
+    except sqlite3.Error as e:
+        print(f"Erro ao buscar respostas: {e}")
+        return None
+
+def get_progresso_by_aula(aula_id):
+    db = get_db()
+    try:
+        return db.execute('''
+            SELECT usuarios.nome, progresso_aulas.concluida
+            FROM progresso_aulas
+            JOIN usuarios ON progresso_aulas.user_id = usuarios.id
+            WHERE progresso_aulas.aula_id = ?
+        ''', (aula_id,)).fetchall()
+    except sqlite3.Error as e:
+        print(f"Erro ao buscar progresso: {e}")
+        return None
+
+def update_nota_resposta(aluno, aula, nota):
+    db = get_db()
+    try:
+        db.execute('''
+            UPDATE respostas
+            SET nota = ?
+            WHERE user_id = (SELECT id FROM usuarios WHERE nome = ?) AND aula_id = (SELECT id FROM aulas WHERE titulo = ?)
+        ''', (nota, aluno, aula))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao atualizar nota: {e}")      
 
 if __name__ == '__main__':
     init_db()
