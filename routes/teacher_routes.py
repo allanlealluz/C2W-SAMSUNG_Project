@@ -81,8 +81,10 @@ def ver_feedbacks():
             aula_id = aula['id']
             titulo_aula = aula['titulo']
             respostas = get_respostas_by_aula(aula_id)
+            print(respostas)
+            for resposta in respostas:
+                print(resposta)
             
-            # Se não houver respostas, inicializa o feedback como lista vazia
             feedbacks[titulo_aula] = respostas if respostas else []
 
             for resposta in respostas or []:
@@ -133,8 +135,13 @@ def ver_feedbacks():
         progresso_medio_total = sum(data[0] for data in alunos_data.values()) / len(alunos_data)
         alunos_abaixo_da_media = {nome: progresso_por_aluno[nome] for nome, data in alunos_data.items() if data[0] < progresso_medio_total}
         dificuldades = {nome: palavras_chave.get(nome, []) for nome in alunos_abaixo_da_media}
-
-        # Adiciona a variável `plot_url` ao template
+        for nome, progresso_list in progresso_por_aluno.items():
+            progresso_medio = min(max(sum(progresso_list) / len(progresso_list), 0), 1) * 100
+            feedback_count = sum(1 for feedback_list in feedbacks.values() for f in feedback_list if f['nome'] == nome)
+            alunos_data[nome] = [progresso_medio, feedback_count]
+        print(progresso_medio_total)
+        print(alunos_abaixo_da_media)
+        print("Alunos Data:", alunos_data) 
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,

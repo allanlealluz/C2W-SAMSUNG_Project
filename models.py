@@ -128,14 +128,14 @@ def get_respostas_by_aula(aula_id):
     db = get_db()
     try:
         return db.execute("""
-            SELECT usuarios.nome, respostas.pergunta_id, respostas.resposta, perguntas.texto AS pergunta_texto
+            SELECT usuarios.nome, perguntas.texto AS pergunta_texto, respostas.resposta
             FROM respostas
             JOIN usuarios ON respostas.user_id = usuarios.id
             JOIN perguntas ON respostas.pergunta_id = perguntas.id
             WHERE respostas.aula_id = ?
         """, (aula_id,)).fetchall()
     except sqlite3.Error as e:
-        print(f"Erro ao buscar respostas: {e}")
+        print(f"Erro ao buscar respostas para a aula {aula_id}: {e}")
         return None
 
 def get_progresso_by_aula(aula_id):
