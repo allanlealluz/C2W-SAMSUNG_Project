@@ -84,7 +84,6 @@ def responder_atividade(aula_id):
     db.commit()
 
     return jsonify({'message': 'Respostas enviadas com sucesso!'}), 200
-
 @student_bp.route('/update_progress', methods=['POST'])
 def update_progress():
     user_id = session.get("user")
@@ -94,6 +93,7 @@ def update_progress():
     data = request.get_json()
     section_id = data.get('section')
     aula_id = data.get('aula_id')
+    
     print(f"section_id: {section_id}, aula_id: {aula_id}")
     if not section_id or not aula_id:
         return jsonify({'error': 'Dados insuficientes para processar o progresso'}), 400
@@ -113,7 +113,7 @@ def update_progress():
             db.commit()
 
         total_sections = db.execute(
-            'SELECT COUNT(DISTINCT section) FROM respostas WHERE aula_id = ?',
+            'SELECT COUNT(*) FROM perguntas WHERE aula_id = ?',
             (aula_id,)
         ).fetchone()[0]
 
@@ -144,5 +144,6 @@ def update_progress():
 
     except Exception as e:
         print(f"Erro ao atualizar progresso: {str(e)}")
-        db.rollback() 
+        db.rollback()
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500
+

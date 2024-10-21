@@ -64,13 +64,12 @@ def criarAula():
             return redirect(url_for('teacher.criarAula'))
 
     return render_template("criarAula.html")
-
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
-    if 'user' in session and session['tipo'] == 'professor':
+    if session.get('user') and session.get('tipo') == 'professor':
         user_id = session.get('user')
         aulas = get_aulas_by_professor(user_id)
-        if not aulas:
+        if aulas is None:
             return "Erro ao buscar aulas", 500
         
         feedbacks = {}
@@ -82,14 +81,11 @@ def ver_feedbacks():
             aula_id = aula['id']
             titulo_aula = aula['titulo']
             respostas = get_respostas_by_aula(aula_id)
-            print(respostas)
             
-            if not respostas:
-                return "Erro ao buscar respostas", 500
-            
-            feedbacks[titulo_aula] = respostas
+            # Se não houver respostas, inicializa o feedback como lista vazia
+            feedbacks[titulo_aula] = respostas if respostas else []
 
-            for resposta in respostas:
+            for resposta in respostas or []:
                 nome_aluno = resposta['nome']
                 pergunta_texto = resposta['pergunta_texto']
                 keywords = extract_keywords(pergunta_texto)
@@ -100,7 +96,8 @@ def ver_feedbacks():
 
             progresso = get_progresso_by_aula(aula_id)
             
-            if not progresso:
+            # Se não houver progresso, continue para a próxima aula
+            if progresso is None:
                 return "Erro ao buscar progresso", 500
             
             for aluno in progresso:
@@ -115,35 +112,41 @@ def ver_feedbacks():
         alunos_completos = 0
 
         for nome, progresso_list in progresso_por_aluno.items():
-            progresso_medio = np.clip(np.mean(progresso_list), 0, 1) * 100
+            progresso_medio = min(max(sum(progresso_list) / len(progresso_list), 0), 1) * 100
             if all(progresso_list):
                 alunos_completos += 1
             
+            # Calcula o número de feedbacks para o aluno
             feedback_count = sum(1 for feedback_list in feedbacks.values() for f in feedback_list if f['nome'] == nome)
             alunos_data[nome] = [progresso_medio, feedback_count]
 
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
-        X, labels, centroids = kmeans_clustering(alunos_data)
 
-        if X is not None:
-            nomes_alunos = list(alunos_data.keys())
-            plot_url = generate_cluster_plot(X, labels, centroids, nomes_alunos)
+        # Verifica se há dados para clustering
+        if alunos_data:
+            X, labels, centroids = kmeans_clustering(alunos_data)
+            # Gera o gráfico se houver dados válidos
+            if X is not None:
+                nomes_alunos = list(alunos_data.keys())
+                plot_url = generate_cluster_plot(X, labels, centroids, nomes_alunos)
 
-        progresso_medio_total = np.mean([data[0] for data in alunos_data.values()])
+        progresso_medio_total = sum(data[0] for data in alunos_data.values()) / len(alunos_data)
         alunos_abaixo_da_media = {nome: progresso_por_aluno[nome] for nome, data in alunos_data.items() if data[0] < progresso_medio_total}
         dificuldades = {nome: palavras_chave.get(nome, []) for nome in alunos_abaixo_da_media}
 
+        # Adiciona a variável `plot_url` ao template
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,
             dificuldades=dificuldades,
-            plot_respostas_url='/static/images/cluster_plot.png',
+            plot_respostas_url=plot_url if alunos_data else None,
             progresso=progresso_por_aluno,
             alunos_completos=alunos_completos,
             alunos_incompletos=alunos_incompletos
         )
 
     return redirect(url_for('auth.login'))
+
 
 @teacher_bp.route('/dar_nota', methods=['POST'])
 def dar_nota():
