@@ -3,11 +3,6 @@ from models import get_db, find_user_by_id, get_aulas
 
 student_bp = Blueprint('student', __name__)
 
-@student_bp.route('/dafrom flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
-from models import get_db, find_user_by_id, get_aulas
-
-student_bp = Blueprint('student', __name__)
-
 @student_bp.route('/dashboard_aluno')
 def dashboard_aluno():
     user_id = session.get("user")
@@ -15,7 +10,7 @@ def dashboard_aluno():
         return redirect(url_for('auth.login'))
 
     userData = find_user_by_id(user_id)
-    aula = get_aulas(user_id)  # Pega a próxima aula disponível
+    aula = get_aulas(user_id)  # P
 
     if not aula:
         flash("Nenhuma aula disponível no momento.", "info")
@@ -178,17 +173,6 @@ def update_progress():
     except Exception as e:
         db.rollback()
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500
-shboard_aluno')
-def dashboard_aluno():
-    user_id = session.get("user")
-    if not user_id:
-        return redirect(url_for('auth.login'))
-
-    userData = find_user_by_id(user_id)
-    aula = get_aulas(user_id)  # Pega a próxima aula disponível
-
-    return render_template("dashboard_aluno.html", user=userData, aula=aula)
-
 @student_bp.route('/ver_aula/<int:aula_id>', methods=["GET", "POST"])
 def ver_aula(aula_id):
     user_id = session.get("user")
