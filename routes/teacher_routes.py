@@ -57,7 +57,9 @@ def criarAula():
             flash("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criarAula'))
 
+        conteudo_nome = None  # Inicializar como None
         conteudo_file = request.files.get('file')
+        
         if conteudo_file and allowed_file(conteudo_file.filename):
             try:
                 filename = secure_filename(conteudo_file.filename)
@@ -67,12 +69,16 @@ def criarAula():
             except Exception as e:
                 flash('Erro ao salvar o arquivo', 'error')
                 return redirect(url_for('teacher.criarAula'))
-        else:
-            flash("Formato de arquivo inválido ou nenhum arquivo foi enviado.", "error")
+        
+        # Verifica se foi enviado um arquivo ou se o campo conteúdo foi preenchido
+        if conteudo_nome is None and not request.form.get("conteudo"):
+            flash("Você deve enviar um arquivo ou fornecer o conteúdo da aula.", "error")
             return redirect(url_for('teacher.criarAula'))
 
+        conteudo = request.form.get("conteudo") if conteudo_nome is None else conteudo_nome
+        
         try:
-            criar_aula(user_id, titulo, descricao, conteudo_nome, perguntas, topico)
+            criar_aula(user_id, titulo, descricao, conteudo, perguntas, topico)
             flash("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
