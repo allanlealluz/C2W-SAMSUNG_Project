@@ -78,7 +78,7 @@ def criarAula():
         conteudo = request.form.get("conteudo") if conteudo_nome is None else conteudo_nome
         
         try:
-            criar_aula(user_id, titulo, descricao, conteudo, perguntas, topico)
+            criar_aula(user_id, titulo, descricao, conteudo, perguntas, topico, conteudo_nome)
             flash("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
