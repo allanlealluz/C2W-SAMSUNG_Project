@@ -43,9 +43,6 @@
         <div class="section mt-4" id="section-2">
             <h2>2. Responda às Perguntas</h2>
             <p>Baseado no conteúdo apresentado, responda as seguintes perguntas:</p>
-            {% for pergunta in perguntas %}
-                <p>{{ pergunta.texto }}</p> 
-            {% endfor %}
         <form method="POST">
             {% for pergunta in perguntas %}
                 <div class="form-group">
