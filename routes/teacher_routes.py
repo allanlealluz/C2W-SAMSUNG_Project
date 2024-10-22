@@ -24,7 +24,7 @@ import sqlite3
 
 teacher_bp = Blueprint('teacher', __name__)
 
-ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}  # Extensões permitidas
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 
 def allowed_file(filename):
@@ -57,7 +57,7 @@ def criarAula():
             flash("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criarAula'))
 
-        conteudo_nome = None  # Inicializar como None
+        conteudo_nome = None  
         conteudo_file = request.files.get('file')
         
         if conteudo_file and allowed_file(conteudo_file.filename):
@@ -70,7 +70,6 @@ def criarAula():
                 flash('Erro ao salvar o arquivo', 'error')
                 return redirect(url_for('teacher.criarAula'))
         
-        # Verifica se foi enviado um arquivo ou se o campo conteúdo foi preenchido
         if conteudo_nome is None and not request.form.get("conteudo"):
             flash("Você deve enviar um arquivo ou fornecer o conteúdo da aula.", "error")
             return redirect(url_for('teacher.criarAula'))
