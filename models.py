@@ -189,5 +189,11 @@ def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
     alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
     return alunos_menor_desempenho
 
+def update_nota_resposta(resposta_id, nota):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('UPDATE respostas SET nota = ? WHERE id = ?', (nota, resposta_id))
+    db.commit()
+
 if __name__ == '__main__':
     init_db()
