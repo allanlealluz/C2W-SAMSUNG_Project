@@ -156,3 +156,21 @@ def ver_feedbacks():
 
     return redirect(url_for('auth.login'))
 
+@teacher_bp.route('/dashboard_professor/avaliar_alunos/<int:aula_id>', methods=["GET", "POST"])
+def avaliar_alunos(aula_id):
+    if 'user' not in session or session['tipo'] != 'professor':
+        return redirect(url_for('auth.login'))
+
+    user_id = session.get('user')
+    respostas = get_respostas_by_aula(aula_id)
+
+    if request.method == "POST":
+        for resposta in respostas:
+            nota = request.form.get(f"nota_{resposta['id']}")
+            if nota:
+                update_nota_resposta(resposta['id'], nota)
+
+        flash("Notas atualizadas com sucesso!", "success")
+        return redirect(url_for('teacher.dashboard_professor'))
+
+    return render_template('avaliar_alunos.html', respostas=respostas, aula_id=aula_id)
