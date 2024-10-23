@@ -26,6 +26,9 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
     perguntas = db.execute('SELECT id, texto FROM perguntas WHERE aula_id = ?', (aula_id,)).fetchall()
+    if request.method == "POST":
+        respostas = request.form.to_dict()
+        print(respostas) 
 
     if not aula:
         flash("Aula não encontrada.", "error")

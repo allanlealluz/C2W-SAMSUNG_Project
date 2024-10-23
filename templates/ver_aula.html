@@ -103,7 +103,6 @@
 
                 const respostas = {};
                 
-                // Assumindo que os inputs têm o atributo 'data-pergunta-id'
                 const perguntas = document.querySelectorAll('[data-pergunta-id]');
                 
                 perguntas.forEach(function(pergunta) {
@@ -111,7 +110,7 @@
                     const resposta = pergunta.value;
                     
                     if (resposta.trim()) {
-                        respostas[perguntaId] = resposta;  // Vincula o ID da pergunta à resposta
+                        respostas[perguntaId] = resposta; 
                     }
                 });
 

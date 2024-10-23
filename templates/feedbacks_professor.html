@@ -22,6 +22,16 @@
     <section>
         <!-- Feedbacks por Aula -->
         <h2>Feedbacks por Aula</h2>
+        {% for resp in respostas %}
+            <ul>            
+                    <li>
+                        {{resp }}
+                    </li>
+            </ul>
+        {% endfor %}
+    </section>
+
+    <section>
         {% for aula, respostas in feedbacks.items() %}
             <h3>{{ aula }}</h3>
             <ul>

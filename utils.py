@@ -6,6 +6,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 import spacy
 from sklearn.linear_model import LinearRegression
+import matplotlib
+matplotlib.use('Agg')
 
 nlp = spacy.load('pt_core_news_sm')
 

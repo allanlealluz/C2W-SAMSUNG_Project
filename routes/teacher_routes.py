@@ -141,9 +141,11 @@ def ver_feedbacks():
 
         progresso_medio_total = sum(sum(data) / len(data) for data in alunos_data.values()) / len(alunos_data)
         print(respostas)
+        resp =  get_respostas_by_aula(aula_id)
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,
+            respostas = resp,
             plot_respostas_url=plot_url,
             previsoes=previsoes,
             progresso=progresso_por_aluno,
