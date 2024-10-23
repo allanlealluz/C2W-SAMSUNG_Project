@@ -3,7 +3,7 @@ import os
 import numpy as np
 from werkzeug.utils import secure_filename
 from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, update_nota_resposta
-from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords
+from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords, generate_performance_plot
 import sqlite3
 
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
@@ -91,35 +91,26 @@ def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
         user_id = session.get('user')
         aulas = get_aulas_by_professor(user_id)
-        
+
         if not aulas:
             flash("Nenhuma aula encontrada para o professor.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
 
         feedbacks = {}
         progresso_por_aluno = {}
-        palavras_chave = {}
         total_alunos = set()
 
         for aula in aulas:
-            aula_id = aula['id']
-            titulo_aula = aula['titulo']
+            aula_id = aula[0]
+            titulo_aula = aula[1]  
+
             respostas = get_respostas_by_aula(aula_id)
 
             if respostas is None:
                 flash(f"Erro ao buscar respostas para a aula {titulo_aula}.", "error")
                 continue
-            
+
             feedbacks[titulo_aula] = respostas if respostas else []
-
-            for resposta in respostas:
-                nome_aluno = resposta['nome']
-                pergunta_texto = resposta['pergunta_texto']
-                keywords = extract_keywords(pergunta_texto)
-
-                if nome_aluno not in palavras_chave:
-                    palavras_chave[nome_aluno] = []
-                palavras_chave[nome_aluno].extend(keywords)
 
             progresso = get_progresso_by_aula(aula_id)
 
@@ -130,54 +121,36 @@ def ver_feedbacks():
             for aluno in progresso:
                 nome = aluno['nome']
                 total_alunos.add(nome)
-                
+
                 if nome not in progresso_por_aluno:
                     progresso_por_aluno[nome] = []
                 progresso_por_aluno[nome].append(aluno['concluida'])
 
         alunos_data = {}
-        alunos_completos = 0
-
         for nome, progresso_list in progresso_por_aluno.items():
             progresso_medio = min(max(sum(progresso_list) / len(progresso_list), 0), 1) * 100
-            if all(progresso_list):
-                alunos_completos += 1
-            
-            feedback_count = sum(1 for feedback_list in feedbacks.values() for f in feedback_list if f['nome'] == nome)
-            alunos_data[nome] = [progresso_medio, feedback_count]
+            alunos_data[nome] = progresso_list
 
+        plot_url, previsoes = (None, None)
+
+        if alunos_data:
+            plot_url, previsoes = generate_performance_plot(alunos_data)
+
+        alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
 
-        # Verifica se há dados para clustering
-        if alunos_data:
-            X, labels, centroids = kmeans_clustering(alunos_data)
-            plot_url = generate_cluster_plot(X, labels, centroids, list(alunos_data.keys())) if X is not None else None
-
-        progresso_medio_total = sum(data[0] for data in alunos_data.values()) / len(alunos_data)
-        alunos_abaixo_da_media = {nome: progresso_por_aluno[nome] for nome, data in alunos_data.items() if data[0] < progresso_medio_total}
-        dificuldades = {nome: palavras_chave.get(nome, []) for nome in alunos_abaixo_da_media}
-
+        progresso_medio_total = sum(sum(data) / len(data) for data in alunos_data.values()) / len(alunos_data)
+        print(respostas)
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,
-            dificuldades=dificuldades,
             plot_respostas_url=plot_url,
+            previsoes=previsoes,
             progresso=progresso_por_aluno,
             alunos_completos=alunos_completos,
-            alunos_incompletos=alunos_incompletos
+            alunos_incompletos=alunos_incompletos,
+            progresso_medio_total=progresso_medio_total
         )
 
     return redirect(url_for('auth.login'))
 
-@teacher_bp.route('/dar_nota', methods=['POST'])
-def dar_nota():
-    aluno = request.form['aluno']
-    aula = request.form['aula']
-    nota = int(request.form['nota'])
-
-    if update_nota_resposta(aluno, aula, nota):
-        flash("Nota atribuída com sucesso!", "success")
-    else:
-        flash("Erro ao atribuir a nota.", "error")
-
-    return redirect(url_for('teacher.ver_feedbacks'))

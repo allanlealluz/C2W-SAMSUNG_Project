@@ -22,7 +22,29 @@ def get_db():
             print(f"Erro ao conectar ao banco de dados: {e}")
             return None
     return g.db
+def execute_query(query, params=None):
+    conn = sqlite3.connect('database.db')  # Substitua pelo caminho do seu banco de dados
+    cursor = conn.cursor()
 
+    try:
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        
+        if query.strip().lower().startswith("select"):
+            result = cursor.fetchall()  # Para queries SELECT, retornamos os dados
+        else:
+            conn.commit()  # Para INSERT, UPDATE ou DELETE, comitamos a transação
+            result = cursor.lastrowid  # Podemos retornar o ID da última linha inserida se necessário
+
+        return result
+    except sqlite3.Error as e:
+        print(f"Erro ao executar query: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 def create_user(nome, email, senha, tipo):
     db = get_db()
     if db is None:
@@ -116,27 +138,27 @@ def verificar_tabelas():
         print("Tabelas encontradas:", [tabela["name"] for tabela in tabelas])
     except sqlite3.Error as e:
         print(f"Erro ao verificar tabelas: {e}")
-def get_aulas_by_professor(user_id):
-    db = get_db()
-    try:
-        return db.execute("SELECT id, titulo FROM aulas WHERE professor_id = ?", (user_id,)).fetchall()
-    except sqlite3.Error as e:
-        print(f"Erro ao buscar aulas: {e}")
-        return None
+        
+def get_aulas_by_professor(user_id, topico=None):
+    query = "SELECT * FROM aulas WHERE professor_id = ?"
+    params = [user_id]
 
-def get_respostas_by_aula(aula_id):
-    db = get_db()
-    try:
-        return db.execute("""
-            SELECT usuarios.nome, perguntas.texto AS pergunta_texto, respostas.resposta
-            FROM respostas
-            JOIN usuarios ON respostas.user_id = usuarios.id
-            JOIN perguntas ON respostas.pergunta_id = perguntas.id
-            WHERE respostas.aula_id = ?
-        """, (aula_id,)).fetchall()
-    except sqlite3.Error as e:
-        print(f"Erro ao buscar respostas para a aula {aula_id}: {e}")
-        return None
+    if topico:
+        query += " AND topico = ?"
+        params.append(topico)
+
+    return execute_query(query, params)
+
+def get_respostas_by_aula(aula_id, topico=None):
+    query = "SELECT r.*, u.nome FROM respostas r JOIN usuarios u ON r.user_id = u.id WHERE r.aula_id = ?"
+    params = [aula_id]
+
+    if topico:
+        query += " AND r.topico = ?"
+        params.append(topico)
+
+    return execute_query(query, params)
+
 
 def get_progresso_by_aula(aula_id):
     db = get_db()
@@ -162,6 +184,10 @@ def update_nota_resposta(aluno, aula, nota):
         db.commit()
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")      
+def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
+    # Aqui, 'cluster_label' indicaria o grupo de menor desempenho
+    alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
+    return alunos_menor_desempenho
 
 if __name__ == '__main__':
     init_db()
