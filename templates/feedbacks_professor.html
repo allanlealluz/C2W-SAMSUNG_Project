@@ -20,6 +20,9 @@
     </section>
 
     <section>
+        <li class="nav-item">
+            <a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar alunos</a>
+        </li>
         <!-- Feedbacks por Aula -->
         <h2>Feedbacks por Aula</h2>
         {% for resp in respostas %}
@@ -27,27 +30,6 @@
                     <li>
                         {{resp }}
                     </li>
-            </ul>
-        {% endfor %}
-    </section>
-
-    <section>
-        {% for aula, respostas in feedbacks.items() %}
-            <h3>{{ aula }}</h3>
-            <ul>
-                {% for resposta in respostas %}
-                    <li>
-                        <strong>{{ resposta.nome }}:</strong> {{ resposta.pergunta_texto }} - 
-                        <em>{{ resposta.resposta }}</em>
-                        <form action="/dar_nota" method="post">
-                            <label for="nota">Dar Nota:</label>
-                            <input type="number" name="nota" min="0" max="10" required>
-                            <input type="hidden" name="aluno" value="{{ resposta.nome }}">
-                            <input type="hidden" name="aula" value="{{ aula }}">
-                            <input type="submit" value="Enviar Nota">
-                        </form>
-                    </li>
-                {% endfor %}
             </ul>
         {% endfor %}
     </section>
