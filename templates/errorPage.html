@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro de Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #121212; /* Cor de fundo escuro */
+            color: #ffffff; /* Texto branco */
+        }
+        .alert {
+            background-color: #6a0dad; /* Violeta */
+            border-color: #9370db; /* Violeta mais claro */
+        }
+        .alert a {
+            background-color: #1e90ff; /* Azul vibrante para o botão */
+            color: #ffffff; /* Texto branco no botão */
+        }
+        .alert a:hover {
+            background-color: #4682b4; /* Azul mais escuro no hover */
+        }
+        h4.alert-heading {
+            color: #ffd700; /* Dourado para o título */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Credenciais Inválidas!</h4>
+            <p class="text-danger">As credenciais fornecidas estão incorretas. Por favor, verifique seu e-mail e senha e tente novamente.</p>
+            <hr>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Tentar Novamente</a>
+        </div>
+    </div>
+</body>
+</html>

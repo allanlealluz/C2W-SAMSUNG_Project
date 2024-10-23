@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C2W - Aprendendo Robótica e Programação</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/home.css')}}">
+</head>
+<body>
+
+    <div class="sidebar">
+        <h1 class="navbar navbar-brand">C2W</h1>
+        <a href="/">Início</a>
+        <a href="#">Sobre</a>
+        <a href="/cadastro">Cadastro</a>
+        <a href="#">Contato</a>
+        <a href="/login">Login</a>
+    </div>
+
+    <div class="content">
+        <div class="logo-container">
+            <a href="/cadastro"><img class="img-fluid" src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo"></a>
+        </div>
+        <div class="container">
+            <h1 class="text-center">Bem-vindo ao C2W!</h1>
+            <p class="text-center">Conectando alunos e professores para um aprendizado interativo de robótica e programação.</p>
+        </div>
+        <div class="container row">
+            <div class="col-md-6">
+                <h2>Sobre o C2W</h2>
+                <p>O C2W é uma plataforma que facilita o ensino de robótica e programação para crianças, com colaboração de professores.</p>
+            </div>
+            <div class="col-md-6">
+                <h2>Nossos Recursos</h2>
+                <ul>
+                    <li>Cursos de Robótica Básica</li>
+                    <li>Introdução à Programação</li>
+                    <li>Projetos Interativos</li>
+                    <li>Análise de Desempenho</li>
+                    <li>Colaboração com Professores</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer text-center py-3">
+        <span>© 2024 C2W - Todos os direitos reservados.</span>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
