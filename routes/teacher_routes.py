@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
-from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, update_nota_resposta
+from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno
+
 from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords, generate_performance_plot
 import sqlite3
 
@@ -151,26 +152,37 @@ def ver_feedbacks():
             progresso=progresso_por_aluno,
             alunos_completos=alunos_completos,
             alunos_incompletos=alunos_incompletos,
-            progresso_medio_total=progresso_medio_total
+            progresso_medio_total=progresso_medio_total,
+            aula_id = aula_id
         )
 
     return redirect(url_for('auth.login'))
 
-@teacher_bp.route('/dashboard_professor/avaliar_alunos/<int:aula_id>', methods=["GET", "POST"])
-def avaliar_alunos(aula_id):
+@teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
+def avaliar_alunos():
+    if 'user' not in session or session['tipo'] != 'professor':
+        return redirect(url_for('auth.login'))
+    
+    alunos = get_alunos()
+    
+    return render_template('avaliar_alunos.html', alunos=alunos)
+
+
+@teacher_bp.route('/dashboard_professor/analisar_aluno/<int:aluno_id>', methods=["GET", "POST"])
+def analisar_aluno(aluno_id):
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
-    user_id = session.get('user')
-    respostas = get_respostas_by_aula(aula_id)
-
     if request.method == "POST":
-        for resposta in respostas:
-            nota = request.form.get(f"nota_{resposta['id']}")
-            if nota:
-                update_nota_resposta(resposta['id'], nota)
+        nota = request.form.get('nota')
+        if nota:
+            Adicionar_nota(1,aluno_id, nota)
+            flash("Nota adicionada com sucesso!", "success")
+            return redirect(url_for('teacher.avaliar_alunos'))
 
-        flash("Notas atualizadas com sucesso!", "success")
-        return redirect(url_for('teacher.dashboard_professor'))
+    # Busca as respostas do aluno específico
+    resposta = resp_aluno(aluno_id)
+    
+    return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
 
-    return render_template('avaliar_alunos.html', respostas=respostas, aula_id=aula_id)
+

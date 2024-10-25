@@ -23,7 +23,7 @@ def get_db():
             return None
     return g.db
 def execute_query(query, params=None):
-    conn = sqlite3.connect('database.db')  # Substitua pelo caminho do seu banco de dados
+    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
 
     try:
@@ -33,10 +33,10 @@ def execute_query(query, params=None):
             cursor.execute(query)
         
         if query.strip().lower().startswith("select"):
-            result = cursor.fetchall()  # Para queries SELECT, retornamos os dados
+            result = cursor.fetchall()
         else:
-            conn.commit()  # Para INSERT, UPDATE ou DELETE, comitamos a transação
-            result = cursor.lastrowid  # Podemos retornar o ID da última linha inserida se necessário
+            conn.commit()
+            result = cursor.lastrowid  
 
         return result
     except sqlite3.Error as e:
@@ -149,17 +149,31 @@ def get_aulas_by_professor(user_id, topico=None):
 
     return execute_query(query, params)
 
-def get_respostas_by_aula(aula_id, topico=None):
-    query = "SELECT r.*, u.nome FROM respostas r JOIN usuarios u ON r.user_id = u.id WHERE r.aula_id = ?"
-    params = [aula_id]
+def get_respostas_by_aula(aula_id):
+    db = get_db()
+    return db.execute('''
+        SELECT r.user_id, u.nome, r.resposta
+        FROM respostas r
+        JOIN usuarios u ON r.user_id = u.id
+        WHERE r.aula_id = ?
+    ''', (aula_id,)).fetchall()
 
-    if topico:
-        query += " AND r.topico = ?"
-        params.append(topico)
+def get_resposta_by_aluno_aula(aluno_id, aula_id):
+    db = get_db()
+    return db.execute('''
+        SELECT r.user_id, u.nome, r.resposta
+        FROM respostas r
+        JOIN usuarios u ON r.user_id = u.id
+        WHERE r.aula_id = ? AND r.user_id = ?
+    ''', (aula_id, aluno_id)).fetchone()
 
-    return execute_query(query, params)
 
-
+def get_alunos():
+    db = get_db()
+    return db.execute("SELECT * FROM usuarios")
+def resp_aluno(aluno_id):
+      db = get_db()
+      return db.execute("SELECT * FROM respostas where user_id = ?",(aluno_id))
 def get_progresso_by_aula(aula_id):
     db = get_db()
     try:
@@ -185,15 +199,21 @@ def update_nota_resposta(aluno, aula, nota):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")      
 def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
-    # Aqui, 'cluster_label' indicaria o grupo de menor desempenho
     alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
     return alunos_menor_desempenho
 
-def update_nota_resposta(resposta_id, nota):
+def Adicionar_nota(aula_id, aluno_id, nota):
     db = get_db()
-    cursor = db.cursor()
-    cursor.execute('UPDATE respostas SET nota = ? WHERE id = ?', (nota, resposta_id))
-    db.commit()
+    try:
+        db.execute('''
+            UPDATE respostas
+            SET nota = ?
+            WHERE aula_id = ? AND user_id = ?
+        ''', (nota, aula_id, aluno_id))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao atualizar nota: {e}")
+
 
 if __name__ == '__main__':
     init_db()

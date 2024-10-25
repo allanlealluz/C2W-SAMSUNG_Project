@@ -7,28 +7,24 @@
 </head>
 <body>
     <h1>Avaliar Alunos - Aula {{ aula_id }}</h1>
-    <form method="POST">
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome do Aluno</th>
-                    <th>Resposta</th>
-                    <th>Nota</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for resposta in respostas %}
-                <tr>
-                    <td>{{ resposta['nome'] }}</td>
-                    <td>{{ resposta['resposta'] }}</td>
-                    <td>
-                        <input type="number" name="nota_{{ resposta['id'] }}" min="0" max="10" step="0.1" value="{{ resposta['nota'] or '' }}">
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <button type="submit">Salvar Notas</button>
-    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome do Aluno</th>
+                <th>Resposta</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for aluno in alunos %}
+            <tr>
+                <a href="/analisar_aluno/{{aluno['id']}}"><td>{{ aluno['nome'] }}</td></a>
+                <td>
+                    <a href="{{ url_for('teacher.analisar_aluno',aluno_id=aluno['id'])}}">Analisar Aluno</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
 </html>

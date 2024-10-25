@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisar Aluno</title>
+</head>
+<body>
+    <h1>Analisando Aluno: {{ resposta['nome'] }} - Aula {{ aula_id }}</h1>
+    
+    <p><strong>Resposta do Aluno:</strong> {{ resposta['resposta'] }}</p>
+
+    <form method="POST">
+        <label for="nota">Nota:</label>
+        <input type="number" name="nota" min="0" max="10" step="0.1" required>
+        <button type="submit">Adicionar Nota</button>
+    </form>
+</body>
+</html>
