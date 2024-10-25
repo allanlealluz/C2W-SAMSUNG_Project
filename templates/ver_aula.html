@@ -47,7 +47,7 @@
             {% for pergunta in perguntas %}
                 <div class="form-group">
                     <label for="pergunta-{{ pergunta.id }}">{{ pergunta.texto }}</label>
-                    <input type="text" class="form-control" name="{{ pergunta.id }}" id="pergunta-{{ pergunta.id }}" placeholder="Digite sua resposta">
+                    <input type="text" class="form-control" name="respostas[]" id="pergunta-{{ pergunta.id }}" placeholder="Digite sua resposta">
                 </div>
             {% endfor %}
             <button type="submit" class="btn btn-primary" onclick="completeSection(2)" id="submit-respostas">Enviar Respostas</button>
@@ -98,44 +98,30 @@
                 }
             }
             // Função para enviar resposta via fetch
-            document.getElementById('submit-respostas').addEventListener('click', function(event) {
-                event.preventDefault();  // Impede o comportamento padrão de recarregar a página
+            document.getElementById('submit-respostas').addEventListener('click', function() {
+                let form = document.getElementById('form-respostas');
+                let formData = new FormData(form);
+                
+                let respostas = formData.getAll('respostas[]'); 
+            
+                console.log(respostas);
 
-                const respostas = {};
-                
-                const perguntas = document.querySelectorAll('[data-pergunta-id]');
-                
-                perguntas.forEach(function(pergunta) {
-                    const perguntaId = pergunta.getAttribute('data-pergunta-id');
-                    const resposta = pergunta.value;
-                    
-                    if (resposta.trim()) {
-                        respostas[perguntaId] = resposta; 
-                    }
+                fetch('/submit_respostas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ respostas: respostas })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Sucesso:', data);
+                })
+                .catch((error) => {
+                    console.error('Erro:', error);
                 });
-
-                if (Object.keys(respostas).length > 0) {
-                    fetch(`/responder_aula/{{ aula.id }}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ respostas: respostas })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        console.log("Respostas enviadas com sucesso.");
-                        alert('Respostas enviadas com sucesso!');
-                    })
-                    .catch(err => {
-                        console.error('Erro ao enviar respostas:', err);
-                    });
-                } else {
-                    alert('Por favor, responda pelo menos uma pergunta antes de enviar.');
-                }
             });
-
-            // Função para atualizar a barra de progresso
+            
             function updateProgressBar() {
                 const progressBar = document.getElementById("progress-bar");
                 const progress = (completedSections / totalSections) * 100;
