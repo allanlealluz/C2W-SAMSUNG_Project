@@ -84,23 +84,25 @@ def concluir_aula(aula_id):
     
     return redirect(url_for('student.dashboard_aluno'))
 
-@student_bp.route('/responder_atividade/<int:aula_id>', methods=["POST","GET"])
+@student_bp.route('/responder_atividade/<int:aula_id>', methods=["POST"])
 def responder_atividade(aula_id):
     user_id = session.get("user")
     if not user_id:
         return jsonify({'error': 'Usuário não autenticado.'}), 403
 
-    respostas = request.json.get('respostas', {})
-
-    if not respostas:
+    data = request.json.get('respostas', [])
+    
+    if not data:
         return jsonify({'error': 'Nenhuma resposta fornecida.'}), 400
 
     db = get_db()
 
     try:
-        for pergunta_id, resposta in respostas.items():
-            if resposta.strip():
-                # Verifica se a resposta já existe
+        for item in data:
+            pergunta_id = item.get('pergunta_id')
+            resposta = item.get('resposta', '').strip()
+
+            if resposta:
                 exists = db.execute(
                     'SELECT 1 FROM respostas WHERE user_id = ? AND pergunta_id = ? AND aula_id = ?',
                     (user_id, pergunta_id, aula_id)
@@ -120,7 +122,6 @@ def responder_atividade(aula_id):
     except Exception as e:
         db.rollback()
         return jsonify({'error': 'Erro ao enviar respostas: ' + str(e)}), 500
-
 
 @student_bp.route('/update_progress', methods=['POST'])
 def update_progress():

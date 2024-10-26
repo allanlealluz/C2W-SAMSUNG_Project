@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard do Professor</title>
-    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <title>Análise de Desempenho</title>
+    <link rel="icon" href="{{ url_for('static', filename='/img/C2W.png') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/dashboard_professor.css')}}">
-
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/dashboard_professor.css') }}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
@@ -41,11 +39,26 @@
         </div>
     </nav>
 
-    <div class="container container-custom text-center">
-        <h1>Dashboard do Professor</h1>
-        <h2>Bem-vindo, {{user['nome']}}</h2>
-        <a href="#" class="btn btn-custom m-2">Turma de Programação</a>
-        <a href="/dashboard_professor/feedbacks" class="btn btn-custom m-2">Turma de Robótica</a>
+    <div class="container mt-5 pt-5">
+        <h1 class="text-center mb-4">Análise de Desempenho dos Alunos</h1>
+        <div class="text-center">
+            <img src="{{ url_for('static', filename='images/' + plot_url) }}" alt="Gráfico de Desempenho" class="img-fluid">
+        </div>
+
+        <h2 class="mt-5">Dados dos Alunos</h2>
+        <ul class="list-group">
+            {% for aluno_id, nota, topico in alunos_data %}
+                <li class="list-group-item">
+                    <strong>ID do Aluno:</strong> {{ aluno_id }} | 
+                    <strong>Nota:</strong> {{ nota }} | 
+                    <strong>Tópico:</strong> {{ topico }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-primary">Voltar ao Dashboard</a>
+        </div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->

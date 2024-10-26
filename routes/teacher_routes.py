@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
 from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno
-
-from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords, generate_performance_plot
+from utils import  generate_performance_plot
 import sqlite3
 
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
@@ -18,7 +17,8 @@ from models import (
     get_aulas_by_professor, 
     get_respostas_by_aula, 
     get_progresso_by_aula, 
-    update_nota_resposta
+    update_nota_resposta,
+    get_student_scores
 )
 from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords
 import sqlite3
@@ -182,7 +182,45 @@ def analisar_aluno(aluno_id):
 
     # Busca as respostas do aluno específico
     resposta = resp_aluno(aluno_id)
-    
+    print([resp['resposta'] for resp in resposta])
     return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
+
+@teacher_bp.route('/dashboard_professor/update_nota_resposta', methods=["GET", "POST"])
+def update_nota_resposta_route():
+    data = request.get_json()
+    resposta_id = data.get("resposta_id")
+    nota = data.get("nota")
+
+    if resposta_id and nota is not None:
+        update_nota_resposta(resposta_id, nota)
+        return jsonify({"success": True}), 200
+    return jsonify({"error": "Dados inválidos"}), 400
+
+@teacher_bp.route('/dashboard_professor/analisar_desempenho', methods=["GET"])
+def analisar_desempenho():
+    if 'user' not in session or session['tipo'] != 'professor':
+        return redirect(url_for('auth.login'))
+
+    # Obter notas dos alunos
+    alunos_data = get_student_scores()
+    print(alunos_data)
+
+    if not alunos_data:
+        flash("Nenhum dado disponível para análise.", "error")
+        return redirect(url_for('teacher.dashboard_professor'))
+    
+    # Agrupar os alunos usando K-Means
+    X, labels, centroids = kmeans_clustering(alunos_data)
+
+    # Verifique se X, labels e centroids são válidos antes de gerar o gráfico
+    if X is None or labels is None or centroids is None:
+        flash("Erro ao realizar clustering. Verifique os dados.", "error")
+        return redirect(url_for('teacher.dashboard_professor'))
+
+    # Gerar o gráfico dos clusters
+    plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
+    print(plot_url)
+    return render_template('analisar_desempenho.html', plot_url=plot_url, alunos_data=alunos_data)
+
 
 

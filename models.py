@@ -170,10 +170,11 @@ def get_resposta_by_aluno_aula(aluno_id, aula_id):
 
 def get_alunos():
     db = get_db()
-    return db.execute("SELECT * FROM usuarios")
+    return db.execute("SELECT * FROM usuarios where tipo != 'professor'").fetchall()
 def resp_aluno(aluno_id):
       db = get_db()
-      return db.execute("SELECT * FROM respostas where user_id = ?",(aluno_id))
+      return db.execute("SELECT * FROM respostas where user_id = ?", (aluno_id,)).fetchall()
+
 def get_progresso_by_aula(aula_id):
     db = get_db()
     try:
@@ -187,17 +188,17 @@ def get_progresso_by_aula(aula_id):
         print(f"Erro ao buscar progresso: {e}")
         return None
 
-def update_nota_resposta(aluno, aula, nota):
+def update_nota_resposta(resposta_id, nota):
     db = get_db()
     try:
         db.execute('''
             UPDATE respostas
             SET nota = ?
-            WHERE user_id = (SELECT id FROM usuarios WHERE nome = ?) AND aula_id = (SELECT id FROM aulas WHERE titulo = ?)
-        ''', (nota, aluno, aula))
+            WHERE id = ?
+        ''', (nota, resposta_id))
         db.commit()
     except sqlite3.Error as e:
-        print(f"Erro ao atualizar nota: {e}")      
+        print(f"Erro ao atualizar nota: {e}") 
 def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
     alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
     return alunos_menor_desempenho
@@ -213,6 +214,30 @@ def Adicionar_nota(aula_id, aluno_id, nota):
         db.commit()
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")
+def get_student_scores():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT 
+        r.user_id, 
+        r.nota, 
+        a.topico AS aula_conteudo
+    FROM 
+        respostas r
+        JOIN aulas a ON r.aula_id = a.id;
+    """
+    
+    cursor.execute(query)
+    scores = cursor.fetchall()
+
+    # Convertendo o resultado em uma lista de listas
+    alunos_data = []
+    for aluno_id, nota, topico in scores:
+        alunos_data.append((aluno_id, nota, topico))  # Aqui mantemos o aluno_id para identificação
+
+    conn.close()
+    return alunos_data
 
 
 if __name__ == '__main__':
