@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
-from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno
-from utils import  generate_performance_plot
+from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores
+from utils import generate_performance_plot, kmeans_clustering, generate_cluster_plot, generate_student_performance_plot, prever_notas
 import sqlite3
 
 teacher_bp = Blueprint('teacher', __name__)
@@ -86,7 +86,7 @@ def ver_feedbacks():
 
         for aula in aulas:
             aula_id = aula[0]
-            titulo_aula = aula[1]  
+            titulo_aula = aula[1]
 
             respostas = get_respostas_by_aula(aula_id)
 
@@ -105,41 +105,67 @@ def ver_feedbacks():
             for aluno in progresso:
                 nome = aluno['nome']
                 total_alunos.add(nome)
-
                 if nome not in progresso_por_aluno:
                     progresso_por_aluno[nome] = []
                 progresso_por_aluno[nome].append(aluno['concluida'])
 
+        alunos_scores = get_student_scores()
+        alunos_scores_dict = {}
+        for aluno_id, nome, nota, topico in alunos_scores:
+            if nome in alunos_scores_dict:
+                existing_nota, existing_topico = alunos_scores_dict[nome]
+                new_nota = (existing_nota + nota) / 2
+                alunos_scores_dict[nome] = (new_nota, topico)
+            else:
+                alunos_scores_dict[nome] = (nota, topico)
+
+        # Atualizando a estrutura de alunos_data para incluir o histórico
         alunos_data = {}
-        for nome, progresso_list in progresso_por_aluno.items():
-            print(progresso_list)
-            alunos_data[nome] = progresso_list
+        for nome in total_alunos:
+            progresso = progresso_por_aluno.get(nome, [])
+            nota = alunos_scores_dict.get(nome, (None, None))[0]
+            
+            if progresso and nota is not None:
+                # Criar um histórico de progresso e notas
+                if nome not in alunos_data:
+                    alunos_data[nome] = {
+                        'progresso': min(sum(progresso), 100),
+                        'nota': nota,
+                        'historico': []  # Inicializa o histórico
+                    }
+                alunos_data[nome]['historico'].append({
+                    'progresso': alunos_data[nome]['progresso'],
+                    'nota': alunos_data[nome]['nota']
+                })
 
-        plot_url, previsoes = (None, None)
+        previsoes = prever_notas(alunos_data)
 
+        plot_url = None
         if alunos_data:
-            plot_url, previsoes = generate_performance_plot(alunos_data)
+            plot_url, previsoes = generate_performance_plot(alunos_data, previsoes)
 
         alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
 
-        progresso_medio_total = sum(sum(data) / len(data) for data in alunos_data.values()) / len(alunos_data)
-        print(respostas)
-        resp =  get_respostas_by_aula(aula_id)
+        progresso_medio_total = sum(data['progresso'] for data in alunos_data.values()) / len(alunos_data) if alunos_data else 0
+        media_geral = sum(dados['nota'] for dados in alunos_data.values() if dados['nota'] is not None)
+        media_geral = media_geral / len(alunos_data) if alunos_data else 0
+
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,
-            respostas = resp,
             plot_respostas_url=plot_url,
             previsoes=previsoes,
             progresso=progresso_por_aluno,
             alunos_completos=alunos_completos,
             alunos_incompletos=alunos_incompletos,
             progresso_medio_total=progresso_medio_total,
-            aula_id = aula_id
+            media_geral=media_geral,
+            aula_id=aula_id,
+            alunos_data=alunos_data
         )
-
     return redirect(url_for('auth.login'))
+
 
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():
@@ -150,7 +176,6 @@ def avaliar_alunos():
     
     return render_template('avaliar_alunos.html', alunos=alunos)
 
-
 @teacher_bp.route('/dashboard_professor/analisar_aluno/<int:aluno_id>', methods=["GET", "POST"])
 def analisar_aluno(aluno_id):
     if 'user' not in session or session['tipo'] != 'professor':
@@ -159,13 +184,11 @@ def analisar_aluno(aluno_id):
     if request.method == "POST":
         nota = request.form.get('nota')
         if nota:
-            Adicionar_nota(1,aluno_id, nota)
+            Adicionar_nota(1, aluno_id, nota)
             flash("Nota adicionada com sucesso!", "success")
             return redirect(url_for('teacher.avaliar_alunos'))
 
-    # Busca as respostas do aluno específico
     resposta = resp_aluno(aluno_id)
-    print([resp['resposta'] for resp in resposta])
     return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
 
 @teacher_bp.route('/dashboard_professor/update_nota_resposta', methods=["GET", "POST"])
@@ -184,26 +207,21 @@ def analisar_desempenho():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
-    # Obter notas dos alunos
     alunos_data = get_student_scores()
-    print(alunos_data)
 
     if not alunos_data:
         flash("Nenhum dado disponível para análise.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
     
-    # Agrupar os alunos usando K-Means
     X, labels, centroids = kmeans_clustering(alunos_data)
 
-    # Verifique se X, labels e centroids são válidos antes de gerar o gráfico
     if X is None or labels is None or centroids is None:
         flash("Erro ao realizar clustering. Verifique os dados.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
 
-    # Gerar o gráfico dos clusters
     plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
-    print(plot_url)
-    return render_template('analisar_desempenho.html', plot_url=plot_url, alunos_data=alunos_data)
+    student_performance_plot_url = generate_student_performance_plot(alunos_data)
 
-
-
+    return render_template('analisar_desempenho.html', plot_url=plot_url, 
+                           student_performance_plot_url=student_performance_plot_url, 
+                           alunos_data=alunos_data)

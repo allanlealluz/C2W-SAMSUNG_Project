@@ -34,27 +34,31 @@
 
         <div class="section container-fluid" id="section-1"> 
             <h2>1. Conteúdo da Aula</h2>
+            {% if aula.arquivo  %}
             <div class="embed-responsive embed-responsive-1by1S" height="500px">
                  <embed class="embed-responsive-item w-100" src="{{ url_for('static', filename='/uploads/'+aula.arquivo) }}" height="500px">
             </div>
+            {% endif %}
             <button class="btn btn-primary mt-3" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
-
-        <form id="form-respostas">
-            {% for pergunta in perguntas %}
-                <div class="form-group">
-                    <label for="resposta-{{ pergunta.id }}">{{ pergunta.texto }}</label>
-                    <input type="text" class="form-control" id="resposta-{{ pergunta.id }}" name="respostas[]" placeholder="Digite sua resposta">
-                    <input type="hidden" name="pergunta_ids[]" value="{{ pergunta.id }}">
-                </div>
-            {% endfor %}
-            <button type="button" id="submit-respostas" onclick="completeSection(2)">Enviar Respostas</button>
-        </form>
         
+        <div class="section container-fluid" id="section-2" data-completed="false">   
+            <h2>2. Respostas</h2>
+            <form id="form-respostas">
+                {% for pergunta in perguntas %}
+                    <div class="form-group">
+                        <label for="resposta-{{ pergunta.id }}">{{ pergunta.texto }}</label>
+                        <input type="text" class="form-control" id="resposta-{{ pergunta.id }}" name="respostas[]" placeholder="Digite sua resposta">
+                        <input type="hidden" name="pergunta_ids[]" value="{{ pergunta.id }}">
+                    </div>
+                {% endfor %}
+                <button type="button" id="submit-respostas">Enviar Respostas</button>
+            </form>
+        </div>
+
         <div class="progress mt-5">
             <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
         </div>
-
         <form action="{{ url_for('student.concluir_aula', aula_id=aula.id) }}" method="POST" class="mt-4">
             <button type="submit" class="btn btn-success">Concluir Aula</button>
         </form>
@@ -68,10 +72,10 @@
             const section = document.getElementById(`section-${sectionId}`);
         
             if (!section.getAttribute('data-completed')) {
-                section.style.backgroundColor = '#d4edda';
+                section.style.backgroundColor = '#d4edda'; // Cor verde claro
                 section.setAttribute('data-completed', 'true');
                 completedSections++;
-    
+
                 fetch('/update_progress', {
                     method: 'POST',
                     headers: {
@@ -121,6 +125,9 @@
             .then(data => {
                 console.log('Sucesso:', data);
                 alert(data.message || 'Respostas enviadas com sucesso!');
+
+                // Marca a seção 2 como concluída
+                completeSection(2); // Chama a função para completar a seção 2
             })
             .catch(error => {
                 console.error('Erro:', error);
