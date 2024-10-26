@@ -39,7 +39,7 @@
                             <tr>
                                 <td>{{ aluno }}</td>
                                 <td>{{ dados.nota | round(2) }}</td>
-                                <td>{{ (dados.progresso * 100) | round(2) }}%</td>
+                                <td>{{ (dados.progresso *10) | round(2) }}%</td>
                                 <td>
                                     {% if dados.nota is not none and dados.nota < media_geral %}
                                         <span style="color: red;">Sim</span>
@@ -62,7 +62,7 @@
             {% if previsoes %}
                 <ul>
                     {% for aluno, previsao in previsoes.items() %}
-                        <li><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao | round(2) }}%</li>
+                        <li><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao *10 | round(2) }}%</li>
                     {% endfor %}
                 </ul>
             {% else %}

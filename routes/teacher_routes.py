@@ -70,7 +70,6 @@ def criarAula():
 
     return render_template("criarAula.html")
 
-
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
@@ -98,7 +97,6 @@ def ver_feedbacks():
             feedbacks[titulo_aula] = respostas if respostas else []
 
             progresso = get_progresso_by_aula(aula_id)
-            print(progresso)
 
             if progresso is None:
                 flash(f"Erro ao buscar progresso para a aula {titulo_aula}.", "error")
@@ -107,14 +105,12 @@ def ver_feedbacks():
             for aluno in progresso:
                 nome = aluno['nome']
                 total_alunos.add(nome)
-
                 if nome not in progresso_por_aluno:
                     progresso_por_aluno[nome] = []
                 progresso_por_aluno[nome].append(aluno['concluida'])
 
         # Coleta as notas dos alunos
         alunos_scores = get_student_scores()
-        print(alunos_scores)
 
         # Agrupar notas para evitar duplicatas
         alunos_scores_dict = {}
@@ -127,33 +123,29 @@ def ver_feedbacks():
             else:
                 alunos_scores_dict[nome] = (nota, topico)
 
-        print(alunos_scores_dict)
         alunos_data = {}
         for nome in total_alunos:
             progresso = progresso_por_aluno.get(nome, [])
             nota = alunos_scores_dict.get(nome, (None, None))[0]
-            print(nota)
             if progresso and nota is not None:
                 alunos_data[nome] = {
-                    'progresso': sum(progresso),
-                    'nota': nota 
+                    'progresso': min(sum(progresso), 100),  # Limitar o progresso a 100
+                    'nota': nota
                 }
 
         # Previsão dos próximos resultados usando a função separada
         previsoes = prever_notas(alunos_data)
 
-        print("Previsões: ", previsoes)
-
         plot_url = None
         if alunos_data:
-            plot_url, previsoes = generate_performance_plot(alunos_data)
+            plot_url, previsoes = generate_performance_plot(alunos_data, previsoes)  # Passando previsões aqui
 
         alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
 
         progresso_medio_total = sum(data['progresso'] for data in alunos_data.values()) / len(alunos_data) if alunos_data else 0
 
-       # Cálculo da média geral
+        # Cálculo da média geral
         media_geral = sum(dados['nota'] for dados in alunos_data.values() if dados['nota'] is not None)
         media_geral = media_geral / len(alunos_data) if alunos_data else 0
 
@@ -169,9 +161,11 @@ def ver_feedbacks():
             progresso_medio_total=progresso_medio_total,
             media_geral=media_geral,  # Adicionando média geral
             aula_id=aula_id,
-            alunos_data = alunos_data
+            alunos_data=alunos_data
         )
     return redirect(url_for('auth.login'))
+
+
 
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():

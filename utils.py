@@ -144,15 +144,25 @@ def generate_student_performance_plot(alunos_data):
     plt.close()
 
     return 'Performance.png'
-def generate_performance_plot(alunos_data):
+def generate_performance_plot(alunos_data, previsoes):
     plt.figure(figsize=(10, 6))
+    
+    # Dicionário para armazenar cores dos alunos
+    cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))  # Escolhe um colormap para as cores
 
     # Adiciona um ponto para cada aluno no gráfico
-    for nome, dados in alunos_data.items():
+    for i, (nome, dados) in enumerate(alunos_data.items()):
         media_nota = dados['nota']
         progresso = dados['progresso']
+        cor_aluno = cores[i]  # Atribui uma cor diferente para cada aluno
         
-        plt.scatter(media_nota, progresso, label=nome, alpha=0.7)  # Plotar individualmente
+        # Plotar dados reais
+        plt.scatter(media_nota, progresso, color=cor_aluno, label=f'{nome} (Real)', alpha=0.7)
+
+        # Plotar previsões, se existirem
+        if nome in previsoes:
+            previsao = previsoes[nome]
+            plt.scatter(media_nota, previsao, marker='x', color=cor_aluno, s=100, label=f'{nome} (Previsto)', alpha=1)  # 's' controla o tamanho do 'x'
 
     # Configuração do gráfico
     plt.title('Desempenho dos Alunos: Média das Notas vs Progresso')
@@ -169,7 +179,9 @@ def generate_performance_plot(alunos_data):
     plt.savefig(plot_url)
     plt.close()
 
-    return plot_url, {}
+    return plot_url, previsoes  # Retornando previsões
+
+
 
 def prever_notas(alunos_data):
     previsoes = {}
