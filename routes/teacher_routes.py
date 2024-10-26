@@ -86,7 +86,7 @@ def ver_feedbacks():
 
         for aula in aulas:
             aula_id = aula[0]
-            titulo_aula = aula[1]  
+            titulo_aula = aula[1]
 
             respostas = get_respostas_by_aula(aula_id)
 
@@ -110,36 +110,50 @@ def ver_feedbacks():
                     progresso_por_aluno[nome] = []
                 progresso_por_aluno[nome].append(aluno['concluida'])
 
+        # Obter notas dos alunos
+        alunos_scores = get_student_scores() 
+
+        # Transformar a lista em um dicionário para acesso mais fácil
+        alunos_scores_dict = {nome: (nota, topico) for aluno_id, nome, nota, topico in alunos_scores}
+
         alunos_data = {}
-        for nome, progresso_list in progresso_por_aluno.items():
-            print(progresso_list)
-            alunos_data[nome] = progresso_list
+        for nome in total_alunos:
+            progresso = progresso_por_aluno.get(nome, [])
+            nota = alunos_scores_dict.get(nome, (None, None))[0]  # Pegue a nota
 
-        plot_url, previsoes = (None, None)
+            # Apenas adiciona dados se houver progresso e nota
+            if progresso and nota is not None:
+                alunos_data[nome] = {
+                    'progresso': sum(progresso) / len(progresso),  # Média de progresso
+                    'nota': nota  # Nota
+                }
 
+        plot_url, previsoes = None, {}
+
+        # Gerar gráfico de desempenho individual por aluno
         if alunos_data:
             plot_url, previsoes = generate_performance_plot(alunos_data)
 
         alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
 
-        progresso_medio_total = sum(sum(data) / len(data) for data in alunos_data.values()) / len(alunos_data)
-        print(respostas)
-        resp =  get_respostas_by_aula(aula_id)
+        progresso_medio_total = sum(data['progresso'] for data in alunos_data.values()) / len(alunos_data) if alunos_data else 0
+
         return render_template(
             'feedbacks_professor.html',
             feedbacks=feedbacks,
-            respostas = resp,
+            respostas=respostas,
             plot_respostas_url=plot_url,
             previsoes=previsoes,
             progresso=progresso_por_aluno,
             alunos_completos=alunos_completos,
             alunos_incompletos=alunos_incompletos,
             progresso_medio_total=progresso_medio_total,
-            aula_id = aula_id
+            aula_id=aula_id
         )
 
     return redirect(url_for('auth.login'))
+
 
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():

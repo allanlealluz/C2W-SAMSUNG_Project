@@ -1,57 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback dos Alunos</title>
-    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/feedback_professor.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/feedback_professor.css') }}">
 </head>
 <body>
     <header>
         <h1>Feedback dos Alunos</h1>
     </header>
 
-    <section>
+    <main>
         <!-- Gráfico de Progresso dos Alunos -->
-        <h2>Gráfico de Progresso dos Alunos</h2>
-        <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Respostas dos Alunos" style="width: 100%; max-width: 800px;">
-    </section>
+        <section>
+            <h2>Gráfico de Progresso dos Alunos</h2>
+            <img src="{{ url_for('static', filename='images/performance_plot.png') }}" 
+                 alt="Gráfico de Progresso dos Alunos" 
+                 style="width: 100%; max-width: 800px;">
+        </section>
 
-    <section>
-        <h2>Feedbacks por Aula</h2>
-        {% for resp in respostas %}
-            <ul>            
-                    <li>
-                        {{resp }}
-                    </li>
-            </ul>
-        {% endfor %}
-    </section>
+        <section>
+            <h2>Feedbacks por Aula</h2>
+            {% if respostas %}
+                <ul>            
+                    {% for resp in respostas %}
+                        <li>{{ resp }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Nenhum feedback disponível.</p>
+            {% endif %}
+        </section>
 
-    <section>
-        <!-- Previsões de Desempenho -->
-        <h2>Previsões de Desempenho</h2>
-        {% if previsoes %}
-            <ul>
-                {% for aluno, previsao in previsoes.items() %}
-                    <li><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao }}%</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Sem previsões de desempenho disponíveis.</p>
-        {% endif %}
-    </section>
+        <section>
+            <!-- Previsões de Desempenho -->
+            <h2>Previsões de Desempenho</h2>
+            {% if previsoes %}
+                <ul>
+                    {% for aluno, previsao in previsoes.items() %}
+                        <li><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao | round(2) }}%</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Sem previsões de desempenho disponíveis.</p>
+            {% endif %}
+        </section>
 
-    <section>
-        <!-- Resumo do Progresso -->
-        <h2>Resumo do Progresso</h2>
-        <p>Total de alunos: {{ total_alunos }}</p>
-        <p>Alunos que responderam todas as aulas: {{ alunos_completos }}</p>
-        <p>Alunos que ainda precisam responder: {{ alunos_incompletos }}</p>
-        <p>Progresso médio dos alunos: {{ progresso_medio_total }}%</p>
-    </section>
+        <section>
+            <!-- Resumo do Progresso -->
+            <h2>Resumo do Progresso</h2>
+            <p>Total de alunos: {{ total_alunos }}</p>
+            <p>Alunos que responderam todas as aulas: {{ alunos_completos }}</p>
+            <p>Alunos que ainda precisam responder: {{ alunos_incompletos }}</p>
+            <p>Progresso médio dos alunos: {{ progresso_medio_total | round(2) }}%</p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Sua Instituição de Ensino. Todos os direitos reservados.</p>
+    </footer>
 
 </body>
 </html>

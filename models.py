@@ -220,7 +220,7 @@ def get_student_scores():
         r.user_id, 
         u.nome, 
         r.nota, 
-        a.topico AS aula_conteudo
+        a.titulo AS aula_conteudo
     FROM 
         respostas r
         JOIN aulas a ON r.aula_id = a.id

@@ -13,27 +13,22 @@ from collections import defaultdict
 nlp = spacy.load('pt_core_news_sm')
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    # Converter os dados dos alunos para um formato que possa ser plotado
-    # Supondo que alunos_data seja uma lista de dicionários ou algo similar
-    perguntas = [d['pergunta'] for d in alunos_data]  # Exemplo de como extrair perguntas
-    aulas = [d['aula'] for d in alunos_data]  # Exemplo de como extrair aulas
-    scores = np.array([d['nota'] for d in alunos_data])  # Extrair notas
-    
-    # Agrupar por perguntas e aulas
+    perguntas = [d['pergunta'] for d in alunos_data]
+    aulas = [d['aula'] for d in alunos_data]
+    scores = np.array([d['nota'] for d in alunos_data])
+
     unique_perguntas = list(set(perguntas))
     unique_aulas = list(set(aulas))
-    
-    # Criar um dicionário para armazenar as notas por pergunta e aula
+
     performance_data = {pergunta: [] for pergunta in unique_perguntas}
-    
+
     for pergunta in unique_perguntas:
         for aula in unique_aulas:
             filtered_scores = [scores[i] for i in range(len(perguntas)) if perguntas[i] == pergunta and aulas[i] == aula]
             performance_data[pergunta].append(np.mean(filtered_scores) if filtered_scores else 0)
 
-    # Criar o gráfico de barras
     fig, ax = plt.subplots()
-    width = 0.15  # Largura das barras
+    width = 0.15
     x = np.arange(len(unique_aulas))
 
     for i, pergunta in enumerate(unique_perguntas):
@@ -46,7 +41,6 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     ax.set_xticklabels(unique_aulas)
     ax.legend()
 
-    # Salvar o gráfico e retornar a URL
     plot_path = 'static/plots/performance_plot.png'
     plt.savefig(plot_path)
     plt.close()
@@ -56,69 +50,95 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
 def kmeans_clustering(alunos_data):
     notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
 
-    
     if notas.size == 0:
         return None, None, None
 
     num_clusters = 3 
     kmeans = KMeans(n_clusters=num_clusters, random_state=0)
 
-    # Aplicar KMeans
     labels = kmeans.fit_predict(notas)
     centroids = kmeans.cluster_centers_
 
     return notas, labels, centroids
 
-
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 8))
 
-    plt.scatter(X[:, 0], np.zeros_like(X[:, 0]), c=labels, cmap='viridis', marker='o', edgecolor='k', s=100)
-    plt.scatter(centroids[:, 0], np.zeros_like(centroids[:, 0]), color='red', s=200, alpha=0.5, marker='X')
-    for i, aluno in enumerate(alunos_data):
-        aluno_id, nome, nota, topico = aluno
-        plt.annotate(f"{nome}", (X[i, 0], 0), textcoords="offset points", xytext=(0, 10), ha='center', fontsize=8)
+    aulas = sorted(set(aluno[3] for aluno in alunos_data))
+    aula_indices = {aula: i for i, aula in enumerate(aulas)}
 
-    plt.title('Distribuição das Notas dos Alunos')
+    unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
+    colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))
+    aluno_colors = {nome: colors[i] for i, nome in enumerate(unique_alunos)}
+
+    jitter_strength_x = 0.1
+    jitter_strength_y = 0.2
+
+    notas_por_aluno = defaultdict(list)
+
+    for aluno in alunos_data:
+        nome = aluno[1]
+        nota = aluno[2]
+        aula = aluno[3]
+        notas_por_aluno[nome].append((nota, aula))
+
+    for aluno, notas in notas_por_aluno.items():
+        for nota, aula in notas:
+            y_pos = aula_indices[aula]
+            x_pos = nota + np.random.uniform(-jitter_strength_x, jitter_strength_x)
+            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
+            plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
+    
+    for aluno, color in aluno_colors.items():
+        plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
+    plt.legend(title="Alunos", loc="center right", box_to_anchor=(1, 1))
+
+    plt.title('Notas dos Alunos por Aula')
     plt.xlabel('Notas')
-    plt.yticks([])  
-    plt.colorbar(label='Clusters')
-    plt.grid(True)
-    plt.savefig('static/images/cluster_plot.png')  
+    plt.ylabel('Aulas')
+    plt.yticks(range(len(aulas)), aulas)
+    plt.grid(True, linestyle='--', linewidth=0.5)
+
+    plot_path = 'static/images/cluster_plot.png'
+    plt.savefig(plot_path)
     plt.close()
     
     return 'cluster_plot.png'
 
-
-
 def generate_student_performance_plot(alunos_data):
     if not alunos_data or not isinstance(alunos_data, list):
         raise ValueError("alunos_data deve ser uma lista.")
+
     notas_por_aluno = defaultdict(float)
+    contagem_por_aluno = defaultdict(int)
+
     for aluno in alunos_data:
         nota = aluno[2]
-        nome = aluno[1]  
-        
-        print(f"Processando aluno: {nome}, Nota: {nota}") 
-        
+        nome = aluno[1]
+
         try:
             nota = float(nota)
         except ValueError:
             raise ValueError(f"A nota '{nota}' para o aluno '{nome}' não é um número válido.")
-        
+
         notas_por_aluno[nome] += nota
+        contagem_por_aluno[nome] += 1
 
     alunos_nomes = list(notas_por_aluno.keys())
-    alunos_notas = list(notas_por_aluno.values())
-    alunos_data_sorted = zip(alunos_nomes, alunos_notas)
+    alunos_notas = [notas_por_aluno[nome] / contagem_por_aluno[nome] for nome in alunos_nomes]
+
+    alunos_data_sorted = sorted(zip(alunos_nomes, alunos_notas), key=lambda x: x[1], reverse=True)
     alunos_nomes_sorted, alunos_notas_sorted = zip(*alunos_data_sorted)
+
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.barh(alunos_nomes_sorted, alunos_notas_sorted, color='skyblue')
-    ax.set_xlabel('Notas')
+    ax.set_xlabel('Notas (Média)')
     ax.set_ylabel('Alunos')
-    ax.set_title('Desempenho dos Alunos (Soma das Notas)')
+    ax.set_title('Desempenho dos Alunos (Média das Notas)')
+
     for index, value in enumerate(alunos_notas_sorted):
-        ax.text(value, index, str(value))
+        ax.text(value, index, f"{value:.2f}")
+
     student_performance_plot_path = 'static/images/Performance.png'
     plt.savefig(student_performance_plot_path)
     plt.close()
@@ -126,42 +146,27 @@ def generate_student_performance_plot(alunos_data):
     return 'Performance.png'
 def generate_performance_plot(alunos_data):
     plt.figure(figsize=(10, 6))
-    
-    previsoes = {}
-    for nome, progresso in alunos_data.items():
-        X = np.arange(1, len(progresso) + 1).reshape(-1, 1) 
-        y = np.array(progresso) 
-        
-        model = LinearRegression()
-        model.fit(X, y)
-        
-        proxima_aula = len(progresso) + 1
-        desempenho_previsto = model.predict([[proxima_aula]])[0]
-        previsoes[nome] = desempenho_previsto
 
-        plt.plot(X, y, marker='o', label=f'{nome} (Progresso Passado)')
-        plt.scatter([proxima_aula], [desempenho_previsto], color='red', label=f'{nome} (Previsto)')
+    # Adiciona um ponto para cada aluno no gráfico
+    for nome, dados in alunos_data.items():
+        media_nota = dados['nota']
+        progresso = dados['progresso']
+        
+        plt.scatter(media_nota, progresso, label=nome, alpha=0.7)  # Plotar individualmente
 
-    plt.title('Desempenho dos Alunos e Previsão de Desempenho Futuro')
-    plt.xlabel('Aulas')
-    plt.ylabel('Progresso (0 = Incompleto, 1 = Completo)')
+    # Configuração do gráfico
+    plt.title('Desempenho dos Alunos: Média das Notas vs Progresso')
+    plt.xlabel('Média das Notas dos Alunos')
+    plt.ylabel('Progresso Médio (0 = Incompleto, 1 = Completo)')
     plt.legend()
+    plt.grid()
 
-    # Salvar o gráfico
+    # Salva a imagem do gráfico
     img_dir = os.path.join(os.getcwd(), 'static', 'images')
     os.makedirs(img_dir, exist_ok=True)
 
-    plot_url= os.path.join('static', 'images','performance_plot.png')
+    plot_url = os.path.join('static', 'images', 'performance_plot.png')
     plt.savefig(plot_url)
     plt.close()
 
-    return plot_url, previsoes
-def prever_desempenho_futuro(alunos_data):
-    X = np.array([[data[0], data[1]] for data in alunos_data.values()]) 
-    y = np.array([data[2] for data in alunos_data.values()])  
-
-    model = LinearRegression()
-    model.fit(X, y)
-
-    previsoes = model.predict(X)
-    return previsoes
+    return plot_url, {}
