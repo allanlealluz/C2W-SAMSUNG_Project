@@ -6,23 +6,6 @@ from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, 
 from utils import  generate_performance_plot
 import sqlite3
 
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
-import os
-import numpy as np
-from werkzeug.utils import secure_filename
-from models import (
-    get_db, 
-    find_user_by_id, 
-    criar_aula, 
-    get_aulas_by_professor, 
-    get_respostas_by_aula, 
-    get_progresso_by_aula, 
-    update_nota_resposta,
-    get_student_scores
-)
-from utils import generate_plot, kmeans_clustering, generate_cluster_plot, extract_keywords
-import sqlite3
-
 teacher_bp = Blueprint('teacher', __name__)
 
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
