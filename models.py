@@ -199,9 +199,6 @@ def update_nota_resposta(resposta_id, nota):
         db.commit()
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}") 
-def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
-    alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
-    return alunos_menor_desempenho
 
 def Adicionar_nota(aula_id, aluno_id, nota):
     db = get_db()
@@ -221,23 +218,24 @@ def get_student_scores():
     query = """
     SELECT 
         r.user_id, 
+        u.nome, 
         r.nota, 
         a.topico AS aula_conteudo
     FROM 
         respostas r
-        JOIN aulas a ON r.aula_id = a.id;
+        JOIN aulas a ON r.aula_id = a.id
+        JOIN usuarios u ON r.user_id = u.id; 
     """
     
     cursor.execute(query)
     scores = cursor.fetchall()
-
-    # Convertendo o resultado em uma lista de listas
     alunos_data = []
-    for aluno_id, nota, topico in scores:
-        alunos_data.append((aluno_id, nota, topico))  # Aqui mantemos o aluno_id para identificação
+    for aluno_id, nome, nota, topico in scores:
+        alunos_data.append((aluno_id, nome, nota, topico))
 
     conn.close()
     return alunos_data
+
 
 
 if __name__ == '__main__':

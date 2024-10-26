@@ -28,7 +28,8 @@ def generate_plot(data, title, x_label, y_label):
     return plot_url
 
 def kmeans_clustering(alunos_data):
-    notas = np.array([nota for _, nota, _ in alunos_data]).reshape(-1, 1)
+    notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
+
     
     if notas.size == 0:
         return None, None, None
@@ -49,8 +50,8 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.scatter(X[:, 0], np.zeros_like(X[:, 0]), c=labels, cmap='viridis', marker='o', edgecolor='k', s=100)
     plt.scatter(centroids[:, 0], np.zeros_like(centroids[:, 0]), color='red', s=200, alpha=0.5, marker='X')
     for i, aluno in enumerate(alunos_data):
-        aluno_id, nota, topico = aluno
-        plt.annotate(f"{aluno_id}", (X[i, 0], 0), textcoords="offset points", xytext=(0, 10), ha='center', fontsize=8)
+        aluno_id, nome, nota, topico = aluno
+        plt.annotate(f"{nome}", (X[i, 0], 0), textcoords="offset points", xytext=(0, 10), ha='center', fontsize=8)
 
     plt.title('Distribuição das Notas dos Alunos')
     plt.xlabel('Notas')

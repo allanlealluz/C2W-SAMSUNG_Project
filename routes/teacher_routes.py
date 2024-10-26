@@ -212,7 +212,7 @@ def analisar_desempenho():
     # Agrupar os alunos usando K-Means
     X, labels, centroids = kmeans_clustering(alunos_data)
 
-    # Verifique se X, labels e centroids são válidos antes de gerar o gráfico
+
     if X is None or labels is None or centroids is None:
         flash("Erro ao realizar clustering. Verifique os dados.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
