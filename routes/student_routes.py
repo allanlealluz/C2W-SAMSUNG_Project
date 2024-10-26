@@ -10,7 +10,10 @@ def dashboard_aluno():
         return redirect(url_for('auth.login'))
 
     userData = find_user_by_id(user_id)
-    aula = get_aulas(user_id)  # Pega a próxima aula disponível
+    aula = get_aulas(user_id)
+
+    if not aula:
+        flash("Nenhuma aula disponível no momento.", "info")
 
     return render_template("dashboard_aluno.html", user=userData, aula=aula)
 
@@ -23,20 +26,40 @@ def ver_aula(aula_id):
     db = get_db()
     aula = db.execute('SELECT * FROM aulas WHERE id = ?', (aula_id,)).fetchone()
     perguntas = db.execute('SELECT id, texto FROM perguntas WHERE aula_id = ?', (aula_id,)).fetchall()
-    
+
+    if not aula:
+        flash("Aula não encontrada.", "error")
+        return redirect(url_for('student.dashboard_aluno'))
+
     if request.method == "POST":
         respostas = request.form.to_dict()
+        
+        try:
+            for pergunta_id, resposta in respostas.items():
+                if resposta.strip():
+                    # Verifica se a resposta já existe
+                    exists = db.execute(
+                        'SELECT 1 FROM respostas WHERE user_id = ? AND pergunta_id = ? AND aula_id = ?',
+                        (user_id, pergunta_id, aula_id)
+                    ).fetchone()
 
-        for pergunta_id, resposta in respostas.items():
-            if resposta.strip():  # Ignora respostas vazias
-                db.execute(
-                    'INSERT INTO respostas (user_id, pergunta_id, resposta, aula_id) VALUES (?, ?, ?, ?)',
-                    (user_id, pergunta_id, resposta, aula_id)
-                )
-        db.commit()
-        flash("Respostas enviadas com sucesso!", "success")
+                    if not exists:
+                        db.execute(
+                            'INSERT INTO respostas (user_id, pergunta_id, resposta, aula_id) VALUES (?, ?, ?, ?)',
+                            (user_id, pergunta_id, resposta, aula_id)
+                        )
+                    else:
+                        flash(f"Resposta já enviada para a pergunta {pergunta_id}.", "info")
+
+            db.commit()
+            flash("Respostas enviadas com sucesso!", "success")
+
+        except Exception as e:
+            db.rollback()
+            flash(f"Erro ao enviar respostas: {str(e)}", "error")
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])
 def concluir_aula(aula_id):
@@ -52,8 +75,8 @@ def concluir_aula(aula_id):
     ).fetchone()
 
     if not progresso:
-        db.execute('INSERT INTO progresso_aulas (user_id, aula_id, concluida) VALUES (?, ?, 1)', 
-                   (user_id, aula_id))
+        db.execute('INSERT INTO progresso_aulas (user_id, aula_id, concluida) VALUES (?, ?, ?)', 
+                   (user_id, aula_id, 1))
         db.commit()
         flash("Aula concluída com sucesso!", "success")
     else:
@@ -61,29 +84,44 @@ def concluir_aula(aula_id):
     
     return redirect(url_for('student.dashboard_aluno'))
 
-@student_bp.route('/responder_aula/<int:aula_id>', methods=["POST"])
+@student_bp.route('/responder_atividade/<int:aula_id>', methods=["POST"])
 def responder_atividade(aula_id):
     user_id = session.get("user")
     if not user_id:
-        return redirect(url_for('auth.login'))
+        return jsonify({'error': 'Usuário não autenticado.'}), 403
 
-    respostas = request.json.get('respostas', {})
-
-    if not respostas:
+    data = request.json.get('respostas', [])
+    
+    if not data:
         return jsonify({'error': 'Nenhuma resposta fornecida.'}), 400
 
     db = get_db()
 
-    for pergunta_id, resposta in respostas.items():
-        if resposta.strip():  # Ignora respostas vazias
-            db.execute(
-                'INSERT INTO respostas (user_id, aula_id, section, response) VALUES (?, ?, ?, ?)',
-                (user_id, aula_id, pergunta_id, resposta)
-            )
+    try:
+        for item in data:
+            pergunta_id = item.get('pergunta_id')
+            resposta = item.get('resposta', '').strip()
 
-    db.commit()
+            if resposta:
+                exists = db.execute(
+                    'SELECT 1 FROM respostas WHERE user_id = ? AND pergunta_id = ? AND aula_id = ?',
+                    (user_id, pergunta_id, aula_id)
+                ).fetchone()
 
-    return jsonify({'message': 'Respostas enviadas com sucesso!'}), 200
+                if not exists:
+                    db.execute(
+                        'INSERT INTO respostas (user_id, aula_id, pergunta_id, resposta) VALUES (?, ?, ?, ?)',
+                        (user_id, aula_id, pergunta_id, resposta)
+                    )
+                else:
+                    return jsonify({'error': f'Resposta já enviada para a pergunta {pergunta_id}.'}), 400
+
+        db.commit()
+        return jsonify({'message': 'Respostas enviadas com sucesso!'}), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({'error': 'Erro ao enviar respostas: ' + str(e)}), 500
 
 @student_bp.route('/update_progress', methods=['POST'])
 def update_progress():
@@ -113,7 +151,7 @@ def update_progress():
             db.commit()
 
         total_sections = db.execute(
-            'SELECT COUNT(DISTINCT section) FROM respostas WHERE aula_id = ?',
+            'SELECT COUNT(*) FROM perguntas WHERE aula_id = ?',
             (aula_id,)
         ).fetchone()[0]
 
@@ -143,5 +181,5 @@ def update_progress():
         return jsonify({'message': 'Progresso atualizado com sucesso!'}), 200
 
     except Exception as e:
-        db.rollback()  # Reverte a transação em caso de erro
+        db.rollback()
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500

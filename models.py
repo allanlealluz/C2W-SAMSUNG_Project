@@ -22,7 +22,29 @@ def get_db():
             print(f"Erro ao conectar ao banco de dados: {e}")
             return None
     return g.db
+def execute_query(query, params=None):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
 
+    try:
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        
+        if query.strip().lower().startswith("select"):
+            result = cursor.fetchall()
+        else:
+            conn.commit()
+            result = cursor.lastrowid  
+
+        return result
+    except sqlite3.Error as e:
+        print(f"Erro ao executar query: {e}")
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 def create_user(nome, email, senha, tipo):
     db = get_db()
     if db is None:
@@ -116,6 +138,107 @@ def verificar_tabelas():
         print("Tabelas encontradas:", [tabela["name"] for tabela in tabelas])
     except sqlite3.Error as e:
         print(f"Erro ao verificar tabelas: {e}")
+        
+def get_aulas_by_professor(user_id, topico=None):
+    query = "SELECT * FROM aulas WHERE professor_id = ?"
+    params = [user_id]
+
+    if topico:
+        query += " AND topico = ?"
+        params.append(topico)
+
+    return execute_query(query, params)
+
+def get_respostas_by_aula(aula_id):
+    db = get_db()
+    return db.execute('''
+        SELECT r.user_id, u.nome, r.resposta
+        FROM respostas r
+        JOIN usuarios u ON r.user_id = u.id
+        WHERE r.aula_id = ?
+    ''', (aula_id,)).fetchall()
+
+def get_resposta_by_aluno_aula(aluno_id, aula_id):
+    db = get_db()
+    return db.execute('''
+        SELECT r.user_id, u.nome, r.resposta
+        FROM respostas r
+        JOIN usuarios u ON r.user_id = u.id
+        WHERE r.aula_id = ? AND r.user_id = ?
+    ''', (aula_id, aluno_id)).fetchone()
+
+
+def get_alunos():
+    db = get_db()
+    return db.execute("SELECT * FROM usuarios where tipo != 'professor'").fetchall()
+def resp_aluno(aluno_id):
+      db = get_db()
+      return db.execute("SELECT * FROM respostas where user_id = ?", (aluno_id,)).fetchall()
+
+def get_progresso_by_aula(aula_id):
+    db = get_db()
+    try:
+        return db.execute('''
+            SELECT usuarios.nome, progresso_aulas.concluida
+            FROM progresso_aulas
+            JOIN usuarios ON progresso_aulas.user_id = usuarios.id
+            WHERE progresso_aulas.aula_id = ?
+        ''', (aula_id,)).fetchall()
+    except sqlite3.Error as e:
+        print(f"Erro ao buscar progresso: {e}")
+        return None
+
+def update_nota_resposta(resposta_id, nota):
+    db = get_db()
+    try:
+        db.execute('''
+            UPDATE respostas
+            SET nota = ?
+            WHERE id = ?
+        ''', (nota, resposta_id))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao atualizar nota: {e}") 
+def get_alunos_com_menor_desempenho(alunos_data, labels, cluster_label=0):
+    alunos_menor_desempenho = {nome: alunos_data[nome] for nome, label in zip(alunos_data.keys(), labels) if label == cluster_label}
+    return alunos_menor_desempenho
+
+def Adicionar_nota(aula_id, aluno_id, nota):
+    db = get_db()
+    try:
+        db.execute('''
+            UPDATE respostas
+            SET nota = ?
+            WHERE aula_id = ? AND user_id = ?
+        ''', (nota, aula_id, aluno_id))
+        db.commit()
+    except sqlite3.Error as e:
+        print(f"Erro ao atualizar nota: {e}")
+def get_student_scores():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT 
+        r.user_id, 
+        r.nota, 
+        a.topico AS aula_conteudo
+    FROM 
+        respostas r
+        JOIN aulas a ON r.aula_id = a.id;
+    """
+    
+    cursor.execute(query)
+    scores = cursor.fetchall()
+
+    # Convertendo o resultado em uma lista de listas
+    alunos_data = []
+    for aluno_id, nota, topico in scores:
+        alunos_data.append((aluno_id, nota, topico))  # Aqui mantemos o aluno_id para identificação
+
+    conn.close()
+    return alunos_data
+
 
 if __name__ == '__main__':
     init_db()

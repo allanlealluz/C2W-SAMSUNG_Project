@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS respostas (
     pergunta_id INTEGER NOT NULL,
     resposta TEXT NOT NULL,
     aula_id INTEGER NOT NULL,
+    nota INTEGER,
     FOREIGN KEY (user_id) REFERENCES usuarios(id),
     FOREIGN KEY (aula_id) REFERENCES aulas(id),
     FOREIGN KEY (pergunta_id) REFERENCES perguntas(id)

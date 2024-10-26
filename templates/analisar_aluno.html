@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisar Aluno</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 40px;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .card-title {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .response-text {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #555;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-submit {
+            width: 100%;
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1 class="card-title">Analisando Respostas de: {{ resposta[0].nome }} - Aula {{ aula_id }}</h1>
+            
+            {% for resp in resposta %}
+            <div class="response-block mb-4">
+                <p class="response-text"><strong>Resposta do Aluno:</strong> {{ resp.resposta }}</p>
+                
+                <form class="nota-form" data-id="{{ resp.id }}" onsubmit="submitNota(event, {{ resp.id }})">
+                    <div class="form-group">
+                        <label for="nota-{{ resp.id }}">Nota:</label>
+                        <input type="number" class="form-control" id="nota-{{ resp.id }}" name="nota" min="0" max="10" step="0.1" required placeholder="Insira a nota de 0 a 10">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-submit mt-3">Adicionar Nota</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        const totalFormularios = document.querySelectorAll('.nota-form').length;
+        let formulariosEnviados = 0;
+
+        async function submitNota(event, respostaId) {
+            event.preventDefault();
+            
+            const notaInput = document.querySelector(`#nota-${respostaId}`);
+            const nota = notaInput.value;
+
+            try {
+                const response = await fetch('/dashboard_professor/update_nota_resposta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        resposta_id: respostaId,
+                        nota: nota
+                    })
+                });
+
+                if (response.ok) {
+                    formulariosEnviados++;
+                    alert("Nota atualizada com sucesso!");
+
+                    // Verifica se todos os formulários foram enviados
+                    if (formulariosEnviados === totalFormularios) {
+                        window.location.href = '/dashboard_professor';  // Redireciona para o dashboard ou outra página
+                    }
+                } else {
+                    alert("Erro ao atualizar a nota.");
+                }
+            } catch (error) {
+                console.error("Erro ao enviar a nota:", error);
+                alert("Erro ao enviar a nota.");
+            }
+        }
+    </script>
+</body>
+</html>
