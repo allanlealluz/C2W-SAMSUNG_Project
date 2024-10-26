@@ -91,7 +91,7 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
-    plt.legend(title="Alunos", loc="center right", box_to_anchor=(1, 1))
+    plt.legend(title="Alunos", loc="upper right")
 
     plt.title('Notas dos Alunos por Aula')
     plt.xlabel('Notas')
@@ -157,7 +157,7 @@ def generate_performance_plot(alunos_data):
     # Configuração do gráfico
     plt.title('Desempenho dos Alunos: Média das Notas vs Progresso')
     plt.xlabel('Média das Notas dos Alunos')
-    plt.ylabel('Progresso Médio (0 = Incompleto, 1 = Completo)')
+    plt.ylabel('Progresso nas aulas')
     plt.legend()
     plt.grid()
 
@@ -170,3 +170,13 @@ def generate_performance_plot(alunos_data):
     plt.close()
 
     return plot_url, {}
+
+def prever_notas(alunos_data):
+    previsoes = {}
+    for nome, dados in alunos_data.items():
+        X = np.array([[dados['progresso'], dados['nota']]])
+        model = LinearRegression()
+        model.fit(X, np.array([dados['nota']])) 
+        proxima_nota = model.predict(X)[0]
+        previsoes[nome] = proxima_nota
+    return previsoes
