@@ -34,9 +34,11 @@
 
         <div class="section container-fluid" id="section-1"> 
             <h2>1. Conteúdo da Aula</h2>
+            {% if aula.arquivo  %}
             <div class="embed-responsive embed-responsive-1by1S" height="500px">
                  <embed class="embed-responsive-item w-100" src="{{ url_for('static', filename='/uploads/'+aula.arquivo) }}" height="500px">
             </div>
+            {% endif %}
             <button class="btn btn-primary mt-3" onclick="completeSection(1)">Marcar como Concluída</button>
         </div>
         
@@ -57,7 +59,6 @@
         <div class="progress mt-5">
             <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
         </div>
-
         <form action="{{ url_for('student.concluir_aula', aula_id=aula.id) }}" method="POST" class="mt-4">
             <button type="submit" class="btn btn-success">Concluir Aula</button>
         </form>

@@ -1,16 +1,12 @@
 import matplotlib.pyplot as plt
-import io
-import base64
 import os
 import numpy as np
 from sklearn.cluster import KMeans
-import spacy
 from sklearn.linear_model import LinearRegression
 import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-nlp = spacy.load('pt_core_news_sm')
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     perguntas = [d['pergunta'] for d in alunos_data]
@@ -144,34 +140,29 @@ def generate_student_performance_plot(alunos_data):
     plt.close()
 
     return 'Performance.png'
+
 def generate_performance_plot(alunos_data, previsoes):
     plt.figure(figsize=(10, 6))
     
-    # Dicionário para armazenar cores dos alunos
-    cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))  # Escolhe um colormap para as cores
+    cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
-    # Adiciona um ponto para cada aluno no gráfico
     for i, (nome, dados) in enumerate(alunos_data.items()):
         media_nota = dados['nota']
         progresso = dados['progresso']
-        cor_aluno = cores[i]  # Atribui uma cor diferente para cada aluno
+        cor_aluno = cores[i]
         
-        # Plotar dados reais
         plt.scatter(media_nota, progresso, color=cor_aluno, label=f'{nome} (Real)', alpha=0.7)
 
-        # Plotar previsões, se existirem
         if nome in previsoes:
             previsao = previsoes[nome]
-            plt.scatter(media_nota, previsao, marker='x', color=cor_aluno, s=100, label=f'{nome} (Previsto)', alpha=1)  # 's' controla o tamanho do 'x'
+            plt.scatter(media_nota, previsao, marker='x', color=cor_aluno, s=100, label=f'{nome} (Previsto)', alpha=1)
 
-    # Configuração do gráfico
     plt.title('Desempenho dos Alunos: Média das Notas vs Progresso')
     plt.xlabel('Média das Notas dos Alunos')
     plt.ylabel('Progresso nas aulas')
     plt.legend()
     plt.grid()
 
-    # Salva a imagem do gráfico
     img_dir = os.path.join(os.getcwd(), 'static', 'images')
     os.makedirs(img_dir, exist_ok=True)
 
@@ -179,16 +170,37 @@ def generate_performance_plot(alunos_data, previsoes):
     plt.savefig(plot_url)
     plt.close()
 
-    return plot_url, previsoes  # Retornando previsões
-
-
+    return plot_url, previsoes
 
 def prever_notas(alunos_data):
     previsoes = {}
+    print(alunos_data)
     for nome, dados in alunos_data.items():
-        X = np.array([[dados['progresso'], dados['nota']]])
-        model = LinearRegression()
-        model.fit(X, np.array([dados['nota']])) 
-        proxima_nota = model.predict(X)[0]
-        previsoes[nome] = proxima_nota
+        # Coletar progresso e notas anteriores
+        progresso = []
+        notas = []
+        
+        # Preencher listas de progresso e notas
+        if 'historico' in dados:
+            for entrada in dados['historico']:
+                progresso.append(entrada['progresso'])
+                notas.append(entrada['nota'])
+        
+        if progresso and notas:
+            # Transformar listas em arrays NumPy
+            X = np.array(progresso).reshape(-1, 1)  # Progresso como entrada
+            y = np.array(notas)  # Notas como saída
+
+            # Treinamento do modelo de regressão linear
+            model = LinearRegression()
+            model.fit(X, y) 
+            
+            # Prever a próxima nota usando o progresso atual
+            proxima_nota = model.predict(np.array([[dados['progresso']]]))[0]
+            previsoes[nome] = proxima_nota
+        else:
+            # Se não houver progresso ou notas, use a nota atual
+            previsoes[nome] = dados['nota'] if 'nota' in dados else None
+
     return previsoes
+
