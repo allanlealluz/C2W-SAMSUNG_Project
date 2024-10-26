@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
-from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno
-from utils import  generate_performance_plot
+from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores
+from utils import  generate_performance_plot,kmeans_clustering,generate_cluster_plot, generate_student_performance_plot
 import sqlite3
 
 teacher_bp = Blueprint('teacher', __name__)
@@ -186,7 +186,6 @@ def analisar_desempenho():
 
     # Obter notas dos alunos
     alunos_data = get_student_scores()
-    print(alunos_data)
 
     if not alunos_data:
         flash("Nenhum dado disponível para análise.", "error")
@@ -195,7 +194,6 @@ def analisar_desempenho():
     # Agrupar os alunos usando K-Means
     X, labels, centroids = kmeans_clustering(alunos_data)
 
-
     if X is None or labels is None or centroids is None:
         flash("Erro ao realizar clustering. Verifique os dados.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
@@ -203,7 +201,11 @@ def analisar_desempenho():
     # Gerar o gráfico dos clusters
     plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
     print(plot_url)
-    return render_template('analisar_desempenho.html', plot_url=plot_url, alunos_data=alunos_data)
+    student_performance_plot_url = generate_student_performance_plot(alunos_data)
+
+    return render_template('analisar_desempenho.html', plot_url=plot_url, 
+                           student_performance_plot_url=student_performance_plot_url, 
+                           alunos_data=alunos_data)
 
 
 

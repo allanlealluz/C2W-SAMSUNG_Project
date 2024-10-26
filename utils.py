@@ -8,24 +8,50 @@ import spacy
 from sklearn.linear_model import LinearRegression
 import matplotlib
 matplotlib.use('Agg')
+from collections import defaultdict
 
 nlp = spacy.load('pt_core_news_sm')
 
-def generate_plot(data, title, x_label, y_label):
+def generate_cluster_plot(X, labels, centroids, alunos_data):
+    # Converter os dados dos alunos para um formato que possa ser plotado
+    # Supondo que alunos_data seja uma lista de dicionários ou algo similar
+    perguntas = [d['pergunta'] for d in alunos_data]  # Exemplo de como extrair perguntas
+    aulas = [d['aula'] for d in alunos_data]  # Exemplo de como extrair aulas
+    scores = np.array([d['nota'] for d in alunos_data])  # Extrair notas
+    
+    # Agrupar por perguntas e aulas
+    unique_perguntas = list(set(perguntas))
+    unique_aulas = list(set(aulas))
+    
+    # Criar um dicionário para armazenar as notas por pergunta e aula
+    performance_data = {pergunta: [] for pergunta in unique_perguntas}
+    
+    for pergunta in unique_perguntas:
+        for aula in unique_aulas:
+            filtered_scores = [scores[i] for i in range(len(perguntas)) if perguntas[i] == pergunta and aulas[i] == aula]
+            performance_data[pergunta].append(np.mean(filtered_scores) if filtered_scores else 0)
+
+    # Criar o gráfico de barras
     fig, ax = plt.subplots()
-    ax.bar(data.keys(), data.values(), color='blue')
-    ax.set_title(title)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
+    width = 0.15  # Largura das barras
+    x = np.arange(len(unique_aulas))
+
+    for i, pergunta in enumerate(unique_perguntas):
+        ax.bar(x + i * width, performance_data[pergunta], width, label=pergunta)
+
+    ax.set_xlabel('Aulas')
+    ax.set_ylabel('Média das Notas')
+    ax.set_title('Desempenho dos Alunos por Pergunta e Aula')
+    ax.set_xticks(x + width / 2)
+    ax.set_xticklabels(unique_aulas)
+    ax.legend()
+
+    # Salvar o gráfico e retornar a URL
+    plot_path = 'static/plots/performance_plot.png'
+    plt.savefig(plot_path)
+    plt.close()
     
-    # Converte o gráfico para base64
-    img = io.BytesIO()
-    plt.savefig(img, format='png')
-    img.seek(0)
-    plot_url = base64.b64encode(img.getvalue()).decode()
-    plt.close(fig)
-    
-    return plot_url
+    return plot_path
 
 def kmeans_clustering(alunos_data):
     notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
@@ -65,11 +91,39 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
 
 
 
-def extract_keywords(text):
-    doc = nlp(text)
-    keywords = [token.lemma_ for token in doc if not token.is_stop and not token.is_punct][:3]
-    return keywords
+def generate_student_performance_plot(alunos_data):
+    if not alunos_data or not isinstance(alunos_data, list):
+        raise ValueError("alunos_data deve ser uma lista.")
+    notas_por_aluno = defaultdict(float)
+    for aluno in alunos_data:
+        nota = aluno[2]
+        nome = aluno[1]  
+        
+        print(f"Processando aluno: {nome}, Nota: {nota}") 
+        
+        try:
+            nota = float(nota)
+        except ValueError:
+            raise ValueError(f"A nota '{nota}' para o aluno '{nome}' não é um número válido.")
+        
+        notas_por_aluno[nome] += nota
 
+    alunos_nomes = list(notas_por_aluno.keys())
+    alunos_notas = list(notas_por_aluno.values())
+    alunos_data_sorted = zip(alunos_nomes, alunos_notas)
+    alunos_nomes_sorted, alunos_notas_sorted = zip(*alunos_data_sorted)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(alunos_nomes_sorted, alunos_notas_sorted, color='skyblue')
+    ax.set_xlabel('Notas')
+    ax.set_ylabel('Alunos')
+    ax.set_title('Desempenho dos Alunos (Soma das Notas)')
+    for index, value in enumerate(alunos_notas_sorted):
+        ax.text(value, index, str(value))
+    student_performance_plot_path = 'static/images/Performance.png'
+    plt.savefig(student_performance_plot_path)
+    plt.close()
+
+    return 'Performance.png'
 def generate_performance_plot(alunos_data):
     plt.figure(figsize=(10, 6))
     
