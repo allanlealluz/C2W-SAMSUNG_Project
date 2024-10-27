@@ -9,19 +9,15 @@ def dashboard_aluno():
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    # Recupera informações do usuário
     user_info = find_user_by_id(user_id)
 
     db = get_db()
-
-    # Consulta para obter aulas não concluídas de Programação
     cursos_programacao = db.execute('''
         SELECT a.* FROM aulas a
         LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
         WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
     ''', (user_id,)).fetchall()
 
-    # Consulta para obter aulas não concluídas de Robótica
     cursos_robotica = db.execute('''
         SELECT a.* FROM aulas a
         LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
@@ -62,7 +58,6 @@ def ver_aula(aula_id):
                             (user_id, pergunta_id, resposta, aula_id)
                         )
 
-            # Atualizar o progresso
             db.execute(
                 '''
                 INSERT INTO progresso_atividades (user_id, section_id, aula_id, completou)
