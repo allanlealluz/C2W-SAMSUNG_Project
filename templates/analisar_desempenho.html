@@ -45,16 +45,6 @@
             <img src="{{ url_for('static', filename='images/' + plot_url) }}" alt="Gráfico de Desempenho" class="img-fluid">
         </div>
 
-        <h2 class="mt-5">Dados dos Alunos</h2>
-        <ul class="list-group">
-            {% for aluno_id,nome, nota, topico in alunos_data %}
-                <li class="list-group-item">
-                    <strong>ID do Aluno:</strong> {{ aluno_id }} | 
-                    <strong>Nota:</strong> {{ nota }} | 
-                    <strong>Aula:</strong> {{ topico }}
-                </li>
-            {% endfor %}
-        </ul>
 
         <div class="text-center mt-4">
             <img src="{{ url_for('static', filename='images/'+student_performance_plot_url) }}" alt="Gráfico de Desempenho" class="img-fluid">

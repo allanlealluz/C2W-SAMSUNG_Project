@@ -188,8 +188,10 @@ def analisar_aluno(aluno_id):
             flash("Nota adicionada com sucesso!", "success")
             return redirect(url_for('teacher.avaliar_alunos'))
 
-    resposta = resp_aluno(aluno_id)
+    # Atualizado para buscar apenas respostas sem nota
+    resposta = [resp for resp in resp_aluno(aluno_id) if resp["nota"] is None]
     return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
+
 
 @teacher_bp.route('/dashboard_professor/update_nota_resposta', methods=["GET", "POST"])
 def update_nota_resposta_route():
@@ -207,18 +209,21 @@ def analisar_desempenho():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
-    alunos_data = get_student_scores()
+    # Obtenha dados dos alunos, incluindo tópicos
+    alunos_data = get_student_scores()  # Deve retornar (aluno_id, aluno_nome, nota, topico)
 
     if not alunos_data:
         flash("Nenhum dado disponível para análise.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
     
+    # Realiza o clustering com base nos tópicos
     X, labels, centroids = kmeans_clustering(alunos_data)
 
     if X is None or labels is None or centroids is None:
         flash("Erro ao realizar clustering. Verifique os dados.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
 
+    # Gera os gráficos usando tópicos
     plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
     student_performance_plot_url = generate_student_performance_plot(alunos_data)
 
