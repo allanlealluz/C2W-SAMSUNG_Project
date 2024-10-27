@@ -1,6 +1,5 @@
 import sqlite3
 from flask import g
-from collections import defaultdict
 import numpy as np
 DATABASE = 'database.db'
 
@@ -213,9 +212,11 @@ def Adicionar_nota(aula_id, aluno_id, nota):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")
 def get_student_scores():
-    conn = get_db()
-    cursor = conn.cursor()
-
+    db = get_db() 
+    if db is None:
+        return []
+    
+    cursor = db.cursor()
     query = """
     SELECT 
         r.user_id, 
@@ -231,11 +232,11 @@ def get_student_scores():
     cursor.execute(query)
     scores = cursor.fetchall()
     alunos_data = []
-    for aluno_id, nome, nota, topico in scores:
-        alunos_data.append((aluno_id, nome, nota, topico))
+    for aluno_id, nome, nota, aula in scores:
+        alunos_data.append((aluno_id, nome, nota, aula))
 
-    conn.close()
     return alunos_data
+
 def get_student_scores_topic():
     conn = get_db()
     cursor = conn.cursor()

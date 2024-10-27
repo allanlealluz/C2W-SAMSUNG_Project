@@ -13,6 +13,7 @@ from utils import (
     prever_notas,generate_performance_by_topic_plot
 )
 import sqlite3
+from collections import defaultdict
 
 teacher_bp = Blueprint('teacher', __name__)
 
@@ -109,26 +110,32 @@ def criarAula():
 
     return render_template("criarAula.html")
 
-
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
         user_id = session.get('user')
         
+        feedbacks = {}
+        progresso_por_aluno = {}
+        total_alunos = set()
+        notas_por_topico = defaultdict(list)
+        notas_por_aula = defaultdict(list)
+        alunos_scores = get_student_scores()  # Obter notas dos alunos
+        plot_url = None
+        previsoes = {}
+        aula_id = None
+
         try:
             aulas = get_aulas_by_professor(user_id)
             if not aulas:
                 flash("Nenhuma aula encontrada para o professor.", "error")
                 return redirect(url_for('teacher.dashboard_professor'))
 
-            feedbacks = {}
-            progresso_por_aluno = {}
-            total_alunos = set()
-
             for aula in aulas:
                 aula_id = aula[0]
                 titulo_aula = aula[1]
 
+                # Obter respostas e progresso para cada aula
                 respostas = get_respostas_by_aula(aula_id)
                 if respostas is None:
                     flash(f"Erro ao buscar respostas para a aula {titulo_aula}.", "error")
@@ -144,68 +151,56 @@ def ver_feedbacks():
                 for aluno in progresso:
                     nome = aluno['nome']
                     total_alunos.add(nome)
-                    if nome not in progresso_por_aluno:
-                        progresso_por_aluno[nome] = []
-                    progresso_por_aluno[nome].append(aluno['concluida'])
+                    progresso_por_aluno[nome] = aluno['concluida']  # Supondo que seja um booleano
 
-            alunos_scores = get_student_scores()
-            alunos_scores_dict = {}
-            for aluno_id, nome, nota, topico in alunos_scores:
-                if nome in alunos_scores_dict:
-                    existing_nota, existing_topico = alunos_scores_dict[nome]
-                    new_nota = (existing_nota + nota) / 2
-                    alunos_scores_dict[nome] = (new_nota, topico)
-                else:
-                    alunos_scores_dict[nome] = (nota, topico)
+                # Coletar notas para calcular médias
+                for resposta in respostas:
+                    aluno_id = resposta['user_id']
+                    nota = resposta.get('nota', 0)  # Supondo que a nota possa ser zero se não existir
+                    topico = resposta.get('topico')  # Se sua estrutura de dados suportar
 
-            alunos_data = {}
-            for nome in total_alunos:
-                progresso = progresso_por_aluno.get(nome, [])
-                nota = alunos_scores_dict.get(nome, (None, None))[0]
-                
-                if progresso and nota is not None:
-                    if nome not in alunos_data:
-                        alunos_data[nome] = {
-                            'progresso': min(sum(progresso), 100),
-                            'nota': nota,
-                            'historico': []
-                        }
-                    alunos_data[nome]['historico'].append({
-                        'progresso': alunos_data[nome]['progresso'],
-                        'nota': alunos_data[nome]['nota']
-                    })
+                    notas_por_aula[aula_id].append(nota)
+                    notas_por_topico[topico].append(nota)
 
+            # Calcular as médias por aula
+            medias_por_aula = {aula_id: sum(notas) / len(notas) if notas else 0 for aula_id, notas in notas_por_aula.items()}
+            # Calcular as médias por tópico
+            medias_por_topico = {topico: sum(notas) / len(notas) if notas else 0 for topico, notas in notas_por_topico.items()}
+
+            # Prever notas usando sua lógica de previsão
+            alunos_data = [(aluno_id, nome, nota) for aluno_id, nome, nota, _ in alunos_scores]
             previsoes = prever_notas(alunos_data)
 
-            plot_url = None
+            # Gerar gráfico com os dados de desempenho
             if alunos_data:
                 plot_url = generate_performance_plot(alunos_data, previsoes)
 
-            alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
-            alunos_incompletos = len(progresso_por_aluno) - alunos_completos
-
-            progresso_medio_total = sum(data['progresso'] for data in alunos_data.values()) / len(alunos_data) if alunos_data else 0
-            media_geral = sum(dados['nota'] for dados in alunos_data.values() if dados['nota'] is not None)
-            media_geral = media_geral / len(alunos_data) if alunos_data else 0
-
+            # Renderizar a página com todos os dados necessários
             return render_template(
                 'feedbacks_professor.html',
                 feedbacks=feedbacks,
                 plot_respostas_url=plot_url,
                 previsoes=previsoes,
                 progresso=progresso_por_aluno,
-                alunos_completos=alunos_completos,
-                alunos_incompletos=alunos_incompletos,
-                progresso_medio_total=progresso_medio_total,
-                media_geral=media_geral,
-                aula_id=aula_id,
-                alunos_data=alunos_data
+                medias_por_aula=medias_por_aula,
+                medias_por_topico=medias_por_topico,
+                total_alunos=len(total_alunos)  # Número total de alunos
             )
         except Exception as e:
-            flash(f"Erro ao carregar feedbacks: {e}", "error")
-            return redirect(url_for('teacher.dashboard_professor'))
+            print(f"Erro ao carregar feedbacks: {e}")
+            return render_template(
+                'feedbacks_professor.html',
+                feedbacks=feedbacks,
+                plot_respostas_url=plot_url,
+                previsoes=previsoes,
+                progresso=progresso_por_aluno,
+                medias_por_aula={},
+                medias_por_topico={},
+                total_alunos=len(total_alunos)
+            )
 
     return redirect(url_for('auth.login'))
+
 
 
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])

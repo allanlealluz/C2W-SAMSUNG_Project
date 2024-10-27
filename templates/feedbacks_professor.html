@@ -17,7 +17,6 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-          
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/">Início</a>
@@ -43,6 +42,8 @@
 
     <main class="container mt-5">
         <h1>Feedback Alunos</h1>
+        
+        <!-- Gráfico de Progresso -->
         <section>
             <div class="card">
                 <div class="card-body">
@@ -54,6 +55,7 @@
             </div>
         </section>
 
+        <!-- Desempenho dos Alunos -->
         <section>
             <div class="card">
                 <div class="card-body">
@@ -92,6 +94,7 @@
             </div>
         </section>
 
+        <!-- Previsões de Desempenho -->
         <section>
             <div class="card">
                 <div class="card-body">
@@ -108,6 +111,73 @@
                 </div>
             </div>
         </section>
+
+        <!-- Médias por Tópico -->
+        <section>
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Média por Tópico</h2>
+                    {% if notas_por_topico %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Tópico</th>
+                                    <th>Média</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno, topicos in notas_por_topico.items() %}
+                                    {% for topico, notas in topicos.items() %}
+                                        <tr>
+                                            <td>{{ aluno }}</td>
+                                            <td>{{ topico }}</td>
+                                            <td>{{ (notas | sum / notas | length) | round(2) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Nenhum dado de média por tópico disponível.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Médias por Aula -->
+        <section>
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Média por Aula</h2>
+                    {% if notas_por_aula %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Aula</th>
+                                    <th>Média</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno, aulas in notas_por_aula.items() %}
+                                    {% for aula_id, notas in aulas.items() %}
+                                        <tr>
+                                            <td>{{ aluno }}</td>
+                                            <td>{{ aula_id }}</td>
+                                            <td>{{ (notas | sum / notas | length) | round(2) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Nenhum dado de média por aula disponível.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <footer>
