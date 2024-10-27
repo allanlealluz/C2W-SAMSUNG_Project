@@ -18,14 +18,14 @@ def dashboard_aluno():
     cursos_programacao = db.execute('''
         SELECT a.* FROM aulas a
         LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0)
+        WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
     ''', (user_id,)).fetchall()
 
     # Consulta para obter aulas não concluídas de Robótica
     cursos_robotica = db.execute('''
         SELECT a.* FROM aulas a
         LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0)
+        WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
     ''', (user_id,)).fetchall()
 
     return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)

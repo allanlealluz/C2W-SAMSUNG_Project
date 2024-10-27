@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{url_for('static',filename='/CSS/dashboard_professor.css')}}">
-
-
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
@@ -19,33 +17,39 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Início</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/Criar_Aula">Criar Aula</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar alunos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Sair</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="/">Início</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Criar_Aula">Criar Aula</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar alunos</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Sair</a></li>
             </ul>
         </div>
     </nav>
 
-    <div class="container container-custom text-center">
+    <div class="container container-custom text-center mt-5">
         <h1>Dashboard do Professor</h1>
         <h2>Bem-vindo, {{user['nome']}}</h2>
-        <a href="#" class="btn btn-custom m-2">Turma de Programação</a>
-        <a href="/dashboard_professor/feedbacks" class="btn btn-custom m-2">Turma de Robótica</a>
+
+        <div class="mt-4">
+            <h3>Desempenho dos Alunos</h3>
+            <table class="table table-bordered mt-3">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Média das Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for aluno in alunos %}
+                        <tr>
+                            <td>{{ aluno['nome'] }}</td>
+                            <td>{{ aluno['media'] | round(2) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Bootstrap JS and dependencies -->

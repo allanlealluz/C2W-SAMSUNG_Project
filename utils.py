@@ -7,7 +7,6 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     perguntas = [d['pergunta'] for d in alunos_data]
     aulas = [d['aula'] for d in alunos_data]
@@ -174,33 +173,26 @@ def generate_performance_plot(alunos_data, previsoes):
 
 def prever_notas(alunos_data):
     previsoes = {}
-    print(alunos_data)
+
     for nome, dados in alunos_data.items():
-        # Coletar progresso e notas anteriores
         progresso = []
         notas = []
         
-        # Preencher listas de progresso e notas
         if 'historico' in dados:
             for entrada in dados['historico']:
                 progresso.append(entrada['progresso'])
                 notas.append(entrada['nota'])
-        
-        if progresso and notas:
-            # Transformar listas em arrays NumPy
-            X = np.array(progresso).reshape(-1, 1)  # Progresso como entrada
-            y = np.array(notas)  # Notas como saída
 
-            # Treinamento do modelo de regressão linear
+        if len(progresso) >= 2 and len(set(progresso)) > 1:
+            X = np.array(progresso).reshape(-1, 1)
+            y = np.array(notas)
+
             model = LinearRegression()
-            model.fit(X, y) 
+            model.fit(X, y)
             
-            # Prever a próxima nota usando o progresso atual
             proxima_nota = model.predict(np.array([[dados['progresso']]]))[0]
             previsoes[nome] = proxima_nota
         else:
-            # Se não houver progresso ou notas, use a nota atual
-            previsoes[nome] = dados['nota'] if 'nota' in dados else None
+            previsoes[nome] = np.mean(notas) if notas else dados.get('nota', None)
 
     return previsoes
-

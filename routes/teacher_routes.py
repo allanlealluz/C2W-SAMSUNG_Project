@@ -2,8 +2,16 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
-from models import get_db, find_user_by_id, criar_aula, get_aulas_by_professor, get_respostas_by_aula, get_progresso_by_aula, get_alunos, Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores
-from utils import generate_performance_plot, kmeans_clustering, generate_cluster_plot, generate_student_performance_plot, prever_notas
+from models import (
+    get_db, find_user_by_id, criar_aula, get_aulas_by_professor,
+    get_respostas_by_aula, get_progresso_by_aula, get_alunos,
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores
+)
+from utils import (
+    generate_performance_plot, kmeans_clustering,
+    generate_cluster_plot, generate_student_performance_plot,
+    prever_notas
+)
 import sqlite3
 
 teacher_bp = Blueprint('teacher', __name__)
@@ -22,7 +30,25 @@ def dashboard_professor():
     user_id = session.get("user")
     if user_id and session['tipo'] == 'professor':
         userData = find_user_by_id(user_id)
-        return render_template('dashboard_professor.html', user=userData)
+
+        alunos_data = get_student_scores()
+        alunos_dict = {}
+        for aluno_id, nome, nota, _ in alunos_data:
+            if nome not in alunos_dict:
+                alunos_dict[nome] = {'total_notas': 0, 'num_notas': 0}
+            alunos_dict[nome]['total_notas'] += nota
+            alunos_dict[nome]['num_notas'] += 1
+
+        alunos_media = [{'nome': nome, 'media': data['total_notas'] / data['num_notas']}
+                        for nome, data in alunos_dict.items()]
+        alunos_media = sorted(alunos_media, key=lambda x: x['media'], reverse=True)
+
+        return render_template(
+            'dashboard_professor.html',
+            user=userData,
+            alunos=alunos_media
+        )
+
     return redirect(url_for('auth.login'))
 
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
@@ -119,19 +145,17 @@ def ver_feedbacks():
             else:
                 alunos_scores_dict[nome] = (nota, topico)
 
-        # Atualizando a estrutura de alunos_data para incluir o histórico
         alunos_data = {}
         for nome in total_alunos:
             progresso = progresso_por_aluno.get(nome, [])
             nota = alunos_scores_dict.get(nome, (None, None))[0]
             
             if progresso and nota is not None:
-                # Criar um histórico de progresso e notas
                 if nome not in alunos_data:
                     alunos_data[nome] = {
                         'progresso': min(sum(progresso), 100),
                         'nota': nota,
-                        'historico': []  # Inicializa o histórico
+                        'historico': []
                     }
                 alunos_data[nome]['historico'].append({
                     'progresso': alunos_data[nome]['progresso'],
@@ -142,7 +166,7 @@ def ver_feedbacks():
 
         plot_url = None
         if alunos_data:
-            plot_url, previsoes = generate_performance_plot(alunos_data, previsoes)
+            plot_url = generate_performance_plot(alunos_data, previsoes)
 
         alunos_completos = sum(all(prog) for prog in progresso_por_aluno.values())
         alunos_incompletos = len(progresso_por_aluno) - alunos_completos
@@ -166,7 +190,6 @@ def ver_feedbacks():
         )
     return redirect(url_for('auth.login'))
 
-
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():
     if 'user' not in session or session['tipo'] != 'professor':
@@ -188,10 +211,8 @@ def analisar_aluno(aluno_id):
             flash("Nota adicionada com sucesso!", "success")
             return redirect(url_for('teacher.avaliar_alunos'))
 
-    # Atualizado para buscar apenas respostas sem nota
     resposta = [resp for resp in resp_aluno(aluno_id) if resp["nota"] is None]
     return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
-
 
 @teacher_bp.route('/dashboard_professor/update_nota_resposta', methods=["GET", "POST"])
 def update_nota_resposta_route():
@@ -209,21 +230,18 @@ def analisar_desempenho():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
-    # Obtenha dados dos alunos, incluindo tópicos
-    alunos_data = get_student_scores()  # Deve retornar (aluno_id, aluno_nome, nota, topico)
+    alunos_data = get_student_scores()
 
     if not alunos_data:
         flash("Nenhum dado disponível para análise.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
     
-    # Realiza o clustering com base nos tópicos
     X, labels, centroids = kmeans_clustering(alunos_data)
 
     if X is None or labels is None or centroids is None:
         flash("Erro ao realizar clustering. Verifique os dados.", "error")
         return redirect(url_for('teacher.dashboard_professor'))
 
-    # Gera os gráficos usando tópicos
     plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
     student_performance_plot_url = generate_student_performance_plot(alunos_data)
 
