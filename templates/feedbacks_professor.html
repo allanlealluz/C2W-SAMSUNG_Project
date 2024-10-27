@@ -5,75 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedback dos Alunos</title>
     <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/feedback_professor.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/feedback_professor.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Feedback dos Alunos</h1>
-    </header>
+   
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <a class="navbar-brand" href="#">C2W</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Início</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Criar_Aula">Criar Aula</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar alunos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Sair</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-    <main>
-        <!-- Gráfico de Progresso dos Alunos -->
+    <main class="container mt-5">
+        <h1>Feedback Alunos</h1>
         <section>
-            <h2>Gráfico de Progresso dos Alunos</h2>
-            <img src="{{ url_for('static', filename='images/performance_plot.png') }}" 
-                 alt="Gráfico de Progresso dos Alunos" 
-                 style="width: 100%; max-width: 800px;">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Gráfico de Progresso dos Alunos</h2>
+                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" 
+                         alt="Gráfico de Progresso dos Alunos" 
+                         class="img-fluid">
+                </div>
+            </div>
         </section>
 
         <section>
-            <h2>Desempenho dos Alunos</h2>
-            {% if alunos_data %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Aluno</th>
-                            <th>Média das Notas</th>
-                            <th>Progresso Médio</th>
-                            <th>Abaixo da Média Geral</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for aluno, dados in alunos_data.items() %}
-                            <tr>
-                                <td>{{ aluno }}</td>
-                                <td>{{ dados.nota | round(2) }}</td>
-                                <td>{{ dados.progresso * 10 | round(2) }}%</td>
-                                <td>
-                                    {% if dados.nota is not none and dados.nota < media_geral %}
-                                        <span style="color: red;">Sim</span>
-                                    {% else %}
-                                        <span style="color: green;">Não</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>Nenhum dado de desempenho disponível.</p>
-            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Desempenho dos Alunos</h2>
+                    {% if alunos_data %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Aluno</th>
+                                    <th>Média das Notas</th>
+                                    <th>Progresso Médio</th>
+                                    <th>Abaixo da Média Geral</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno, dados in alunos_data.items() %}
+                                    <tr>
+                                        <td>{{ aluno }}</td>
+                                        <td>{{ dados.nota | round(2) }}</td>
+                                        <td>{{ dados.progresso * 10 | round(2) }}%</td>
+                                        <td>
+                                            {% if dados.nota is not none and dados.nota < media_geral %}
+                                                <span style="color: red;">Sim</span>
+                                            {% else %}
+                                                <span style="color: green;">Não</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Nenhum dado de desempenho disponível.</p>
+                    {% endif %}
+                </div>
+            </div>
         </section>
 
         <section>
-            <!-- Previsões de Desempenho -->
-            <h2>Previsões de Desempenho</h2>
-            {% if previsoes %}
-                <ul>
-                    {% for aluno, previsao in previsoes.items() %}
-                        <li><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao | round(2) }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Sem previsões de desempenho disponíveis.</p>
-            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Previsões de Desempenho</h2>
+                    {% if previsoes %}
+                        <ul class="list-group">
+                            {% for aluno, previsao in previsoes.items() %}
+                                <li class="list-group-item"><strong>{{ aluno }}:</strong> Previsão de desempenho: {{ previsao | round(2) }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Sem previsões de desempenho disponíveis.</p>
+                    {% endif %}
+                </div>
+            </div>
         </section>
     </main>
-    
+
     <footer>
-        <p>&copy; 2024 Sua Instituição de Ensino. Todos os direitos reservados.</p>
+        <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
     </footer>
 
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

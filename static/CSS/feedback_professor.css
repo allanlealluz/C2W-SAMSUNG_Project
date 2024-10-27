@@ -5,7 +5,10 @@ body {
     background-color: #f4f4f4;
     color: #333;
 }
-
+.navbar {
+    background-color: #7b01a3;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
 .container {
     max-width: 1000px;
     margin: 40px auto;
@@ -90,4 +93,7 @@ img {
     table, th, td {
         font-size: 0.9rem;
     }
+}
+.navbar {
+    color:#7b01a3;
 }
