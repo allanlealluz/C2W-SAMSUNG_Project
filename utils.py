@@ -7,41 +7,6 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-def generate_cluster_plot(X, labels, centroids, alunos_data):
-    perguntas = [d['pergunta'] for d in alunos_data]
-    aulas = [d['aula'] for d in alunos_data]
-    scores = np.array([d['nota'] for d in alunos_data])
-
-    unique_perguntas = list(set(perguntas))
-    unique_aulas = list(set(aulas))
-
-    performance_data = {pergunta: [] for pergunta in unique_perguntas}
-
-    for pergunta in unique_perguntas:
-        for aula in unique_aulas:
-            filtered_scores = [scores[i] for i in range(len(perguntas)) if perguntas[i] == pergunta and aulas[i] == aula]
-            performance_data[pergunta].append(np.mean(filtered_scores) if filtered_scores else 0)
-
-    fig, ax = plt.subplots()
-    width = 0.15
-    x = np.arange(len(unique_aulas))
-
-    for i, pergunta in enumerate(unique_perguntas):
-        ax.bar(x + i * width, performance_data[pergunta], width, label=pergunta)
-
-    ax.set_xlabel('Aulas')
-    ax.set_ylabel('Média das Notas')
-    ax.set_title('Desempenho dos Alunos por Pergunta e Aula')
-    ax.set_xticks(x + width / 2)
-    ax.set_xticklabels(unique_aulas)
-    ax.legend()
-
-    plot_path = 'static/plots/performance_plot.png'
-    plt.savefig(plot_path)
-    plt.close()
-    
-    return plot_path
-
 def kmeans_clustering(alunos_data):
     notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
 
@@ -57,7 +22,7 @@ def kmeans_clustering(alunos_data):
     return notas, labels, centroids
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(14, 10))
 
     topicos = sorted(set(aluno[3] for aluno in alunos_data))
     topico_indices = {topico: i for i, topico in enumerate(topicos)}
@@ -86,11 +51,11 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
-    plt.legend(title="Alunos", loc="upper right")
+    plt.legend(title="Alunos", loc="upper right",bbox_to_anchor=(2, 2))
 
-    plt.title('Notas dos Alunos por Tópico')
+    plt.title('Notas dos Alunos por Aulas')
     plt.xlabel('Notas')
-    plt.ylabel('Tópicos')
+    plt.ylabel('Aulas')
     plt.yticks(range(len(topicos)), topicos)
     plt.grid(True, linestyle='--', linewidth=0.5)
 
@@ -196,3 +161,39 @@ def prever_notas(alunos_data):
             previsoes[nome] = np.mean(notas) if notas else dados.get('nota', None)
 
     return previsoes
+def generate_performance_by_topic_plot(alunos_data):
+    if not alunos_data or not isinstance(alunos_data, list):
+        raise ValueError("alunos_data deve ser uma lista.")
+
+    notas_por_topico = defaultdict(list)
+
+    for aluno in alunos_data:
+        nome = aluno[1]
+        nota = aluno[2]
+        topico = aluno[3]
+
+        try:
+            nota = float(nota)
+        except ValueError:
+            raise ValueError(f"A nota '{nota}' para o aluno '{nome}' não é um número válido.")
+
+        notas_por_topico[topico].append(nota)
+
+    medias_por_topico = {topico: np.mean(notas) for topico, notas in notas_por_topico.items()}
+    topicos = list(medias_por_topico.keys())
+    medias = list(medias_por_topico.values())
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(topicos, medias, color='skyblue')
+    ax.set_xlabel('Média das Notas')
+    ax.set_ylabel('Tópicos')
+    ax.set_title('Desempenho dos Alunos por Tópico')
+
+    for index, value in enumerate(medias):
+        ax.text(value, index, f"{value:.2f}")
+
+    plot_path = 'static/images/performance_by_topic_plot.png'
+    plt.savefig(plot_path)
+    plt.close()
+
+    return 'performance_by_topic_plot.png'

@@ -3,14 +3,14 @@ import os
 import numpy as np
 from werkzeug.utils import secure_filename
 from models import (
-    get_db, find_user_by_id, criar_aula, get_aulas_by_professor,
+    find_user_by_id, criar_aula, get_aulas_by_professor,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
     generate_cluster_plot, generate_student_performance_plot,
-    prever_notas
+    prever_notas,generate_performance_by_topic_plot
 )
 import sqlite3
 
@@ -266,12 +266,16 @@ def analisar_desempenho():
         return redirect(url_for('auth.login'))
 
     try:
-        alunos_data = get_student_scores()
+        alunos_data = get_student_scores_topic()
 
         if not alunos_data:
             flash("Nenhum dado disponível para análise.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
-        
+
+        # Gerar gráfico de desempenho por tópico
+        performance_by_topic_plot_url = generate_performance_by_topic_plot(alunos_data)
+
+        # Realiza o clustering
         X, labels, centroids = kmeans_clustering(alunos_data)
 
         if X is None or labels is None or centroids is None:
@@ -281,9 +285,16 @@ def analisar_desempenho():
         plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
         student_performance_plot_url = generate_student_performance_plot(alunos_data)
 
-        return render_template('analisar_desempenho.html', plot_url=plot_url, 
+        return render_template('analisar_desempenho.html', 
+                               plot_url=plot_url, 
                                student_performance_plot_url=student_performance_plot_url, 
+                               performance_by_topic_plot_url=performance_by_topic_plot_url, 
                                alunos_data=alunos_data)
+
     except Exception as e:
         flash(f"Erro ao analisar desempenho: {e}", "error")
         return redirect(url_for('teacher.dashboard_professor'))
+
+
+
+

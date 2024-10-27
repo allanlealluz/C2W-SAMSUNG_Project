@@ -1,6 +1,7 @@
 import sqlite3
 from flask import g
-
+from collections import defaultdict
+import numpy as np
 DATABASE = 'database.db'
 
 def init_db():
@@ -235,8 +236,30 @@ def get_student_scores():
 
     conn.close()
     return alunos_data
+def get_student_scores_topic():
+    conn = get_db()
+    cursor = conn.cursor()
 
+    query = """
+    SELECT 
+        r.user_id, 
+        u.nome, 
+        r.nota, 
+        a.topico AS aula_conteudo
+    FROM 
+        respostas r
+        JOIN aulas a ON r.aula_id = a.id
+        JOIN usuarios u ON r.user_id = u.id; 
+    """
+    
+    cursor.execute(query)
+    scores = cursor.fetchall()
+    alunos_data = []
+    for aluno_id, nome, nota, topico in scores:
+        alunos_data.append((aluno_id, nome, nota, topico))
 
+    conn.close()
+    return alunos_data
 
 if __name__ == '__main__':
     init_db()
