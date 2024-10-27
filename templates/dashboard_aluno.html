@@ -31,33 +31,43 @@
 
 <div class="container mt-4">
     <h1 class="text-center">Bem-vindo, {{ user["nome"] }}!</h1>
-    <p class="text-center">Aqui estão seus cursos ativos.</p>
+    <p class="text-center">Aqui estão suas aulas não concluídas.</p>
 
     <div class="row">
-        <!-- Exemplo de curso ativo -->
-        <div class="col-md-6">
-            <div class="card">
-                <h2 class="card-title">Curso de Programação</h2>
-                <p class="card-text">Progresso: 70%</p>
-                <a href="#" class="btn btn-primary">Continuar Curso</a>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card">
-                {% if aula %}
-                    <div class="card mt-3">
+        <!-- Coluna para Aulas de Programação -->
+        <div class="col-lg-6 col-md-12">
+            <h2 class="text-center">Aulas de Programação</h2>
+            {% if cursos_programacao %}
+                {% for aula in cursos_programacao %}
+                    <div class="card mb-3">
                         <div class="card-body">
-                            <h2 class="card-title">Curso de Robótica</h2>
-                            <h5 class="card-title">{{ aula['titulo'] }}</h5>
+                            <h3 class="card-title">{{ aula['titulo'] }}</h3>
                             <p class="card-text">{{ aula['descricao'] }}</p>
                             <a href="{{ url_for('student.ver_aula', aula_id=aula['id']) }}" class="btn btn-primary">Assistir Aula</a>
                         </div>
                     </div>
-                {% else %}
-                    <p>Nenhuma aula disponível no momento.</p>
-                {% endif %}
-            </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center">Nenhuma aula de Programação disponível.</p>
+            {% endif %}
+        </div>
+
+        <!-- Coluna para Aulas de Robótica -->
+        <div class="col-lg-6 col-md-12">
+            <h2 class="text-center">Aulas de Robótica</h2>
+            {% if cursos_robotica %}
+                {% for aula in cursos_robotica %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ aula['titulo'] }}</h3>
+                            <p class="card-text">{{ aula['descricao'] }}</p>
+                            <a href="{{ url_for('student.ver_aula', aula_id=aula['id']) }}" class="btn btn-primary">Assistir Aula</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center">Nenhuma aula de Robótica disponível.</p>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -9,13 +9,23 @@ def dashboard_aluno():
     if not user_id:
         return redirect(url_for('auth.login'))
 
-    userData = find_user_by_id(user_id)
-    aula = get_aulas(user_id)
+    user_info = find_user_by_id(user_id)
 
-    if not aula:
-        flash("Nenhuma aula disponível no momento.", "info")
+    db = get_db()
+    cursos_programacao = db.execute('''
+        SELECT a.* FROM aulas a
+        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
+        WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
+    ''', (user_id,)).fetchall()
 
-    return render_template("dashboard_aluno.html", user=userData, aula=aula)
+    cursos_robotica = db.execute('''
+        SELECT a.* FROM aulas a
+        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
+        WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
+    ''', (user_id,)).fetchall()
+
+    return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)
+
 
 @student_bp.route('/ver_aula/<int:aula_id>', methods=["GET", "POST"])
 def ver_aula(aula_id):
@@ -35,30 +45,37 @@ def ver_aula(aula_id):
         respostas = request.form.to_dict()
         
         try:
+            # Salvar as respostas
             for pergunta_id, resposta in respostas.items():
                 if resposta.strip():
-                    # Verifica se a resposta já existe
                     exists = db.execute(
                         'SELECT 1 FROM respostas WHERE user_id = ? AND pergunta_id = ? AND aula_id = ?',
                         (user_id, pergunta_id, aula_id)
                     ).fetchone()
-
                     if not exists:
                         db.execute(
                             'INSERT INTO respostas (user_id, pergunta_id, resposta, aula_id) VALUES (?, ?, ?, ?)',
                             (user_id, pergunta_id, resposta, aula_id)
                         )
-                    else:
-                        flash(f"Resposta já enviada para a pergunta {pergunta_id}.", "info")
 
+            db.execute(
+                '''
+                INSERT INTO progresso_atividades (user_id, section_id, aula_id, completou)
+                VALUES (?, ?, ?, 1)
+                ON CONFLICT(user_id, section_id, aula_id) DO UPDATE SET completou=1
+                ''',
+                (user_id, 2, aula_id)
+            )
+            
             db.commit()
-            flash("Respostas enviadas com sucesso!", "success")
+            flash("Respostas enviadas com sucesso! Progresso atualizado.", "success")
 
         except Exception as e:
             db.rollback()
             flash(f"Erro ao enviar respostas: {str(e)}", "error")
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+
 
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])

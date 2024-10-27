@@ -7,7 +7,6 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     perguntas = [d['pergunta'] for d in alunos_data]
     aulas = [d['aula'] for d in alunos_data]
@@ -60,8 +59,8 @@ def kmeans_clustering(alunos_data):
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.figure(figsize=(12, 8))
 
-    aulas = sorted(set(aluno[3] for aluno in alunos_data))
-    aula_indices = {aula: i for i, aula in enumerate(aulas)}
+    topicos = sorted(set(aluno[3] for aluno in alunos_data))
+    topico_indices = {topico: i for i, topico in enumerate(topicos)}
 
     unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
     colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))
@@ -75,12 +74,12 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     for aluno in alunos_data:
         nome = aluno[1]
         nota = aluno[2]
-        aula = aluno[3]
-        notas_por_aluno[nome].append((nota, aula))
+        topico = aluno[3]
+        notas_por_aluno[nome].append((nota, topico))
 
     for aluno, notas in notas_por_aluno.items():
-        for nota, aula in notas:
-            y_pos = aula_indices[aula]
+        for nota, topico in notas:
+            y_pos = topico_indices[topico]
             x_pos = nota + np.random.uniform(-jitter_strength_x, jitter_strength_x)
             y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
             plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
@@ -89,10 +88,10 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
     plt.legend(title="Alunos", loc="upper right")
 
-    plt.title('Notas dos Alunos por Aula')
+    plt.title('Notas dos Alunos por Tópico')
     plt.xlabel('Notas')
-    plt.ylabel('Aulas')
-    plt.yticks(range(len(aulas)), aulas)
+    plt.ylabel('Tópicos')
+    plt.yticks(range(len(topicos)), topicos)
     plt.grid(True, linestyle='--', linewidth=0.5)
 
     plot_path = 'static/images/cluster_plot.png'
@@ -174,33 +173,26 @@ def generate_performance_plot(alunos_data, previsoes):
 
 def prever_notas(alunos_data):
     previsoes = {}
-    print(alunos_data)
+
     for nome, dados in alunos_data.items():
-        # Coletar progresso e notas anteriores
         progresso = []
         notas = []
         
-        # Preencher listas de progresso e notas
         if 'historico' in dados:
             for entrada in dados['historico']:
                 progresso.append(entrada['progresso'])
                 notas.append(entrada['nota'])
-        
-        if progresso and notas:
-            # Transformar listas em arrays NumPy
-            X = np.array(progresso).reshape(-1, 1)  # Progresso como entrada
-            y = np.array(notas)  # Notas como saída
 
-            # Treinamento do modelo de regressão linear
+        if len(progresso) >= 2 and len(set(progresso)) > 1:
+            X = np.array(progresso).reshape(-1, 1)
+            y = np.array(notas)
+
             model = LinearRegression()
-            model.fit(X, y) 
+            model.fit(X, y)
             
-            # Prever a próxima nota usando o progresso atual
             proxima_nota = model.predict(np.array([[dados['progresso']]]))[0]
             previsoes[nome] = proxima_nota
         else:
-            # Se não houver progresso ou notas, use a nota atual
-            previsoes[nome] = dados['nota'] if 'nota' in dados else None
+            previsoes[nome] = np.mean(notas) if notas else dados.get('nota', None)
 
     return previsoes
-
