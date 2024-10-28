@@ -109,7 +109,6 @@ def criarAula():
             return redirect(url_for('teacher.criarAula'))
 
     return render_template("criarAula.html")
-
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
@@ -120,54 +119,77 @@ def ver_feedbacks():
         total_alunos = set()
         notas_por_topico = defaultdict(list)
         notas_por_aula = defaultdict(list)
-        alunos_scores = get_student_scores()  # Obter notas dos alunos
+        alunos_scores = get_student_scores()
         plot_url = None
         previsoes = {}
-        aula_id = None
+
+        print("Start processing feedbacks")
 
         try:
+            # Fetching aulas
             aulas = get_aulas_by_professor(user_id)
+            print(f"Aulas encontradas: {aulas}")
             if not aulas:
-                flash("Nenhuma aula encontrada para o professor.", "error")
+                print("Nenhuma aula encontrada para o professor.")
                 return redirect(url_for('teacher.dashboard_professor'))
 
             for aula in aulas:
                 aula_id = aula[0]
-                titulo_aula = aula[1]
-                respostas = get_respostas_by_aula(aula_id)
-                if respostas is None:
-                    flash(f"Erro ao buscar respostas para a aula {titulo_aula}.", "error")
-                    continue
+                titulo_aula = aula[2]
+                print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
 
+                # Fetching respostas
+                respostas = get_respostas_by_aula(aula_id)
+                print(f"Respostas para aula {aula_id} ({titulo_aula}): {respostas}")
+                if respostas is None:
+                    print(f"Erro ao buscar respostas para a aula {titulo_aula}.")
+                    continue
+                
                 feedbacks[titulo_aula] = respostas if respostas else []
 
+                # Fetching progresso
                 progresso = get_progresso_by_aula(aula_id)
+                print(f"Progresso para aula {aula_id}: {progresso}")
                 if progresso is None:
-                    flash(f"Erro ao buscar progresso para a aula {titulo_aula}.", "error")
+                    print(f"Erro ao buscar progresso para a aula {titulo_aula}.")
                     continue
 
                 for aluno in progresso:
                     nome = aluno['nome']
                     total_alunos.add(nome)
-                    progresso_por_aluno[nome] = aluno['concluida'] 
+                    progresso_por_aluno[nome] = aluno['concluida']
 
                 for resposta in respostas:
                     aluno_id = resposta['user_id']
-                    nota = resposta.get('nota', 0)
-                    topico = resposta.get('topico') 
-
+                    nota = resposta['nota'] if 'nota' in resposta.keys() else 0
+                    topico = resposta['topico'] if 'topico' in resposta.keys() else None
                     notas_por_aula[aula_id].append(nota)
-                    notas_por_topico[topico].append(nota)
+                    if topico:
+                        notas_por_topico[topico].append(nota)
 
-            medias_por_aula = {aula_id: sum(notas) / len(notas) if notas else 0 for aula_id, notas in notas_por_aula.items()}
+            print("Notas por aula:", notas_por_aula)
+            print("Notas por tópico:", notas_por_topico)
 
-            medias_por_topico = {topico: sum(notas) / len(notas) if notas else 0 for topico, notas in notas_por_topico.items()}
+            medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0
+                               for aula_id, notas in notas_por_aula.items()}
+            medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0
+                                 for topico, notas in notas_por_topico.items()}
 
-            alunos_data = [(aluno_id, nome, nota) for aluno_id, nome, nota, _ in alunos_scores]
+            alunos_data = {}
+            for aluno_id, nome, nota, progresso, aula in alunos_scores:
+                if nome not in alunos_data:
+                    alunos_data[nome] = {'historico': []}
+                alunos_data[nome]['historico'].append({
+                    'nota': nota,
+                    'progresso': progresso,
+                    'aula': aula
+                })
+
             previsoes = prever_notas(alunos_data)
-
+            print("Previsões:", previsoes)
             if alunos_data:
                 plot_url = generate_performance_plot(alunos_data, previsoes)
+                print("URL do gráfico:", plot_url)
 
             return render_template(
                 'feedbacks_professor.html',
@@ -177,7 +199,7 @@ def ver_feedbacks():
                 progresso=progresso_por_aluno,
                 medias_por_aula=medias_por_aula,
                 medias_por_topico=medias_por_topico,
-                total_alunos=len(total_alunos) 
+                total_alunos=len(total_alunos)
             )
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
@@ -191,9 +213,7 @@ def ver_feedbacks():
                 medias_por_topico={},
                 total_alunos=len(total_alunos)
             )
-
     return redirect(url_for('auth.login'))
-
 
 
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])

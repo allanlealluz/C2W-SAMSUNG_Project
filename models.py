@@ -222,18 +222,21 @@ def get_student_scores():
         r.user_id, 
         u.nome, 
         r.nota, 
+        pa.concluida,  -- Status de conclusão da aula
         a.titulo AS aula_conteudo
     FROM 
         respostas r
         JOIN aulas a ON r.aula_id = a.id
-        JOIN usuarios u ON r.user_id = u.id; 
+        JOIN usuarios u ON r.user_id = u.id
+        JOIN progresso_aulas pa ON pa.user_id = u.id AND pa.aula_id = a.id;
     """
     
     cursor.execute(query)
     scores = cursor.fetchall()
     alunos_data = []
-    for aluno_id, nome, nota, aula in scores:
-        alunos_data.append((aluno_id, nome, nota, aula))
+    for aluno_id, nome, nota, concluida, aula in scores:
+        progresso = 1 if concluida else 0 
+        alunos_data.append((aluno_id, nome, nota, progresso, aula))
 
     return alunos_data
 
@@ -246,18 +249,21 @@ def get_student_scores_topic():
         r.user_id, 
         u.nome, 
         r.nota, 
+        pa.concluida, 
         a.topico AS aula_conteudo
     FROM 
         respostas r
         JOIN aulas a ON r.aula_id = a.id
-        JOIN usuarios u ON r.user_id = u.id; 
+        JOIN usuarios u ON r.user_id = u.id
+        JOIN progresso_aulas pa ON pa.user_id = u.id AND pa.aula_id = a.id;
     """
     
     cursor.execute(query)
     scores = cursor.fetchall()
     alunos_data = []
-    for aluno_id, nome, nota, topico in scores:
-        alunos_data.append((aluno_id, nome, nota, topico))
+    for aluno_id, nome, nota, concluida, topico in scores:
+        progresso = 1 if concluida else 0
+        alunos_data.append((aluno_id, nome, nota, progresso, topico))
 
     conn.close()
     return alunos_data
