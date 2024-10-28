@@ -134,8 +134,6 @@ def ver_feedbacks():
             for aula in aulas:
                 aula_id = aula[0]
                 titulo_aula = aula[1]
-
-                # Obter respostas e progresso para cada aula
                 respostas = get_respostas_by_aula(aula_id)
                 if respostas is None:
                     flash(f"Erro ao buscar respostas para a aula {titulo_aula}.", "error")
@@ -151,31 +149,26 @@ def ver_feedbacks():
                 for aluno in progresso:
                     nome = aluno['nome']
                     total_alunos.add(nome)
-                    progresso_por_aluno[nome] = aluno['concluida']  # Supondo que seja um booleano
+                    progresso_por_aluno[nome] = aluno['concluida'] 
 
-                # Coletar notas para calcular médias
                 for resposta in respostas:
                     aluno_id = resposta['user_id']
-                    nota = resposta.get('nota', 0)  # Supondo que a nota possa ser zero se não existir
-                    topico = resposta.get('topico')  # Se sua estrutura de dados suportar
+                    nota = resposta.get('nota', 0)
+                    topico = resposta.get('topico') 
 
                     notas_por_aula[aula_id].append(nota)
                     notas_por_topico[topico].append(nota)
 
-            # Calcular as médias por aula
             medias_por_aula = {aula_id: sum(notas) / len(notas) if notas else 0 for aula_id, notas in notas_por_aula.items()}
-            # Calcular as médias por tópico
+
             medias_por_topico = {topico: sum(notas) / len(notas) if notas else 0 for topico, notas in notas_por_topico.items()}
 
-            # Prever notas usando sua lógica de previsão
             alunos_data = [(aluno_id, nome, nota) for aluno_id, nome, nota, _ in alunos_scores]
             previsoes = prever_notas(alunos_data)
 
-            # Gerar gráfico com os dados de desempenho
             if alunos_data:
                 plot_url = generate_performance_plot(alunos_data, previsoes)
 
-            # Renderizar a página com todos os dados necessários
             return render_template(
                 'feedbacks_professor.html',
                 feedbacks=feedbacks,
@@ -184,7 +177,7 @@ def ver_feedbacks():
                 progresso=progresso_por_aluno,
                 medias_por_aula=medias_por_aula,
                 medias_por_topico=medias_por_topico,
-                total_alunos=len(total_alunos)  # Número total de alunos
+                total_alunos=len(total_alunos) 
             )
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
