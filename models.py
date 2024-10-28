@@ -1,6 +1,6 @@
 import sqlite3
 from flask import g
-
+import numpy as np
 DATABASE = 'database.db'
 
 def init_db():
@@ -212,6 +212,35 @@ def Adicionar_nota(aula_id, aluno_id, nota):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")
 def get_student_scores():
+    db = get_db() 
+    if db is None:
+        return []
+    
+    cursor = db.cursor()
+    query = """
+    SELECT 
+        r.user_id, 
+        u.nome, 
+        r.nota, 
+        pa.concluida,  -- Status de conclusão da aula
+        a.titulo AS aula_conteudo
+    FROM 
+        respostas r
+        JOIN aulas a ON r.aula_id = a.id
+        JOIN usuarios u ON r.user_id = u.id
+        JOIN progresso_aulas pa ON pa.user_id = u.id AND pa.aula_id = a.id;
+    """
+    
+    cursor.execute(query)
+    scores = cursor.fetchall()
+    alunos_data = []
+    for aluno_id, nome, nota, concluida, aula in scores:
+        progresso = 1 if concluida else 0 
+        alunos_data.append((aluno_id, nome, nota, progresso, aula))
+
+    return alunos_data
+
+def get_student_scores_topic():
     conn = get_db()
     cursor = conn.cursor()
 
@@ -220,23 +249,24 @@ def get_student_scores():
         r.user_id, 
         u.nome, 
         r.nota, 
-        a.titulo AS aula_conteudo
+        pa.concluida, 
+        a.topico AS aula_conteudo
     FROM 
         respostas r
         JOIN aulas a ON r.aula_id = a.id
-        JOIN usuarios u ON r.user_id = u.id; 
+        JOIN usuarios u ON r.user_id = u.id
+        JOIN progresso_aulas pa ON pa.user_id = u.id AND pa.aula_id = a.id;
     """
     
     cursor.execute(query)
     scores = cursor.fetchall()
     alunos_data = []
-    for aluno_id, nome, nota, topico in scores:
-        alunos_data.append((aluno_id, nome, nota, topico))
+    for aluno_id, nome, nota, concluida, topico in scores:
+        progresso = 1 if concluida else 0
+        alunos_data.append((aluno_id, nome, nota, progresso, topico))
 
     conn.close()
     return alunos_data
-
-
 
 if __name__ == '__main__':
     init_db()

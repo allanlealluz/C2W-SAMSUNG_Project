@@ -7,41 +7,6 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-def generate_cluster_plot(X, labels, centroids, alunos_data):
-    perguntas = [d['pergunta'] for d in alunos_data]
-    aulas = [d['aula'] for d in alunos_data]
-    scores = np.array([d['nota'] for d in alunos_data])
-
-    unique_perguntas = list(set(perguntas))
-    unique_aulas = list(set(aulas))
-
-    performance_data = {pergunta: [] for pergunta in unique_perguntas}
-
-    for pergunta in unique_perguntas:
-        for aula in unique_aulas:
-            filtered_scores = [scores[i] for i in range(len(perguntas)) if perguntas[i] == pergunta and aulas[i] == aula]
-            performance_data[pergunta].append(np.mean(filtered_scores) if filtered_scores else 0)
-
-    fig, ax = plt.subplots()
-    width = 0.15
-    x = np.arange(len(unique_aulas))
-
-    for i, pergunta in enumerate(unique_perguntas):
-        ax.bar(x + i * width, performance_data[pergunta], width, label=pergunta)
-
-    ax.set_xlabel('Aulas')
-    ax.set_ylabel('Média das Notas')
-    ax.set_title('Desempenho dos Alunos por Pergunta e Aula')
-    ax.set_xticks(x + width / 2)
-    ax.set_xticklabels(unique_aulas)
-    ax.legend()
-
-    plot_path = 'static/plots/performance_plot.png'
-    plt.savefig(plot_path)
-    plt.close()
-    
-    return plot_path
-
 def kmeans_clustering(alunos_data):
     notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
 
@@ -57,7 +22,7 @@ def kmeans_clustering(alunos_data):
     return notas, labels, centroids
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(14, 10))
 
     topicos = sorted(set(aluno[3] for aluno in alunos_data))
     topico_indices = {topico: i for i, topico in enumerate(topicos)}
@@ -86,11 +51,11 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
-    plt.legend(title="Alunos", loc="upper right")
+    plt.legend(title="Alunos", loc="upper right",bbox_to_anchor=(2, 2))
 
-    plt.title('Notas dos Alunos por Tópico')
+    plt.title('Notas dos Alunos por Aulas')
     plt.xlabel('Notas')
-    plt.ylabel('Tópicos')
+    plt.ylabel('Aulas')
     plt.yticks(range(len(topicos)), topicos)
     plt.grid(True, linestyle='--', linewidth=0.5)
 
@@ -146,19 +111,21 @@ def generate_performance_plot(alunos_data, previsoes):
     cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
     for i, (nome, dados) in enumerate(alunos_data.items()):
-        media_nota = dados['nota']
-        progresso = dados['progresso']
+        progresso = [entrada['progresso'] for entrada in dados['historico']]
+        notas = [entrada['nota'] for entrada in dados['historico']]
         cor_aluno = cores[i]
         
-        plt.scatter(media_nota, progresso, color=cor_aluno, label=f'{nome} (Real)', alpha=0.7)
+        plt.plot(progresso, notas, color=cor_aluno, marker='o', label=f'{nome} (Real)', alpha=0.7)
 
+        # Previsão de próxima nota e progresso
         if nome in previsoes:
             previsao = previsoes[nome]
-            plt.scatter(media_nota, previsao, marker='x', color=cor_aluno, s=100, label=f'{nome} (Previsto)', alpha=1)
+            plt.scatter(previsao['proximo_progresso'], previsao['proxima_nota'], 
+                        color=cor_aluno, marker='x', s=100, label=f'{nome} (Previsto)', alpha=1)
 
-    plt.title('Desempenho dos Alunos: Média das Notas vs Progresso')
-    plt.xlabel('Média das Notas dos Alunos')
-    plt.ylabel('Progresso nas aulas')
+    plt.title('Desempenho dos Alunos: Progresso vs Notas')
+    plt.xlabel('Progresso nas Aulas')
+    plt.ylabel('Notas')
     plt.legend()
     plt.grid()
 
@@ -169,7 +136,7 @@ def generate_performance_plot(alunos_data, previsoes):
     plt.savefig(plot_url)
     plt.close()
 
-    return plot_url, previsoes
+    return plot_url
 
 def prever_notas(alunos_data):
     previsoes = {}
@@ -177,22 +144,81 @@ def prever_notas(alunos_data):
     for nome, dados in alunos_data.items():
         progresso = []
         notas = []
+        aulas = []
+
+        # Extrai os dados de progresso, nota e aula
+        historico = dados.get('historico', [])
         
-        if 'historico' in dados:
-            for entrada in dados['historico']:
+        for entrada in historico:
+            if 'progresso' in entrada and 'nota' in entrada and 'aula' in entrada:
                 progresso.append(entrada['progresso'])
                 notas.append(entrada['nota'])
+                aulas.append(entrada['aula'])
 
+        # Confere se há dados suficientes para treinar o modelo
         if len(progresso) >= 2 and len(set(progresso)) > 1:
-            X = np.array(progresso).reshape(-1, 1)
-            y = np.array(notas)
+            # Predição da nota
+            X_nota = np.array(progresso).reshape(-1, 1)
+            y_nota = np.array(notas)
+            modelo_nota = LinearRegression()
+            modelo_nota.fit(X_nota, y_nota)
 
-            model = LinearRegression()
-            model.fit(X, y)
-            
-            proxima_nota = model.predict(np.array([[dados['progresso']]]))[0]
-            previsoes[nome] = proxima_nota
+            progresso_atual = dados.get('progresso', progresso[-1])
+            proxima_nota = modelo_nota.predict(np.array([[progresso_atual]]))[0]
+
+            # Predição da aula usando o progresso como referência
+            X_aula = np.array(progresso).reshape(-1, 1)
+            y_aula = np.array(aulas)
+            modelo_aula = LinearRegression()
+            modelo_aula.fit(X_aula, y_aula)
+
+            proxima_aula = round(modelo_aula.predict(np.array([[progresso_atual]]))[0])
+
+            previsoes[nome] = {
+                'proxima_nota': proxima_nota,
+                'proxima_aula': proxima_aula
+            }
         else:
-            previsoes[nome] = np.mean(notas) if notas else dados.get('nota', None)
+            # Usa a média se não houver dados suficientes
+            previsoes[nome] = {
+                'proxima_nota': np.mean(notas) if notas else dados.get('nota', None),
+                'proxima_aula': max(aulas) + 1 if aulas else None
+            }
 
     return previsoes
+def generate_performance_by_topic_plot(alunos_data):
+    if not alunos_data or not isinstance(alunos_data, list):
+        raise ValueError("alunos_data deve ser uma lista.")
+
+    notas_por_topico = defaultdict(list)
+
+    for aluno in alunos_data:
+        nome = aluno[1]
+        nota = aluno[2]
+        topico = aluno[3]
+
+        try:
+            nota = float(nota)
+        except ValueError:
+            raise ValueError(f"A nota '{nota}' para o aluno '{nome}' não é um número válido.")
+
+        notas_por_topico[topico].append(nota)
+
+    medias_por_topico = {topico: np.mean(notas) for topico, notas in notas_por_topico.items()}
+    topicos = list(medias_por_topico.keys())
+    medias = list(medias_por_topico.values())
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(topicos, medias, color='skyblue')
+    ax.set_xlabel('Média das Notas')
+    ax.set_ylabel('Tópicos')
+    ax.set_title('Desempenho dos Alunos por Tópico')
+
+    for index, value in enumerate(medias):
+        ax.text(value, index, f"{value:.2f}")
+
+    plot_path = 'static/images/performance_by_topic_plot.png'
+    plt.savefig(plot_path)
+    plt.close()
+
+    return 'performance_by_topic_plot.png'
