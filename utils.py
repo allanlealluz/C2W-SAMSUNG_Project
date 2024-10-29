@@ -7,15 +7,6 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-import matplotlib.pyplot as plt
-import os
-import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.linear_model import LinearRegression
-import matplotlib
-matplotlib.use('Agg')
-from collections import defaultdict
-
 def kmeans_clustering(alunos_data):
     notas = np.array([nota for _, _, nota, _, _ in alunos_data if isinstance(nota, (int, float))]).reshape(-1, 1)
     
@@ -31,12 +22,10 @@ def kmeans_clustering(alunos_data):
     return notas, labels, centroids
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    print(alunos_data)
     plt.figure(figsize=(16, 12))
 
     topicos = sorted(set(aluno[4] for aluno in alunos_data if len(aluno) > 4))
     if not topicos:
-        print("Erro: Nenhum tópico encontrado em alunos_data.")
         return None
 
     topico_indices = {topico: i for i, topico in enumerate(topicos)}
@@ -128,24 +117,21 @@ def generate_student_performance_plot(alunos_data):
 
 def generate_performance_plot(alunos_data, previsoes):
     plt.figure(figsize=(10, 6))
-    
+
     cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
     for i, (nome, dados) in enumerate(alunos_data.items()):
-        progresso = [entrada['progresso'] for entrada in dados['historico']]
-        notas = [entrada['nota'] for entrada in dados['historico']]
-        cor_aluno = cores[i]
-        
-        plt.plot(progresso, notas, color=cor_aluno, marker='o', label=f'{nome} (Real)', alpha=0.7)
+        notas = [entry['nota'] for entry in dados['historico']]
+        cor_aluno = cores[i]   
+        plt.plot(notas, color=cor_aluno, marker='o', label=f'{nome} (Real)', alpha=0.7)
 
-        # Previsão de próxima nota e progresso
         if nome in previsoes:
             previsao = previsoes[nome]
-            plt.scatter(previsao['proximo_progresso'], previsao['proxima_nota'], 
+            plt.scatter(len(notas), previsao['proxima_nota'], 
                         color=cor_aluno, marker='x', s=100, label=f'{nome} (Previsto)', alpha=1)
 
-    plt.title('Desempenho dos Alunos: Progresso vs Notas')
-    plt.xlabel('Progresso nas Aulas')
+    plt.title('Desempenho dos Alunos: Notas Históricas e Previstas')
+    plt.xlabel('Aulas')
     plt.ylabel('Notas')
     plt.legend()
     plt.grid()
@@ -161,48 +147,47 @@ def generate_performance_plot(alunos_data, previsoes):
 
 def prever_notas(alunos_data):
     previsoes = {}
-
+    
     for nome, dados in alunos_data.items():
-        progresso = []
-        notas = []
-        aulas = []
-        historico = dados.get('historico', [])
-        
-        for entrada in historico:
-            if 'progresso' in entrada and 'nota' in entrada and 'aula' in entrada:
-                progresso.append(entrada['progresso'])
-                notas.append(entrada['nota'])
-                aulas.append(entrada['aula'])
-        if len(progresso) >= 2 and len(set(progresso)) > 1:
-            # Predição da nota
-            X_nota = np.array(progresso).reshape(-1, 1)
-            y_nota = np.array(notas)
-            modelo_nota = LinearRegression()
-            modelo_nota.fit(X_nota, y_nota)
+        historico_progresso = [entry['progresso'] for entry in dados['historico']]
+        historico_notas = [entry['nota'] for entry in dados['historico']]
 
-            progresso_atual = dados.get('progresso', progresso[-1])
-            proxima_nota = modelo_nota.predict(np.array([[progresso_atual]]))[0]
+        if len(historico_progresso) >= 3:
+            X_hist = np.array(historico_progresso).reshape(-1, 1)
+            y_notas = np.array(historico_notas)
+            
+            modelo_notas = LinearRegression()
+            modelo_notas.fit(X_hist, y_notas)
 
-            # Predição da aula usando o progresso como referência
-            X_aula = np.array(progresso).reshape(-1, 1)
-            y_aula = np.array(aulas)
-            modelo_aula = LinearRegression()
-            modelo_aula.fit(X_aula, y_aula)
+            tendencia_nota = modelo_notas.coef_[0]
 
-            proxima_aula = round(modelo_aula.predict(np.array([[progresso_atual]]))[0])
+            modelo_progresso = LinearRegression()
+            modelo_progresso.fit(X_hist, np.array(historico_progresso))
+
+            tendencia_progresso = modelo_progresso.coef_[0]
+
+            decaimento_nota = tendencia_nota < 0
+            decaimento_progresso = tendencia_progresso < 0
+
+            proximo_progresso = historico_progresso[-1] + 1
+            proxima_nota = modelo_notas.predict(np.array([[proximo_progresso]]))[0]
 
             previsoes[nome] = {
                 'proxima_nota': proxima_nota,
-                'proxima_aula': proxima_aula
+                'proximo_progresso': proximo_progresso,
+                'decaimento_nota': decaimento_nota,
+                'decaimento_progresso': decaimento_progresso
             }
         else:
-            # Usa a média se não houver dados suficientes
             previsoes[nome] = {
-                'proxima_nota': np.mean(notas) if notas else dados.get('nota', None),
-                'proxima_aula': max(aulas) + 1 if aulas else None
+                'proxima_nota': np.mean(historico_notas) if historico_notas else 0,
+                'proximo_progresso': (historico_progresso[-1] + 1) if historico_progresso else 1,
+                'decaimento_nota': False,
+                'decaimento_progresso': False
             }
 
     return previsoes
+
 def generate_performance_by_topic_plot(alunos_data):
     if not alunos_data or not isinstance(alunos_data, list):
         raise ValueError("alunos_data deve ser uma lista.")
@@ -239,3 +224,12 @@ def generate_performance_by_topic_plot(alunos_data):
     plt.close()
 
     return 'performance_by_topic_plot.png'
+
+def classificar_alunos_por_grupos(notas):
+    media_nota = np.mean(notas) if notas else 0
+    if media_nota < 5:
+        return "Baixas Notas"
+    elif 5 <= media_nota < 7:
+        return "Notas Médias"
+    else:
+        return "Altas Notas"
