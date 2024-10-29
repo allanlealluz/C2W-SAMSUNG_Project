@@ -152,7 +152,7 @@ def get_aulas_by_professor(user_id, topico=None):
 def get_respostas_by_aula(aula_id):
     db = get_db()
     return db.execute('''
-        SELECT r.user_id, u.nome, r.resposta
+        SELECT r.user_id, u.nome, r.resposta,r.nota
         FROM respostas r
         JOIN usuarios u ON r.user_id = u.id
         WHERE r.aula_id = ?
@@ -215,7 +215,7 @@ def get_student_scores():
     db = get_db() 
     if db is None:
         return []
-    
+     
     cursor = db.cursor()
     query = """
     SELECT 
