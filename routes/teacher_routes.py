@@ -36,7 +36,7 @@ def dashboard_professor():
         alunos_data = get_student_scores()
         alunos_dict = {}
         
-        for aluno_id, nome, nota, _ in alunos_data:
+        for aluno_id, nome, nota, titulo, concluida in alunos_data:
             if nome not in alunos_dict:
                 alunos_dict[nome] = {'total_notas': 0, 'num_notas': 0}  
             if nota is not None: 
@@ -122,11 +122,8 @@ def ver_feedbacks():
         alunos_scores = get_student_scores()
         plot_url = None
         previsoes = {}
-
         print("Start processing feedbacks")
-
         try:
-            # Fetching aulas
             aulas = get_aulas_by_professor(user_id)
             print(f"Aulas encontradas: {aulas}")
             if not aulas:
@@ -137,17 +134,12 @@ def ver_feedbacks():
                 aula_id = aula[0]
                 titulo_aula = aula[2]
                 print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
-
-                # Fetching respostas
                 respostas = get_respostas_by_aula(aula_id)
                 print(f"Respostas para aula {aula_id} ({titulo_aula}): {respostas}")
                 if respostas is None:
                     print(f"Erro ao buscar respostas para a aula {titulo_aula}.")
-                    continue
-                
+                    continue   
                 feedbacks[titulo_aula] = respostas if respostas else []
-
-                # Fetching progresso
                 progresso = get_progresso_by_aula(aula_id)
                 print(f"Progresso para aula {aula_id}: {progresso}")
                 if progresso is None:
@@ -277,17 +269,15 @@ def analisar_desempenho():
         alunos_data = get_student_scores_topic()
 
         if not alunos_data:
-            flash("Nenhum dado disponível para análise.", "error")
+            print("Nenhum dado disponível para análise.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
 
-        # Gerar gráfico de desempenho por tópico
         performance_by_topic_plot_url = generate_performance_by_topic_plot(alunos_data)
 
-        # Realiza o clustering
         X, labels, centroids = kmeans_clustering(alunos_data)
 
         if X is None or labels is None or centroids is None:
-            flash("Erro ao realizar clustering. Verifique os dados.", "error")
+            print("Erro ao realizar clustering. Verifique os dados.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
 
         plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
@@ -300,7 +290,7 @@ def analisar_desempenho():
                                alunos_data=alunos_data)
 
     except Exception as e:
-        flash(f"Erro ao analisar desempenho: {e}", "error")
+        print(f"Erro ao analisar desempenho: {e}", "error")
         return redirect(url_for('teacher.dashboard_professor'))
 
 

@@ -7,26 +7,40 @@ import matplotlib
 matplotlib.use('Agg')
 from collections import defaultdict
 
-def kmeans_clustering(alunos_data):
-    notas = np.array([nota for _, _, nota, _ in alunos_data]).reshape(-1, 1)
+import matplotlib.pyplot as plt
+import os
+import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.linear_model import LinearRegression
+import matplotlib
+matplotlib.use('Agg')
+from collections import defaultdict
 
+def kmeans_clustering(alunos_data):
+    notas = np.array([nota for _, _, nota, _, _ in alunos_data if isinstance(nota, (int, float))]).reshape(-1, 1)
+    
     if notas.size == 0:
         return None, None, None
 
-    num_clusters = 3 
-    kmeans = KMeans(n_clusters=num_clusters, random_state=0)
-
+    num_clusters = min(3, len(set(notas.flatten())))  
+    kmeans = KMeans(n_clusters=num_clusters, random_state=0, n_init=10)
+    
     labels = kmeans.fit_predict(notas)
     centroids = kmeans.cluster_centers_
 
     return notas, labels, centroids
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
-    plt.figure(figsize=(14, 10))
+    print(alunos_data)
+    plt.figure(figsize=(16, 12))
 
-    topicos = sorted(set(aluno[3] for aluno in alunos_data))
+    topicos = sorted(set(aluno[4] for aluno in alunos_data if len(aluno) > 4))
+    if not topicos:
+        print("Erro: Nenhum tópico encontrado em alunos_data.")
+        return None
+
     topico_indices = {topico: i for i, topico in enumerate(topicos)}
-
+    
     unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
     colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))
     aluno_colors = {nome: colors[i] for i, nome in enumerate(unique_alunos)}
@@ -37,9 +51,12 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     notas_por_aluno = defaultdict(list)
 
     for aluno in alunos_data:
+        if len(aluno) < 4:
+            continue 
+
         nome = aluno[1]
         nota = aluno[2]
-        topico = aluno[3]
+        topico = aluno[4]
         notas_por_aluno[nome].append((nota, topico))
 
     for aluno, notas in notas_por_aluno.items():
@@ -48,10 +65,14 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
             x_pos = nota + np.random.uniform(-jitter_strength_x, jitter_strength_x)
             y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
             plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
-    
+
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
-    plt.legend(title="Alunos", loc="upper right",bbox_to_anchor=(2, 2))
+    plt.legend(title="Alunos", loc="upper right", bbox_to_anchor=(1.10, 1))
+
+    if centroids is not None:
+        for centroid in centroids:
+            plt.scatter(centroid, -0.5, color='red', marker='X', s=150, edgecolor='k')
 
     plt.title('Notas dos Alunos por Aulas')
     plt.xlabel('Notas')
@@ -145,8 +166,6 @@ def prever_notas(alunos_data):
         progresso = []
         notas = []
         aulas = []
-
-        # Extrai os dados de progresso, nota e aula
         historico = dados.get('historico', [])
         
         for entrada in historico:
@@ -154,8 +173,6 @@ def prever_notas(alunos_data):
                 progresso.append(entrada['progresso'])
                 notas.append(entrada['nota'])
                 aulas.append(entrada['aula'])
-
-        # Confere se há dados suficientes para treinar o modelo
         if len(progresso) >= 2 and len(set(progresso)) > 1:
             # Predição da nota
             X_nota = np.array(progresso).reshape(-1, 1)
@@ -195,7 +212,7 @@ def generate_performance_by_topic_plot(alunos_data):
     for aluno in alunos_data:
         nome = aluno[1]
         nota = aluno[2]
-        topico = aluno[3]
+        topico = aluno[4]
 
         try:
             nota = float(nota)
