@@ -67,7 +67,7 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.xlabel('Notas')
     plt.ylabel('Aulas')
     plt.yticks(range(len(topicos)), topicos)
-    plt.grid(True, linestyle='--', linewidth=0.5)
+    plt.grid(True, linestyle='--', linewidth=1)
 
     plot_path = 'static/images/cluster_plot.png'
     plt.savefig(plot_path)
