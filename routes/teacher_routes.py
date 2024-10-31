@@ -13,14 +13,13 @@ from utils import (
     prever_notas,generate_performance_by_topic_plot
 )
 from sklearn.cluster import KMeans
-import numpy as np
 import sqlite3
 from collections import defaultdict
 
 teacher_bp = Blueprint('teacher', __name__)
 
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+UPLOAD_FOLDER = "mysite/static/uploads"
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -37,11 +36,11 @@ def dashboard_professor():
 
         alunos_data = get_student_scores()
         alunos_dict = {}
-        
+
         for aluno_id, nome, nota, titulo, concluida in alunos_data:
             if nome not in alunos_dict:
-                alunos_dict[nome] = {'total_notas': 0, 'num_notas': 0}  
-            if nota is not None: 
+                alunos_dict[nome] = {'total_notas': 0, 'num_notas': 0}
+            if nota is not None:
                 alunos_dict[nome]['total_notas'] += nota
                 alunos_dict[nome]['num_notas'] += 1
             else:
@@ -83,9 +82,9 @@ def criarAula():
             print("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criarAula'))
 
-        conteudo_nome = None  
+        conteudo_nome = None
         conteudo_file = request.files.get('file')
-        
+
         if conteudo_file and allowed_file(conteudo_file.filename):
             try:
                 filename = secure_filename(conteudo_file.filename)
@@ -95,13 +94,13 @@ def criarAula():
             except Exception as e:
                 print('Erro ao salvar o arquivo: {}'.format(e), 'error')
                 return redirect(url_for('teacher.criarAula'))
-        
+
         if conteudo_nome is None and not request.form.get("conteudo"):
             print("Você deve enviar um arquivo ou fornecer o conteúdo da aula.", "error")
             return redirect(url_for('teacher.criarAula'))
 
         conteudo = request.form.get("conteudo") if conteudo_nome is None else conteudo_nome
-        
+
         try:
             criar_aula(user_id, titulo, descricao, conteudo, perguntas, topico, conteudo_nome)
             print("Aula criada com sucesso!", "success")
@@ -115,7 +114,7 @@ def criarAula():
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
         user_id = session.get('user')
-        
+
         feedbacks = {}
         progresso_por_aluno = {}
         total_alunos = set()
@@ -125,7 +124,7 @@ def ver_feedbacks():
         plot_url = None
         previsoes = {}
         print("Start processing feedbacks")
-        
+
         try:
             aulas = get_aulas_by_professor(user_id)
             print(f"Aulas encontradas: {aulas}")
@@ -137,18 +136,18 @@ def ver_feedbacks():
                 aula_id = aula[0]
                 titulo_aula = aula[2]
                 print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
-                
+
                 respostas = get_respostas_by_aula(aula_id)
                 print(f"Respostas para aula {aula_id} ({titulo_aula}): {respostas}")
-                
+
                 if respostas is None:
                     print(f"Erro ao buscar respostas para a aula {titulo_aula}.")
-                    continue   
-                
+                    continue
+
                 feedbacks[titulo_aula] = respostas if respostas else []
                 progresso = get_progresso_by_aula(aula_id)
                 print(f"Progresso para aula {aula_id}: {progresso}")
-                
+
                 if progresso is None:
                     print(f"Erro ao buscar progresso para a aula {titulo_aula}.")
                     continue
@@ -159,10 +158,9 @@ def ver_feedbacks():
                     progresso_por_aluno[nome] = aluno['concluida']
                 for resposta in respostas:
                     aluno_id = resposta['user_id']
-                    nota = resposta['nota'] if 'nota' in resposta else 0 
-                    topico = resposta['topico'] if 'topico' in resposta else "Robótica"  
+                    nota = resposta['nota'] if 'nota' in resposta else 0
+                    topico = resposta['topico'] if 'topico' in resposta else "Robótica"
 
-                    # Verifique se nota é numérica
                     if isinstance(nota, (int, float)):
                         notas_por_aula[aula_id].append(nota)
                         if topico:
@@ -188,12 +186,12 @@ def ver_feedbacks():
             progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
 
             if len(notas) > 0:
-                kmeans = KMeans(n_clusters=3)  
+                kmeans = KMeans(n_clusters=3)
                 X = np.column_stack((notas, progresso))
                 kmeans.fit(X)
                 labels = kmeans.labels_
 
-                grupos_alunos = {i: [] for i in range(3)} 
+                grupos_alunos = {i: [] for i in range(3)}
 
                 for i, aluno in enumerate(alunos_data.keys()):
                     grupos_alunos[labels[i]].append(aluno)
@@ -221,7 +219,7 @@ def ver_feedbacks():
                 medias_por_aula=medias_por_aula,
                 medias_por_topico=medias_por_topico,
                 total_alunos=len(total_alunos),
-                grupos=grupos_alunos 
+                grupos=grupos_alunos
             )
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
@@ -234,7 +232,7 @@ def ver_feedbacks():
                 medias_por_aula={},
                 medias_por_topico={},
                 total_alunos=len(total_alunos),
-                grupos={} 
+                grupos={}
             )
     return redirect(url_for('auth.login'))
 
@@ -251,7 +249,7 @@ def classificar_aluno(notas):
 def avaliar_alunos():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
-    
+
     try:
         alunos = get_alunos()
         return render_template('avaliar_alunos.html', alunos=alunos)
@@ -322,10 +320,10 @@ def analisar_desempenho():
         plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
         student_performance_plot_url = generate_student_performance_plot(alunos_data)
 
-        return render_template('analisar_desempenho.html', 
-                               plot_url=plot_url, 
-                               student_performance_plot_url=student_performance_plot_url, 
-                               performance_by_topic_plot_url=performance_by_topic_plot_url, 
+        return render_template('analisar_desempenho.html',
+                               plot_url=plot_url,
+                               student_performance_plot_url=student_performance_plot_url,
+                               performance_by_topic_plot_url=performance_by_topic_plot_url,
                                alunos_data=alunos_data)
 
     except Exception as e:
