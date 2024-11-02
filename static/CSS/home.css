@@ -2,43 +2,155 @@
 body, html {
     height: 100%;
     margin: 0;
+    font-family: 'Roboto', sans-serif;
+    color: #343a40;
 }
+
+
 .sidebar {
     height: 100%;
-    width: 200px;
+    width: 220px;
     position: fixed;
-    background-color: #2d2d2d;
+    background-color: #9308d8;
     padding-top: 20px;
     overflow-y: auto;
 }
+
 .sidebar a {
     padding: 15px 20px;
-    text-align: left;
     font-size: 18px;
-    color: white;
+    color: #ffffff;
     display: block;
+    text-decoration: none;
 }
+
 .sidebar a:hover {
-    background-color: #575757;
-    color: #520085;
+    background-color: #3d3d3d;
+    color: #00ffcc;
 }
+
+
 .content {
-    margin-left: 220px;
-    background-color: #f4f4f4;
+    margin-left: 240px;
+    padding: 30px;
+    background-color: #f8f9fa;
     min-height: 100vh;
-    padding: 20px;
 }
-.logo-container {
-    text-align: center;
+
+.navbar {
+    background-color: #7b01a3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 .navbar-brand {
-    font-size: 3rem;
-    color: #8000ff;
+    font-size: 2.5rem;
+    color: #ffffff;
 }
+
 h1, h2, p {
-    color: #343a40;
+    font-weight: 500;
 }
+
+h1, h2 {
+    color: #7b01a3; 
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+p {
+    color: #343a40; 
+}
+
+.card {
+    background-color: #1a1a3d;
+    border-radius: 8px;
+    overflow: hidden;
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s;
+    margin: 15px 0;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+    border-bottom: 3px solid #7b01a3;
+}
+
+.card-title {
+    font-size: 1.3em;
+    color: #7b01a3; 
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.card-text {
+    color: #cccccc;
+    margin-bottom: 15px;
+}
+
+.btn-c2w {
+    color: #ffffff;
+    background-color: #7b01a3;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-c2w:hover {
+    background-color: #6a0095;
+}
+
+.btn-login {
+    color: #ffffff;
+    background-color: #7b01a3;
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 10px 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #6a0095;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: #00aaff;
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.carousel .carousel-item {
+    height: 300px;
+}
+
+.carousel-item img {
+    max-height: 300px;
+    object-fit: cover;
+}
+
 .footer {
-    background-color: #343a40;
-    color: white;
+    background-color: #1a1a3d;
+    color: #cccccc;
+    padding: 15px 0;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.footer a {
+    color: #00ffcc;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer a:hover {
+    text-decoration: underline;
 }
