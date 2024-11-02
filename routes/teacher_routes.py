@@ -210,6 +210,9 @@ def ver_feedbacks():
                     plot_url = generate_performance_plot(alunos_data, previsoes)
                     print("URL do gráfico:", plot_url)
 
+            # Gerar feedback textual com base nos dados analisados
+            feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno)
+
             return render_template(
                 'feedbacks_professor.html',
                 feedbacks=feedbacks,
@@ -219,7 +222,8 @@ def ver_feedbacks():
                 medias_por_aula=medias_por_aula,
                 medias_por_topico=medias_por_topico,
                 total_alunos=len(total_alunos),
-                grupos=grupos_alunos
+                grupos=grupos_alunos,
+                feedback_texto=feedback_texto  # Passar o feedback textual ao template
             )
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
@@ -235,7 +239,6 @@ def ver_feedbacks():
                 grupos={}
             )
     return redirect(url_for('auth.login'))
-
 def classificar_aluno(notas):
     media_nota = np.mean(notas) if notas else 0
     if media_nota < 5:
@@ -244,7 +247,29 @@ def classificar_aluno(notas):
         return "Notas Médias"
     else:
         return "Altas Notas"
+def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno):
+    feedback_texto = []
 
+    # Descrição das médias por aula
+    for aula_id, media in medias_por_aula.items():
+        feedback_texto.append(f"A média geral de notas para a aula com ID {aula_id} é de {media:.2f}.")
+
+    # Descrição das médias por tópico
+    for topico, media in medias_por_topico.items():
+        feedback_texto.append(f"O tópico '{topico}' possui uma média de desempenho de {media:.2f} entre os alunos.")
+
+    # Descrição das previsões de desempenho dos alunos
+    for nome, dados in previsoes.items():
+        previsao = dados.get("previsao", "N/A")
+        classificacao = dados.get("classificacao", "N/A")
+        feedback_texto.append(f"O aluno '{nome}' está classificado como '{classificacao}' com previsão de nota {previsao:.2f}.")
+
+    # Progresso dos alunos em relação às aulas
+    for nome, progresso in progresso_por_aluno.items():
+        status_progresso = "concluída" if progresso else "pendente"
+        feedback_texto.append(f"O aluno '{nome}' tem o progresso da aula: {status_progresso}.")
+
+    return feedback_texto
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():
     if 'user' not in session or session['tipo'] != 'professor':
@@ -329,7 +354,5 @@ def analisar_desempenho():
     except Exception as e:
         print(f"Erro ao analisar desempenho: {e}", "error")
         return redirect(url_for('teacher.dashboard_professor'))
-
-
 
 
