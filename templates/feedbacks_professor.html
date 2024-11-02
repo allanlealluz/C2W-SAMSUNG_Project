@@ -36,7 +36,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">Gráfico de Progresso dos Alunos</h2>
-                    <img src="{{ plot_respostas_url }}" alt="Gráfico de Progresso dos Alunos" class="img-fluid">
+                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Progresso dos Alunos" class="img-fluid">
                 </div>
             </div>
         </section>
@@ -61,6 +61,14 @@
             </div>
             {% endfor %}
         </section>
+        <div>
+            <h2>Feedback dos Alunos</h2>
+            <ul>
+                {% for linha in feedback_texto %}
+                    <li>{{ linha }}</li>
+                {% endfor %}
+            </ul>
+        </div>
 
         <!-- Seção para a Média das Notas por Aula e Tópico -->
         <section class="mt-4">

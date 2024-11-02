@@ -15,11 +15,12 @@ from utils import (
 from sklearn.cluster import KMeans
 import sqlite3
 from collections import defaultdict
+import os
 
 teacher_bp = Blueprint('teacher', __name__)
 
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
-UPLOAD_FOLDER = "mysite/static/uploads"
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -166,7 +167,6 @@ def ver_feedbacks():
                         if topico:
                             notas_por_topico[topico].append(nota)
 
-
             medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0
                                for aula_id, notas in notas_por_aula.items()}
             medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0
@@ -239,6 +239,7 @@ def ver_feedbacks():
                 grupos={}
             )
     return redirect(url_for('auth.login'))
+
 def classificar_aluno(notas):
     media_nota = np.mean(notas) if notas else 0
     if media_nota < 5:
