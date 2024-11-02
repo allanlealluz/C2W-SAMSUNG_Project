@@ -1,0 +1,32 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f7f7;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; 
+}
+.navbar {
+    background-color: #7b01a3;
+}
+.navbar-brand, .nav-link {
+    color: #fff !important;
+}
+.nav-link:hover {
+    color: #e0e0ff !important;
+}
+.text-center img {
+    max-width: 100%;
+    height: auto; 
+}
+.btn-primary {
+    background-color: #7b01a3;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #9c01cf;
+}
+footer {
+    margin-top: auto;
+    text-align: center;
+    color: #777;
+}
