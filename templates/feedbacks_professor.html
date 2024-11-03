@@ -117,6 +117,7 @@
                             {% for aluno, dados in previsoes.items() %}
                                 <li class="list-group-item">
                                     <strong>{{ aluno }}</strong>: Nota Prevista: {{ dados['nota_prevista'] }}, 
+                                    {{aluno["nota_prevista"]}}
                                     Classificação: {{ dados['classificacao'] }}
                                 </li>
                             {% endfor %}

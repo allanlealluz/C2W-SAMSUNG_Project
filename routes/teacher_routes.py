@@ -139,6 +139,7 @@ def ver_feedbacks():
             for aula in aulas:
                 aula_id = aula[0]
                 titulo_aula = aula[2]
+                topico = aula[5]
                 print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
 
                 respostas = get_respostas_by_aula(aula_id)
@@ -164,7 +165,7 @@ def ver_feedbacks():
                     aluno_id = resposta['user_id']
                     nota = resposta['nota']
                     print("Nota:", nota)
-                    topico = "Robotica"
+    
                     if isinstance(nota, (int, float)):
                         notas_por_aula[aula_id].append(nota)
                         if topico:
@@ -185,13 +186,17 @@ def ver_feedbacks():
                     alunos_data[nome] = {'historico': [], 'id': aluno_id}
                 alunos_data[nome]['historico'].append({
                     'nota': nota,
+                    'progresso': progresso,
                     'aula': aula
                 })
 
             notas = np.array([entry['nota'] for aluno in alunos_data.values() for entry in aluno['historico']])
+            progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
             print(f"Notas antes do cálculo: {notas}")
+            print(f"Progresso antes do cálculo: {progresso}")
 
-            if len(notas) > 0:
+            # Certifique-se de que as dimensões dos arrays são compatíveis
+            if len(notas) == len(progresso) and len(notas) > 0:
                 kmeans = KMeans(n_clusters=3)
                 X = np.column_stack((notas, progresso))
                 kmeans.fit(X)
@@ -215,6 +220,9 @@ def ver_feedbacks():
 
                 if alunos_data:
                     plot_url = generate_performance_plot(alunos_data, previsoes)
+            else:
+                print("Erro: As dimensões dos arrays 'notas' e 'progresso' não correspondem ou estão vazias.")
+            
             feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno)
             print("Feedback textual: ", feedback_texto)
             return render_template(
