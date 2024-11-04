@@ -6,7 +6,7 @@ body {
     color: #333;
 }
 .navbar {
-    background-color: #7b01a3;
+    background-color: #8500b1;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 .container {
@@ -29,7 +29,7 @@ h2 {
     color: #555;
     font-size: 1.8rem;
     margin-top: 40px;
-    border-bottom: 2px solid #7b01a3;
+    border-bottom: 2px solid #9f03d3;
     padding-bottom: 10px;
 }
 
@@ -54,7 +54,7 @@ th, td {
 }
 
 th {
-    background-color: #7b01a3;
+    background-color: #9d02d1;
     color: white;
     font-size: 1.2rem;
     text-transform: uppercase;
@@ -65,11 +65,11 @@ td {
 }
 
 tr:hover {
-    background-color: #f1f1f1;
+    background-color: #ffffff;
 }
 
 thead th {
-    border-bottom: 2px solid #7b01a3;
+    border-bottom: 2px solid #a800e1;
 }
 
 img {

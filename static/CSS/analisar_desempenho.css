@@ -12,14 +12,14 @@ body {
     color: #fff !important;
 }
 .nav-link:hover {
-    color: #e0e0ff !important;
+    color: #ffffff !important;
 }
 .text-center img {
     max-width: 100%;
     height: auto; 
 }
 .btn-primary {
-    background-color: #7b01a3;
+    background-color: #9700ca;
     border: none;
 }
 .btn-primary:hover {

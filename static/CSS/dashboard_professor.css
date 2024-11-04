@@ -18,7 +18,7 @@ body {
     font-size: 1.8rem;
 }
 .navbar-nav .nav-link {
-    color: #f1f1f1 !important;
+    color: #ffffff !important;
     transition: color 0.3s;
     font-size: 1.1rem;
 }
@@ -46,7 +46,7 @@ h2 {
     margin-bottom: 40px;
 }
 .btn-custom {
-    background-color: #7b01a3;
+    background-color: #a501db;
     color: #fff;
     border: none;
     transition: background-color 0.3s, transform 0.2s;

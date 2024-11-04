@@ -47,7 +47,6 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         topico = aluno[4]
         notas_por_aluno[nome].append((nota, topico))
 
-    # Plotar notas de cada aluno
     for aluno, notas in notas_por_aluno.items():
         for nota, topico in notas:
             y_pos = topico_indices[topico]
@@ -67,7 +66,7 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.xlim(0, 11)
     plt.grid(True, linestyle='--', linewidth=0.5)
 
-    plot_path = 'mysite/static/images/cluster_plot.png'
+    plot_path = 'static/images/cluster_plot.png'
     plt.savefig(plot_path)
     plt.close()
 
@@ -107,7 +106,7 @@ def generate_student_performance_plot(alunos_data):
     for index, value in enumerate(alunos_notas_sorted):
         ax.text(value, index, f"{value:.2f}")
 
-    student_performance_plot_path = 'mysite/static/images/Performance.png'
+    student_performance_plot_path = 'static/images/Performance.png'
     plt.savefig(student_performance_plot_path)
     plt.close()
 
@@ -140,7 +139,7 @@ def generate_performance_plot(alunos_data, previsoes):
     plt.legend()
     plt.grid()
 
-    plot_url = 'mysite/static/images/performance_plot.png'
+    plot_url = 'static/images/performance_plot.png'
     plt.savefig(plot_url)
     plt.close()
 
@@ -222,7 +221,7 @@ def generate_performance_by_topic_plot(alunos_data):
     for index, value in enumerate(medias):
         ax.text(value, index, f"{value:.2f}")
 
-    plot_path = 'mysite/static/images/performance_by_topic_plot.png'
+    plot_path = 'static/images/performance_by_topic_plot.png'
     plt.savefig(plot_path)
     plt.close()
 
