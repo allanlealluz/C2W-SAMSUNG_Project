@@ -11,7 +11,7 @@
 </head>
 <body>
    
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg">
         <a class="navbar-brand" href="#">C2W</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -31,7 +31,6 @@
     <main class="container mt-5">
         <h1 class="mb-4 text-center">Feedback dos Alunos</h1>
 
-        <!-- Seção para o Gráfico de Progresso -->
         <section>
             <div class="card mb-4 shadow-sm">
                 <div class="card-body">
@@ -41,18 +40,17 @@
             </div>
         </section>
 
-        <!-- Seção para os Feedbacks por Aula -->
         <section>
             <h3>Feedback por Aula</h3>
             {% if feedbacks %}
                 {% for aula, respostas in feedbacks.items() %}
                 <div class="card mb-3 shadow-sm">
-                    <div class="card-header bg-primary text-white">{{ aula }}</div>
+                    <div class="card-header bg-dark text-white">{{ aula }}</div>
                     <div class="card-body">
                         {% if respostas %}
                             <ul class="list-unstyled">
                                 {% for resposta in respostas %}
-                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['texto'] }}</li>
+                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['resposta'] }}</li>
                                 {% endfor %}
                             </ul>
                         {% else %}
@@ -66,9 +64,10 @@
             {% endif %}
         </section>
 
-        <!-- Seção para Médias das Notas -->
         <section class="mt-4">
-            <h3>Médias das Notas</h3>
+            <div class="container-fluid c2wColor">
+                 <h3>Médias das Notas</h3>
+            </div>
             <div class="row">
                 <div class="col-md-6">
                     <h4>Por Aula</h4>
@@ -97,7 +96,6 @@
             </div>
         </section>
 
-        <!-- Seção para Previsões de Desempenho -->
         <section class="mt-4">
             <h3>Previsões de Desempenho</h3>
             <div class="card shadow-sm">

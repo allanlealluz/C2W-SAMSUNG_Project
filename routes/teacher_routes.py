@@ -194,8 +194,6 @@ def ver_feedbacks():
             progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
             print(f"Notas antes do cálculo: {notas}")
             print(f"Progresso antes do cálculo: {progresso}")
-
-            # Certifique-se de que as dimensões dos arrays são compatíveis
             if len(notas) == len(progresso) and len(notas) > 0:
                 kmeans = KMeans(n_clusters=3)
                 X = np.column_stack((notas, progresso))
@@ -206,16 +204,11 @@ def ver_feedbacks():
 
                 for i, aluno in enumerate(alunos_data.keys()):
                     grupos_alunos[labels[i]].append(aluno)
-
-                print("Grupos de alunos:", grupos_alunos)
-
                 previsoes = prever_notas(alunos_data)
-                print("Previsões:", previsoes)
 
                 for nome, dados in previsoes.items():
                     notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico']]
                     classificacao = classificar_aluno(notas_historico)
-                    print("Classificação ", classificacao)
                     previsoes[nome]['classificacao'] = classificacao
 
                 if alunos_data:

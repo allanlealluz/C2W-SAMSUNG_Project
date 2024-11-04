@@ -97,3 +97,13 @@ img {
 .navbar {
     color:#7b01a3;
 }
+.nav-link{
+    color:#fff !important;
+}
+.navbar-brand{
+    color:#fff;
+}
+.c2wColor{
+    color:#fff;
+    background-color:#7b01a3;
+}
