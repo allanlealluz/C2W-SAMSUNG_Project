@@ -11,20 +11,20 @@ body {
 }
 h2 {
     font-weight: bold;
-    color: #4a90e2;
+    color: #6a0dad;
 }
 .form-group label {
     font-weight: 600;
 }
 .btn-primary {
-    background-color: #4a90e2;
+    background-color: #6a0dad;
     border: none;
 }
 .btn-primary:hover {
-    background-color: #357abd;
+    background-color: #6a0dad;
 }
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: #6a0dad;
     border: none;
 }
 .btn-secondary:hover {

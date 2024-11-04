@@ -15,11 +15,12 @@ from utils import (
 from sklearn.cluster import KMeans
 import sqlite3
 from collections import defaultdict
+import os
 
 teacher_bp = Blueprint('teacher', __name__)
 
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
-UPLOAD_FOLDER = "mysite/static/uploads"
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -123,6 +124,9 @@ def ver_feedbacks():
         alunos_scores = get_student_scores()
         plot_url = None
         previsoes = {}
+        medias_por_aula = {}
+        medias_por_topico = {}
+        feedback_texto = ['']
         print("Start processing feedbacks")
 
         try:
@@ -135,6 +139,7 @@ def ver_feedbacks():
             for aula in aulas:
                 aula_id = aula[0]
                 titulo_aula = aula[2]
+                topico = aula[5]
                 print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
 
                 respostas = get_respostas_by_aula(aula_id)
@@ -158,19 +163,22 @@ def ver_feedbacks():
                     progresso_por_aluno[nome] = aluno['concluida']
                 for resposta in respostas:
                     aluno_id = resposta['user_id']
-                    nota = resposta['nota'] if 'nota' in resposta else 0
-                    topico = resposta['topico'] if 'topico' in resposta else "Robótica"
-
+                    nota = resposta['nota']
+                    print("Nota:", nota)
+    
                     if isinstance(nota, (int, float)):
                         notas_por_aula[aula_id].append(nota)
                         if topico:
                             notas_por_topico[topico].append(nota)
+            
+            print("Notas por aula:", notas_por_aula)
+            print("Notas por tópico:", notas_por_topico)
 
-
-            medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0
-                               for aula_id, notas in notas_por_aula.items()}
-            medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0
-                                 for topico, notas in notas_por_topico.items()}
+            medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
+            medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0 for topico, notas in notas_por_topico.items()}
+            
+            print("Médias por aula: ", medias_por_aula)
+            print("Médias por tópico: ", medias_por_topico)
 
             alunos_data = {}
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
@@ -184,8 +192,11 @@ def ver_feedbacks():
 
             notas = np.array([entry['nota'] for aluno in alunos_data.values() for entry in aluno['historico']])
             progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
+            print(f"Notas antes do cálculo: {notas}")
+            print(f"Progresso antes do cálculo: {progresso}")
 
-            if len(notas) > 0:
+            # Certifique-se de que as dimensões dos arrays são compatíveis
+            if len(notas) == len(progresso) and len(notas) > 0:
                 kmeans = KMeans(n_clusters=3)
                 X = np.column_stack((notas, progresso))
                 kmeans.fit(X)
@@ -204,22 +215,25 @@ def ver_feedbacks():
                 for nome, dados in previsoes.items():
                     notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico']]
                     classificacao = classificar_aluno(notas_historico)
+                    print("Classificação ", classificacao)
                     previsoes[nome]['classificacao'] = classificacao
 
                 if alunos_data:
                     plot_url = generate_performance_plot(alunos_data, previsoes)
-                    print("URL do gráfico:", plot_url)
-
+            else:
+                print("Erro: As dimensões dos arrays 'notas' e 'progresso' não correspondem ou estão vazias.")
+            
+            feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno)
+            print("Feedback textual: ", feedback_texto)
             return render_template(
                 'feedbacks_professor.html',
                 feedbacks=feedbacks,
                 plot_respostas_url=plot_url,
                 previsoes=previsoes,
-                progresso=progresso_por_aluno,
-                medias_por_aula=medias_por_aula,
-                medias_por_topico=medias_por_topico,
                 total_alunos=len(total_alunos),
-                grupos=grupos_alunos
+                feedback_texto=feedback_texto,
+                medias_por_aula=medias_por_aula,
+                medias_por_topico=medias_por_topico
             )
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
@@ -228,11 +242,10 @@ def ver_feedbacks():
                 feedbacks=feedbacks,
                 plot_respostas_url=plot_url,
                 previsoes=previsoes,
-                progresso=progresso_por_aluno,
-                medias_por_aula={},
-                medias_por_topico={},
                 total_alunos=len(total_alunos),
-                grupos={}
+                feedback_texto=feedback_texto,
+                medias_por_aula=medias_por_aula,
+                medias_por_topico=medias_por_topico
             )
     return redirect(url_for('auth.login'))
 
@@ -244,7 +257,32 @@ def classificar_aluno(notas):
         return "Notas Médias"
     else:
         return "Altas Notas"
+def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno):
+    feedback = []
 
+    try:
+        if medias_por_aula:
+            feedback.append("Médias por Aula:")
+            for aula, media in medias_por_aula.items():
+                feedback.append(f"Aula {aula}: Média {media:.2f}")
+        if medias_por_topico:
+            feedback.append("\nMédias por Tópico:")
+            for topico, media in medias_por_topico.items():
+                feedback.append(f"Tópico {topico}: Média {media:.2f}")
+        if previsoes:
+            feedback.append("\nPrevisões:")
+            for aluno, dados in previsoes.items():
+                feedback.append(f"Aluno {aluno}: Previsão {dados.get('previsao', 'N/A')}")
+        if progresso_por_aluno:
+            feedback.append("\nProgresso por Aluno:")
+            for aluno, progresso in progresso_por_aluno.items():
+                feedback.append(f"Aluno {aluno}: Progresso {progresso}")
+
+        return feedback
+
+    except Exception as e:
+        print(f"Erro ao gerar feedback textual: {e}")
+        return ["Erro ao gerar feedback textual."]
 @teacher_bp.route('/dashboard_professor/avaliar_alunos', methods=["GET"])
 def avaliar_alunos():
     if 'user' not in session or session['tipo'] != 'professor':
@@ -329,7 +367,5 @@ def analisar_desempenho():
     except Exception as e:
         print(f"Erro ao analisar desempenho: {e}", "error")
         return redirect(url_for('teacher.dashboard_professor'))
-
-
 
 

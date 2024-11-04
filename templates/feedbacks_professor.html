@@ -18,45 +18,122 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="/">Início</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/Criar_Aula">Criar Aula</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar alunos</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Sair</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="/">Início</a></li>
+                <li class="nav-item"><a class="nav-link" href="/Criar_Aula">Criar Aula</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar Alunos</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a></li>
+                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a></li>
+                <li class="nav-item"><a class="nav-link" href="/logout">Sair</a></li>
             </ul>
         </div>
     </nav>
 
     <main class="container mt-5">
-        <h1>Feedback Alunos</h1>
+        <h1>Feedback dos Alunos</h1>
+    
+        <!-- Seção para o Gráfico de Progresso -->
         <section>
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">Gráfico de Progresso dos Alunos</h2>
-                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" 
-                         alt="Gráfico de Progresso dos Alunos" 
-                         class="img-fluid">
+                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Progresso dos Alunos" class="img-fluid">
+                </div>
+            </div>
+        </section>
+    
+        <!-- Seção para os Feedbacks por Aula -->
+        <section>
+            <h2>Feedback por Aula</h2>
+            {% if feedbacks %}
+                {% for aula, respostas in feedbacks.items() %}
+                <div class="card mb-3">
+                    <div class="card-header">{{ aula }}</div>
+                    <div class="card-body">
+                        {% if respostas %}
+                            <ul>
+                                {% for resposta in respostas %}
+                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['feedback'] }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Sem feedback disponível.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Nenhum feedback disponível.</p>
+            {% endif %}
+        </section>
+        <div>
+            <h2>Feedback dos Alunos</h2>
+            {% if feedback_texto %}
+                <ul>
+                    {% for linha in feedback_texto %}
+                        <li>{{ linha }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Nenhum feedback disponível.</p>
+            {% endif %}
+        </div>
+    
+        <section class="mt-4">
+            <h2>Médias das Notas</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>Por Aula</h3>
+                    <ul class="list-group">
+                        {% if medias_por_aula %}
+                            {% for aula, media in medias_por_aula.items() %}
+                                <li class="list-group-item"><strong>{{ aula }}:</strong> {{ media | round(2) }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <p>Nenhuma média disponível.</p>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h3>Por Tópico</h3>
+                    <ul class="list-group">
+                        {% if medias_por_topico %}
+                            {% for topico, media in medias_por_topico.items() %}
+                                <li class="list-group-item"><strong>{{ topico }}:</strong> {{ media | round(2) }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <p>Nenhuma média disponível.</p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+    
+        <section class="mt-4">
+            <h2>Previsões de Desempenho</h2>
+            <div class="card">
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if previsoes %}
+                            {% for aluno, dados in previsoes.items() %}
+                                <li class="list-group-item">
+                                    <strong>{{ aluno }}</strong>: Nota Prevista: {{ dados['nota_prevista'] }}, 
+                                    {{aluno["nota_prevista"]}}
+                                    Classificação: {{ dados['classificacao'] }}
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                            <p>Nenhuma previsão disponível.</p>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </section>
     </main>
-
-    <footer>
+    
+    <footer class="mt-5">
         <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
     </footer>
+    
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>

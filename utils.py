@@ -47,7 +47,6 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         topico = aluno[4]
         notas_por_aluno[nome].append((nota, topico))
 
-    # Plotar notas de cada aluno
     for aluno, notas in notas_por_aluno.items():
         for nota, topico in notas:
             y_pos = topico_indices[topico]
