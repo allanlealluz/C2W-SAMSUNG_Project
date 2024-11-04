@@ -270,9 +270,11 @@ def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progre
             for topico, media in medias_por_topico.items():
                 feedback.append(f"Tópico {topico}: Média {media:.2f}")
         if previsoes:
+            print(previsoes)
             feedback.append("\nPrevisões:")
             for aluno, dados in previsoes.items():
-                feedback.append(f"Aluno {aluno}: Previsão {dados.get('previsao', 'N/A')}")
+                nota_arredondada = round(dados.get('proxima_nota', 0), 2)
+                feedback.append(f"Aluno {aluno}: Previsão {nota_arredondada}")
         if progresso_por_aluno:
             feedback.append("\nProgresso por Aluno:")
             for aluno, progresso in progresso_por_aluno.items():

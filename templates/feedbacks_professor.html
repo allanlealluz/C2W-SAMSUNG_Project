@@ -29,30 +29,30 @@
     </nav>
 
     <main class="container mt-5">
-        <h1>Feedback dos Alunos</h1>
-    
+        <h1 class="mb-4 text-center">Feedback dos Alunos</h1>
+
         <!-- Seção para o Gráfico de Progresso -->
         <section>
-            <div class="card mb-4">
+            <div class="card mb-4 shadow-sm">
                 <div class="card-body">
-                    <h2 class="card-title">Gráfico de Progresso dos Alunos</h2>
+                    <h3 class="card-title">Gráfico de Progresso dos Alunos</h3>
                     <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Progresso dos Alunos" class="img-fluid">
                 </div>
             </div>
         </section>
-    
+
         <!-- Seção para os Feedbacks por Aula -->
         <section>
-            <h2>Feedback por Aula</h2>
+            <h3>Feedback por Aula</h3>
             {% if feedbacks %}
                 {% for aula, respostas in feedbacks.items() %}
-                <div class="card mb-3">
-                    <div class="card-header">{{ aula }}</div>
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-primary text-white">{{ aula }}</div>
                     <div class="card-body">
                         {% if respostas %}
-                            <ul>
+                            <ul class="list-unstyled">
                                 {% for resposta in respostas %}
-                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['feedback'] }}</li>
+                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['texto'] }}</li>
                                 {% endfor %}
                             </ul>
                         {% else %}
@@ -65,24 +65,13 @@
                 <p>Nenhum feedback disponível.</p>
             {% endif %}
         </section>
-        <div>
-            <h2>Feedback dos Alunos</h2>
-            {% if feedback_texto %}
-                <ul>
-                    {% for linha in feedback_texto %}
-                        <li>{{ linha }}</li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Nenhum feedback disponível.</p>
-            {% endif %}
-        </div>
-    
+
+        <!-- Seção para Médias das Notas -->
         <section class="mt-4">
-            <h2>Médias das Notas</h2>
+            <h3>Médias das Notas</h3>
             <div class="row">
                 <div class="col-md-6">
-                    <h3>Por Aula</h3>
+                    <h4>Por Aula</h4>
                     <ul class="list-group">
                         {% if medias_por_aula %}
                             {% for aula, media in medias_por_aula.items() %}
@@ -94,7 +83,7 @@
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h3>Por Tópico</h3>
+                    <h4>Por Tópico</h4>
                     <ul class="list-group">
                         {% if medias_por_topico %}
                             {% for topico, media in medias_por_topico.items() %}
@@ -107,18 +96,19 @@
                 </div>
             </div>
         </section>
-    
+
+        <!-- Seção para Previsões de Desempenho -->
         <section class="mt-4">
-            <h2>Previsões de Desempenho</h2>
-            <div class="card">
+            <h3>Previsões de Desempenho</h3>
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <ul class="list-group">
+                    <ul class="list-group list-group-flush">
                         {% if previsoes %}
                             {% for aluno, dados in previsoes.items() %}
-                                <li class="list-group-item">
-                                    <strong>{{ aluno }}</strong>: Nota Prevista: {{ dados['nota_prevista'] }}, 
-                                    {{aluno["nota_prevista"]}}
-                                    Classificação: {{ dados['classificacao'] }}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>{{ aluno }}</strong>
+                                    <span>Nota Prevista: <strong>{{ dados['proxima_nota'] | round(2) }}</strong></span>
+                                    <span>Classificação: {{ dados['classificacao'] }}</span>
                                 </li>
                             {% endfor %}
                         {% else %}
@@ -129,11 +119,10 @@
             </div>
         </section>
     </main>
-    
-    <footer class="mt-5">
+
+    <footer class="mt-5 text-center">
         <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
     </footer>
-    
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
