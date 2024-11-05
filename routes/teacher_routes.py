@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_aulas_by_professor,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_modulos_by_professor
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
