@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
-from models import get_db, find_user_by_id, get_aulas
+from models import get_db, find_user_by_id, get_aulas, inscrever_aluno_curso
 
 student_bp = Blueprint('student', __name__)
 
@@ -11,20 +11,29 @@ def dashboard_aluno():
 
     user_info = find_user_by_id(user_id)
 
+    if not user_info:  # Verificar se o usuário existe
+        return redirect(url_for('auth.login'))
+
     db = get_db()
-    cursos_programacao = db.execute('''
-        SELECT a.* FROM aulas a
-        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
-    ''', (user_id,)).fetchall()
+    try:
+        # Aulas de Programação (sem limite de 1)
+        cursos_programacao = db.execute('''
+            SELECT a.* FROM aulas a
+            LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
+            WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0)
+        ''', (user_id,)).fetchall()
 
-    cursos_robotica = db.execute('''
-        SELECT a.* FROM aulas a
-        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
-    ''', (user_id,)).fetchall()
+        # Aulas de Robótica (sem limite de 1)
+        cursos_robotica = db.execute('''
+            SELECT a.* FROM aulas a
+            LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
+            WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0)
+        ''', (user_id,)).fetchall()
+        return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)
 
-    return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)
+    except Exception as e:
+        print(e)
+        return render_template('dashboard_aluno.html', user=user_info)
 
 
 @student_bp.route('/ver_aula/<int:aula_id>', methods=["GET", "POST"])
@@ -75,8 +84,22 @@ def ver_aula(aula_id):
             flash(f"Erro ao enviar respostas: {str(e)}", "error")
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+@student_bp.route('/inscrever_curso/<int:curso_id>', methods=["POST"])
+def inscrever_curso(curso_id):
+    if 'user' not in session or session['tipo'] != 'aluno':
+        return redirect(url_for('auth.login'))
 
+    aluno_id = session['user']
+    resultado = inscrever_aluno_curso(aluno_id, curso_id)
 
+    if resultado == "sucesso":
+        flash("Inscrição realizada com sucesso!", "success")
+    elif resultado == "inscrito":
+        flash("Você já está inscrito neste curso.", "info")
+    else:
+        flash("Erro ao tentar inscrever-se no curso.", "error")
+
+    return redirect(url_for('student.cursos_disponiveis'))
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])
 def concluir_aula(aula_id):

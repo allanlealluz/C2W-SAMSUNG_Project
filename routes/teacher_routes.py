@@ -66,26 +66,29 @@ def dashboard_professor():
 
     return redirect(url_for('auth.login'))
 
-
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
 def criarAula():
+    # Verifica se o usuário está logado e é professor
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
+    # Caso o método seja POST, processa os dados enviados pelo formulário
     if request.method == "POST":
+        # Obtém os valores do formulário
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
-        topico = request.form.get("topico")
+        modulo_id = request.form.get("modulo_id")  # Identificador do módulo selecionado
         user_id = session.get('user')
         perguntas = request.form.getlist("perguntas[]")
 
-        if not titulo or not descricao or not topico:
+        # Verifica se todos os campos obrigatórios foram preenchidos
+        if not titulo or not descricao or not modulo_id:
             print("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criarAula'))
 
+        # Processa o conteúdo do arquivo ou texto fornecido
         conteudo_nome = None
         conteudo_file = request.files.get('file')
-
         if conteudo_file and allowed_file(conteudo_file.filename):
             try:
                 filename = secure_filename(conteudo_file.filename)
@@ -96,21 +99,26 @@ def criarAula():
                 print('Erro ao salvar o arquivo: {}'.format(e), 'error')
                 return redirect(url_for('teacher.criarAula'))
 
+        # Caso não tenha um arquivo, usa o conteúdo de texto
         if conteudo_nome is None and not request.form.get("conteudo"):
             print("Você deve enviar um arquivo ou fornecer o conteúdo da aula.", "error")
             return redirect(url_for('teacher.criarAula'))
 
         conteudo = request.form.get("conteudo") if conteudo_nome is None else conteudo_nome
 
+        # Tenta criar a aula e as perguntas relacionadas
         try:
-            criar_aula(user_id, titulo, descricao, conteudo, perguntas, topico, conteudo_nome)
+            # Atualiza a função para refletir o novo esquema de módulos
+            criar_aula(modulo_id, titulo, descricao, conteudo, perguntas, conteudo_nome)
             print("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
             print(f"Erro ao criar a aula: {e}", "error")
             return redirect(url_for('teacher.criarAula'))
 
-    return render_template("criarAula.html")
+    modulos = get_modulos_by_professor(session.get('user'))
+    return render_template("criarAula.html", modulos=modulos)
+
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
@@ -164,21 +172,14 @@ def ver_feedbacks():
                 for resposta in respostas:
                     aluno_id = resposta['user_id']
                     nota = resposta['nota']
-                    print("Nota:", nota)
     
                     if isinstance(nota, (int, float)):
                         notas_por_aula[aula_id].append(nota)
                         if topico:
                             notas_por_topico[topico].append(nota)
             
-            print("Notas por aula:", notas_por_aula)
-            print("Notas por tópico:", notas_por_topico)
-
             medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
             medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0 for topico, notas in notas_por_topico.items()}
-            
-            print("Médias por aula: ", medias_por_aula)
-            print("Médias por tópico: ", medias_por_topico)
 
             alunos_data = {}
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
@@ -192,8 +193,6 @@ def ver_feedbacks():
 
             notas = np.array([entry['nota'] for aluno in alunos_data.values() for entry in aluno['historico']])
             progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
-            print(f"Notas antes do cálculo: {notas}")
-            print(f"Progresso antes do cálculo: {progresso}")
             if len(notas) == len(progresso) and len(notas) > 0:
                 kmeans = KMeans(n_clusters=3)
                 X = np.column_stack((notas, progresso))
