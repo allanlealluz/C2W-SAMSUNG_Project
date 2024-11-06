@@ -177,13 +177,6 @@ def update_nota_resposta(resposta_id, nota):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar nota: {e}")
         print(f"Erro ao atualizar progresso: {e}")
-def create_course(nome, descricao, professor_id):
-    db = get_db()
-    try:
-        db.execute('INSERT INTO cursos (nome, descricao, professor_id) VALUES (?, ?, ?)', (nome, descricao, professor_id))
-        db.commit()
-    except sqlite3.Error as e:
-        print(f"Erro ao criar curso: {e}")
 
 def create_module(curso_id, titulo, descricao):
     db = get_db()
