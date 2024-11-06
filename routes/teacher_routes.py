@@ -66,26 +66,20 @@ def dashboard_professor():
 
     return redirect(url_for('auth.login'))
 
-@teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
+@teacher_bp.route('/criar_aula', methods=["GET", "POST"])
 def criarAula():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
-    # Caso o método seja POST, processa os dados enviados pelo formulário
     if request.method == "POST":
-        # Obtém os valores do formulário
+        # Obtém os valores do formulário para criar uma aula
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
-        modulo_id = request.form.get("modulo_id")  # Identificador do módulo selecionado
-        user_id = session.get('user')
+        modulo_id = request.form.get("modulo_id")
+        conteudo = request.form.get("conteudo")
         perguntas = request.form.getlist("perguntas[]")
 
-        # Verifica se todos os campos obrigatórios foram preenchidos
-        if not titulo or not descricao or not modulo_id:
-            print("Todos os campos são obrigatórios", "error")
-            return redirect(url_for('teacher.criarAula'))
-
-        # Processa o conteúdo do arquivo ou texto fornecido
+        # Processa o conteúdo do arquivo (caso haja upload de arquivo)
         conteudo_nome = None
         conteudo_file = request.files.get('file')
         if conteudo_file and allowed_file(conteudo_file.filename):
@@ -95,28 +89,56 @@ def criarAula():
                 conteudo_file.save(filepath)
                 conteudo_nome = filename
             except Exception as e:
-                print('Erro ao salvar o arquivo: {}'.format(e), 'error')
-                return redirect(url_for('teacher.criarAula'))
+                print(f"Erro ao salvar o arquivo: {e}", "error")
+                return redirect(url_for('teacher.criar_aula'))
 
-        # Caso não tenha um arquivo, usa o conteúdo de texto
-        if conteudo_nome is None and not request.form.get("conteudo"):
-            print("Você deve enviar um arquivo ou fornecer o conteúdo da aula.", "error")
-            return redirect(url_for('teacher.criarAula'))
+        # Verifica se todos os campos obrigatórios foram preenchidos
+        if not titulo or not descricao or not modulo_id:
+            print("Todos os campos são obrigatórios", "error")
+            return redirect(url_for('teacher.criar_aula'))
 
-        conteudo = request.form.get("conteudo") if conteudo_nome is None else conteudo_nome
+        conteudo = conteudo or conteudo_nome
 
-        # Tenta criar a aula e as perguntas relacionadas
+        # Cria a aula e redireciona para o dashboard
         try:
-            # Atualiza a função para refletir o novo esquema de módulos
             criar_aula(modulo_id, titulo, descricao, conteudo, perguntas, conteudo_nome)
             print("Aula criada com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
             print(f"Erro ao criar a aula: {e}", "error")
-            return redirect(url_for('teacher.criarAula'))
+            return redirect(url_for('teacher.criar_aula'))
 
     modulos = get_modulos_by_professor(session.get('user'))
-    return render_template("criarAula.html", modulos=modulos)
+    return render_template("criar_aula.html", modulos=modulos)
+
+
+@teacher_bp.route('/criar_modulo', methods=["GET", "POST"])
+def criar_modulo():
+    if 'user' not in session or session['tipo'] != 'professor':
+        return redirect(url_for('auth.login'))
+
+    if request.method == "POST":
+        # Obtém os valores do formulário para criar um módulo
+        titulo = request.form.get("titulo")
+        descricao = request.form.get("descricao")
+        curso_id = request.form.get("curso_id")
+
+        # Verifica se todos os campos obrigatórios foram preenchidos
+        if not titulo or not descricao or not curso_id:
+            print("Todos os campos são obrigatórios", "error")
+            return redirect(url_for('teacher.criar_modulo'))
+
+        # Cria o módulo e redireciona para o dashboard
+        try:
+            criar_modulo(curso_id, titulo, descricao)
+            print("Módulo criado com sucesso!", "success")
+            return redirect(url_for('teacher.dashboard_professor'))
+        except sqlite3.Error as e:
+            print(f"Erro ao criar o módulo: {e}", "error")
+            return redirect(url_for('teacher.criar_modulo'))
+
+    cursos = get_cursos_by_professor(session.get('user'))
+    return render_template("criar_modulo.html", cursos=cursos)
 
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():

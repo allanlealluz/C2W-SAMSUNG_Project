@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Módulo e Aulas</title>
+    <title>Criar Aula</title>
     <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_modulo_aula.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_aula.css') }}">
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Criar Módulo e Aulas</h2>
+        <h2>Adicionar Aula ao Módulo</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info">
@@ -21,33 +21,8 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário para Criar Módulo -->
-        <h4>Criar Módulo</h4>
-        <form action="" method="POST">
-            <div class="form-group">
-                <label for="titulo_modulo">Título do Módulo</label>
-                <input type="text" class="form-control" id="titulo_modulo" name="titulo" placeholder="Insira o título do módulo" required>
-            </div>
-            <div class="form-group">
-                <label for="descricao_modulo">Descrição</label>
-                <textarea class="form-control" id="descricao_modulo" name="descricao" rows="3" placeholder="Descrição breve sobre o módulo" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="curso_id">Selecione o Curso</label>
-                <select class="form-control" id="curso_id" name="curso_id" required>
-                    {% for curso in cursos %}
-                        <option value="{{ curso['id'] }}">{{ curso['titulo'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Criar Módulo</button>
-        </form>
-
-        <hr>
-
         <!-- Formulário para Criar Aula -->
-        <h4>Adicionar Aula ao Módulo</h4>
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form action="{{ url_for('teacher.criar_aula') }}" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="titulo_aula">Título da Aula</label>
                 <input type="text" class="form-control" id="titulo_aula" name="titulo" placeholder="Insira o título da aula" required>

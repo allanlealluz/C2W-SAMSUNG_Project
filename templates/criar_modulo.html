@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Módulo</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_modulo.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Criar Módulo</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulário para Criar Módulo -->
+        <form action="{{ url_for('teacher.criar_modulo') }}" method="POST">
+            <div class="form-group">
+                <label for="titulo_modulo">Título do Módulo</label>
+                <input type="text" class="form-control" id="titulo_modulo" name="titulo" placeholder="Insira o título do módulo" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao_modulo">Descrição</label>
+                <textarea class="form-control" id="descricao_modulo" name="descricao" rows="3" placeholder="Descrição breve sobre o módulo" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="curso_id">Selecione o Curso</label>
+                <select class="form-control" id="curso_id" name="curso_id" required>
+                    {% for curso in cursos %}
+                        <option value="{{ curso['id'] }}">{{ curso['titulo'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Criar Módulo</button>
+            <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary ml-2">Cancelar</a>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
