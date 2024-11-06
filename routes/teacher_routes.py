@@ -68,7 +68,6 @@ def dashboard_professor():
 
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
 def criarAula():
-    # Verifica se o usuário está logado e é professor
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 

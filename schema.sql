@@ -9,9 +9,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS cursos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,
-    descricao TEXT,
-    professor_id INTEGER,
-    FOREIGN KEY (professor_id) REFERENCES usuarios(id)
+    descricao TEXT
 );
 CREATE TABLE IF NOT EXISTS inscricoes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,10 +21,12 @@ CREATE TABLE IF NOT EXISTS inscricoes (
 );
 CREATE TABLE IF NOT EXISTS modulos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    curso_id INTEGER NOT NULL,
     titulo TEXT NOT NULL,
     descricao TEXT,
-    FOREIGN KEY (curso_id) REFERENCES cursos(id)
+    curso_id INTEGER,
+    professor_id INTEGER,
+    FOREIGN KEY (curso_id) REFERENCES cursos(id),
+    FOREIGN KEY (professor_id) REFERENCES usuarios(id)
 );
 
 CREATE TABLE IF NOT EXISTS aulas (

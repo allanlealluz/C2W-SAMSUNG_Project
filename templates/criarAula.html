@@ -1,17 +1,16 @@
-<!-- templates/criar_aula.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Aula</title>
+    <title>Criar Módulo e Aulas</title>
     <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_aula.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_modulo_aula.css') }}">
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Criar Aula</h2>
+        <h2>Criar Módulo e Aulas</h2>
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info">
@@ -21,15 +20,41 @@
                 </div>
             {% endif %}
         {% endwith %}
-        
-        <form action="{{ url_for('teacher.criarAula') }}" method="POST" enctype="multipart/form-data">
+
+        <!-- Formulário para Criar Módulo -->
+        <h4>Criar Módulo</h4>
+        <form action="" method="POST">
             <div class="form-group">
-                <label for="titulo">Título da Aula</label>
-                <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Insira o título da aula" required>
+                <label for="titulo_modulo">Título do Módulo</label>
+                <input type="text" class="form-control" id="titulo_modulo" name="titulo" placeholder="Insira o título do módulo" required>
             </div>
             <div class="form-group">
-                <label for="descricao">Descrição</label>
-                <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descrição breve sobre a aula" required></textarea>
+                <label for="descricao_modulo">Descrição</label>
+                <textarea class="form-control" id="descricao_modulo" name="descricao" rows="3" placeholder="Descrição breve sobre o módulo" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="curso_id">Selecione o Curso</label>
+                <select class="form-control" id="curso_id" name="curso_id" required>
+                    {% for curso in cursos %}
+                        <option value="{{ curso['id'] }}">{{ curso['titulo'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Criar Módulo</button>
+        </form>
+
+        <hr>
+
+        <!-- Formulário para Criar Aula -->
+        <h4>Adicionar Aula ao Módulo</h4>
+        <form action="" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="titulo_aula">Título da Aula</label>
+                <input type="text" class="form-control" id="titulo_aula" name="titulo" placeholder="Insira o título da aula" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao_aula">Descrição</label>
+                <textarea class="form-control" id="descricao_aula" name="descricao" rows="3" placeholder="Descrição breve sobre a aula" required></textarea>
             </div>
             <div class="form-group">
                 <label for="conteudo">Conteúdo da Aula</label>
@@ -45,21 +70,18 @@
                 <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
             </div>
             <div class="form-group">
-                <label>Tópico</label><br>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="robotica" name="topico" value="Robótica" required>
-                    <label class="form-check-label" for="robotica">Robótica</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="programacao" name="topico" value="Programação" required>
-                    <label class="form-check-label" for="programacao">Programação</label>
-                </div>
+                <label for="modulo_id">Selecione o Módulo</label>
+                <select class="form-control" id="modulo_id" name="modulo_id" required>
+                    {% for modulo in modulos %}
+                        <option value="{{ modulo['id'] }}">{{ modulo['titulo'] }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="form-group">
                 <label for="file">Anexar arquivo</label>
                 <input type="file" class="form-control-file" id="file" name="file" accept=".pdf, .doc, .docx, .txt">
             </div>
-            <button type="submit" class="btn btn-primary">Criar Aula</button>
+            <button type="submit" class="btn btn-success">Criar Aula</button>
             <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary ml-2">Cancelar</a>
         </form>
     </div>
