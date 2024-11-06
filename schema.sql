@@ -1,3 +1,5 @@
+INSERT INTO usuarios (nome, email, senha, tipo) 
+VALUES ('Allan', 'admin@gmail.com', 'allone', 'admin');
 CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(255) NOT NULL,

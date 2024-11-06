@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from models import get_db, find_user_by_id, get_aulas, inscrever_aluno_curso
 
-admin_bp = Blueprint('student', __name__)
+admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/dashboard_admin')
 def dashboard_admin():
