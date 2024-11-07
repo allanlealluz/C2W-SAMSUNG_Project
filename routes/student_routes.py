@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
-from models import get_db, find_user_by_id, get_aulas, inscrever_aluno_curso
+from models import get_db, find_user_by_id, inscrever_aluno_curso
 
 student_bp = Blueprint('student', __name__)
 
@@ -11,29 +11,32 @@ def dashboard_aluno():
 
     user_info = find_user_by_id(user_id)
 
-    if not user_info:  # Verificar se o usuário existe
+    if not user_info:  
         return redirect(url_for('auth.login'))
 
     db = get_db()
     try:
-        # Aulas de Programação (sem limite de 1)
-        cursos_programacao = db.execute('''
-            SELECT a.* FROM aulas a
-            LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-            WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0)
+
+        cursos_inscritos = db.execute('''
+            SELECT c.id, c.nome, c.descricao
+            FROM cursos c
+            JOIN inscricoes i ON c.id = i.curso_id
+            WHERE i.aluno_id = ?
+        ''', (user_id,)).fetchall()
+        
+        cursos_disponiveis = db.execute('''
+            SELECT c.id, c.nome, c.descricao
+            FROM cursos c
+            LEFT JOIN inscricoes i ON c.id = i.curso_id AND i.aluno_id = ?
+            WHERE i.id IS NULL
         ''', (user_id,)).fetchall()
 
-        # Aulas de Robótica (sem limite de 1)
-        cursos_robotica = db.execute('''
-            SELECT a.* FROM aulas a
-            LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-            WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0)
-        ''', (user_id,)).fetchall()
-        return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)
+        return render_template('dashboard_aluno.html', user=user_info, cursos_inscritos=cursos_inscritos, cursos_disponiveis=cursos_disponiveis)
 
     except Exception as e:
         print(e)
         return render_template('dashboard_aluno.html', user=user_info)
+
 
 
 @student_bp.route('/ver_aula/<int:aula_id>', methods=["GET", "POST"])
