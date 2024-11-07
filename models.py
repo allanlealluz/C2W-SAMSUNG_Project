@@ -155,18 +155,15 @@ def get_progresso_por_aula(aula_id):
 def get_modulos_by_professor(professor_id):
     db = get_db()
     try:
-        # Consulta para obter módulos dos cursos atribuídos ao professor
-        query = '''
-            SELECT modulos.id, modulos.nome, cursos.nome AS curso_nome
+        # Consulta para obter módulos criados pelo professor logado
+        modulos = db.execute('''
+            SELECT id, titulo
             FROM modulos
-            JOIN cursos ON modulos.curso_id = cursos.id
-            JOIN usuarios_cursos ON cursos.id = usuarios_cursos.curso_id
-            WHERE usuarios_cursos.professor_id = ?
-        '''
-        modulos = db.execute(query, (professor_id,)).fetchall()
+            WHERE professor_id = ?
+        ''', (professor_id,)).fetchall()
         return modulos
     except sqlite3.Error as e:
-        print(f"Erro ao buscar módulos para o professor: {e}")
+        print(f"Erro ao buscar módulos: {e}")
         return []
 
 def update_nota_resposta(resposta_id, nota):
@@ -204,6 +201,19 @@ def criar_aula(modulo_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
         db.rollback()
         print(f"Erro ao criar aula: {e}")
         return None
+def criar_modulos(curso_id, titulo, descricao, professor_id):
+    db = get_db()
+    try:
+        db.execute('''
+            INSERT INTO modulos (curso_id, titulo, descricao, professor_id)
+            VALUES (?, ?, ?, ?)
+        ''', (curso_id, titulo, descricao, professor_id))
+        db.commit()
+        print("Módulo criado com sucesso!")
+
+    except sqlite3.Error as e:
+        print(f"Erro ao criar módulo: {e}")
+        db.rollback()
 def get_cursos():
     db = get_db()
     cursos = db.execute('SELECT * FROM cursos').fetchall()
@@ -240,7 +250,6 @@ def get_aulas_by_professor(user_id, topico=None):
         params.append(topico)
 
     return execute_query(query, params)
-
 def get_respostas_by_aula(aula_id):
     db = get_db()
     return db.execute('''

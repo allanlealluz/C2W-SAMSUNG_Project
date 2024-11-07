@@ -35,7 +35,7 @@
                 <label for="curso_id">Selecione o Curso</label>
                 <select class="form-control" id="curso_id" name="curso_id" required>
                     {% for curso in cursos %}
-                        <option value="{{ curso['id'] }}">{{ curso['titulo'] }}</option>
+                        <option value="{{ curso['id'] }}">{{ curso['nome'] }}</option>
                     {% endfor %}
                 </select>
             </div>

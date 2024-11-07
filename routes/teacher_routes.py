@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
+from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify, flash
 import os
 import numpy as np
 from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_aulas_by_professor,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_modulos_by_professor
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_modulos_by_professor, get_cursos, criar_modulos
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
@@ -66,7 +66,7 @@ def dashboard_professor():
 
     return redirect(url_for('auth.login'))
 
-@teacher_bp.route('/criar_aula', methods=["GET", "POST"])
+@teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
 def criarAula():
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
@@ -109,11 +109,12 @@ def criarAula():
             return redirect(url_for('teacher.criar_aula'))
 
     modulos = get_modulos_by_professor(session.get('user'))
-    return render_template("criar_aula.html", modulos=modulos)
+    return render_template("criarAula.html", modulos=modulos)
 
 
 @teacher_bp.route('/criar_modulo', methods=["GET", "POST"])
 def criar_modulo():
+    user_id = session.get("user")
     if 'user' not in session or session['tipo'] != 'professor':
         return redirect(url_for('auth.login'))
 
@@ -125,20 +126,22 @@ def criar_modulo():
 
         # Verifica se todos os campos obrigatórios foram preenchidos
         if not titulo or not descricao or not curso_id:
-            print("Todos os campos são obrigatórios", "error")
+            flash("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criar_modulo'))
 
         # Cria o módulo e redireciona para o dashboard
         try:
-            criar_modulo(curso_id, titulo, descricao)
-            print("Módulo criado com sucesso!", "success")
+            criar_modulos(curso_id, titulo, descricao,user_id)
+            flash("Módulo criado com sucesso!", "success")
             return redirect(url_for('teacher.dashboard_professor'))
         except sqlite3.Error as e:
-            print(f"Erro ao criar o módulo: {e}", "error")
+            flash(f"Erro ao criar o módulo: {e}", "error")
             return redirect(url_for('teacher.criar_modulo'))
 
-    cursos = get_cursos_by_professor(session.get('user'))
+    # Carregar cursos para exibir na seleção
+    cursos = get_cursos()
     return render_template("criar_modulo.html", cursos=cursos)
+
 
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():

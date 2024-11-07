@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
-from models import get_db, find_user_by_id,get_cursos
+from models import get_db, find_user_by_id, get_cursos
 from hashlib import sha256
 import sqlite3
 
@@ -14,7 +14,6 @@ def dashboard_admin():
     user_info = find_user_by_id(user_id)
     return render_template('dashboard_admin.html', user=user_info)
 
-# Função para criar um novo curso
 @admin_bp.route('/dashboard_admin/criar_curso', methods=['GET', 'POST'])
 def criar_curso():
     user_id = session.get("user")
@@ -22,15 +21,12 @@ def criar_curso():
         return redirect(url_for('auth.login'))
 
     if request.method == 'POST':
-        # Obter os dados do formulário
         titulo = request.form['titulo']
         descricao = request.form['descricao']
 
-        # Verificação simples para garantir que os campos não estejam vazios
         if not titulo or not descricao:
             return render_template("criar_curso.html", message="Todos os campos são obrigatórios!")
 
-        # Inserir o novo curso no banco de dados
         db = get_db()
         db.execute('''
             INSERT INTO cursos (nome, descricao) 
@@ -38,7 +34,6 @@ def criar_curso():
         ''', (titulo, descricao))
         db.commit()
 
-        # Redirecionar para o dashboard do admin após criar o curso
         return redirect(url_for('admin.dashboard_admin'))
 
     return render_template('criar_curso.html')
@@ -48,7 +43,6 @@ def gerenciar_cursos():
     if 'user' not in session or session['tipo'] != 'admin':
         return redirect(url_for('auth.login'))
 
-    # Consulta todos os cursos do professor
     try:
         cursos = get_cursos()
     except sqlite3.Error as e:
@@ -56,13 +50,13 @@ def gerenciar_cursos():
         cursos = []
 
     return render_template("gerenciar_curso.html", cursos=cursos)
+
 @admin_bp.route('/dashboard_admin/gerenciar_usuarios')
 def gerenciar_usuarios():
     user_id = session.get("user")
     if not user_id or session.get("tipo") != "admin":
         return redirect(url_for('auth.login'))
 
-    # Consulta todos os usuários
     try:
         db = get_db()
         usuarios = db.execute('SELECT id, nome, email, tipo FROM usuarios').fetchall()
@@ -72,7 +66,6 @@ def gerenciar_usuarios():
         usuarios = []
 
     return render_template('gerenciar_usuarios.html', usuarios=usuarios)
-
 
 @admin_bp.route('/dashboard_admin/alterar_usuario/<int:user_id>', methods=['POST'])
 def alterar_usuario(user_id):
@@ -90,7 +83,6 @@ def alterar_usuario(user_id):
 
     flash("Tipo de usuário atualizado com sucesso.")
     return redirect(url_for('admin.gerenciar_usuarios'))
-@admin_bp.route('/dashboard_admin/editar_curso/<int:curso_id>', methods=["GET", "POST"])
 
 @admin_bp.route('/dashboard_admin/excluir_usuario/<int:user_id>', methods=['POST'])
 def excluir_usuario(user_id):
@@ -119,11 +111,9 @@ def editar_curso(curso_id):
         
         return redirect(url_for("admin.gerenciar_cursos"))
 
-    # Caso GET: carregar dados do curso para exibir no formulário
     curso = get_curso_by_id(curso_id)
     return render_template("editar_curso.html", curso=curso)
 
-# Rota para excluir um curso
 @admin_bp.route('/dashboard_admin/excluir_curso/<int:curso_id>', methods=["POST","GET"])
 def excluir_curso(curso_id):
     db = get_db()
@@ -133,7 +123,6 @@ def excluir_curso(curso_id):
 
 @admin_bp.route('/dashboard_admin/cadastrar_professor', methods=['GET', 'POST'])
 def cadastrar_professor():
-    # Verifica se o usuário é um administrador
     if 'user' not in session or session['tipo'] != 'admin':
         return redirect(url_for('auth.login'))
 
