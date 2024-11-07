@@ -204,6 +204,11 @@ def criar_aula(modulo_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
         db.rollback()
         print(f"Erro ao criar aula: {e}")
         return None
+def get_cursos():
+    db = get_db()
+    cursos = db.execute('SELECT * FROM cursos').fetchall()
+    return cursos
+    
 def get_aulas(user_id):
     db = get_db()
     aula = db.execute('''SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo_nome, aulas.arquivo 
