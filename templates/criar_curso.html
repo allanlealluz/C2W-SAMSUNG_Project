@@ -28,7 +28,7 @@
         <h1 class="text-center mb-4">Criar Novo Curso</h1>
         
         <!-- Formulário para Criar Curso -->
-        <form method="POST" action="{{ url_for('admin.criar_curso') }}">
+        <form method="POST" action="{{ url_for('admin.criar_curso') }}" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="titulo">Título do Curso</label>
                 <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Digite o título do curso" required>
@@ -38,7 +38,10 @@
                 <label for="descricao">Descrição</label>
                 <textarea class="form-control" id="descricao" name="descricao" rows="4" placeholder="Digite a descrição do curso" required></textarea>
             </div>
-
+            <div class="form-group">
+                <label for="file">Anexar arquivo</label>
+                <input type="file" class="form-control-file" id="file" name="file">
+            </div>
             <button type="submit" class="btn btn-primary btn-block">Criar Curso</button>
         </form>
         

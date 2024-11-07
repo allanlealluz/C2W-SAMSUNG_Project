@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from models import get_db, find_user_by_id, get_cursos
 from hashlib import sha256
 import sqlite3
+import os
+from werkzeug.utils import secure_filename
+import random
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -23,15 +26,26 @@ def criar_curso():
     if request.method == 'POST':
         titulo = request.form['titulo']
         descricao = request.form['descricao']
+        imagem = request.files.get('file')
+        UPLOAD_FOLDER = os.path.join('static', 'uploads')
+        try:
+            rand = str(random.randint(1,100))
+            filename = secure_filename(imagem.filename)
+            filepath = os.path.join(UPLOAD_FOLDER,rand+filename)
+            imagem.save(filepath)
+            imagem_nome = rand+filename
+        except Exception as e:
+                print(f"Erro ao salvar o arquivo: {e}", "error")
+                return redirect(url_for('admin.criar_curso'))
 
         if not titulo or not descricao:
             return render_template("criar_curso.html", message="Todos os campos são obrigatórios!")
 
         db = get_db()
         db.execute('''
-            INSERT INTO cursos (nome, descricao) 
-            VALUES (?, ?)
-        ''', (titulo, descricao))
+            INSERT INTO cursos (nome, descricao, imagem) 
+            VALUES (?, ?, ?)
+        ''', (titulo, descricao,imagem_nome))
         db.commit()
 
         return redirect(url_for('admin.dashboard_admin'))

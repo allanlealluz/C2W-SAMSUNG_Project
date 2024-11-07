@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_aulas_by_professor,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_modulos_by_professor, get_cursos, criar_modulos
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_db, get_cursos, criar_modulos
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
@@ -72,16 +72,16 @@ def criarAula():
         return redirect(url_for('auth.login'))
 
     if request.method == "POST":
-        # Obtém os valores do formulário para criar uma aula
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
         modulo_id = request.form.get("modulo_id")
+        curso_id = request.form.get("curso_id")  # Curso selecionado
+
         conteudo = request.form.get("conteudo")
         perguntas = request.form.getlist("perguntas[]")
-
-        # Processa o conteúdo do arquivo (caso haja upload de arquivo)
         conteudo_nome = None
         conteudo_file = request.files.get('file')
+
         if conteudo_file and allowed_file(conteudo_file.filename):
             try:
                 filename = secure_filename(conteudo_file.filename)
@@ -93,13 +93,13 @@ def criarAula():
                 return redirect(url_for('teacher.criar_aula'))
 
         # Verifica se todos os campos obrigatórios foram preenchidos
-        if not titulo or not descricao or not modulo_id:
+        if not titulo or not descricao or not modulo_id or not curso_id:
             print("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criar_aula'))
 
         conteudo = conteudo or conteudo_nome
 
-        # Cria a aula e redireciona para o dashboard
+        # Cria a aula
         try:
             criar_aula(modulo_id, titulo, descricao, conteudo, perguntas, conteudo_nome)
             print("Aula criada com sucesso!", "success")
@@ -108,8 +108,20 @@ def criarAula():
             print(f"Erro ao criar a aula: {e}", "error")
             return redirect(url_for('teacher.criar_aula'))
 
-    modulos = get_modulos_by_professor(session.get('user'))
-    return render_template("criarAula.html", modulos=modulos)
+    # Carregar os cursos do professor
+    cursos = get_cursos()  # Função que retorna os cursos do professor
+
+    return render_template("criarAula.html", cursos=cursos)
+@teacher_bp.route('/api/get_modulos/<int:curso_id>', methods=["GET"])
+def get_modulos(curso_id):
+    db = get_db()
+    modulos = db.execute('''
+        SELECT id, titulo
+        FROM modulos
+        WHERE curso_id = ?
+    ''', (curso_id,)).fetchall()
+
+    return jsonify({'modulos': modulos})
 
 
 @teacher_bp.route('/criar_modulo', methods=["GET", "POST"])
@@ -119,17 +131,12 @@ def criar_modulo():
         return redirect(url_for('auth.login'))
 
     if request.method == "POST":
-        # Obtém os valores do formulário para criar um módulo
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
         curso_id = request.form.get("curso_id")
-
-        # Verifica se todos os campos obrigatórios foram preenchidos
         if not titulo or not descricao or not curso_id:
             flash("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criar_modulo'))
-
-        # Cria o módulo e redireciona para o dashboard
         try:
             criar_modulos(curso_id, titulo, descricao,user_id)
             flash("Módulo criado com sucesso!", "success")

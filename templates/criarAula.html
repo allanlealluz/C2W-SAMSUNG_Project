@@ -11,6 +11,7 @@
 <body>
     <div class="container mt-5">
         <h2>Adicionar Aula ao Módulo</h2>
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <div class="alert alert-info">
@@ -23,6 +24,23 @@
 
         <!-- Formulário para Criar Aula -->
         <form action="{{ url_for('teacher.criarAula') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="curso_id">Selecione o Curso</label>
+                <select class="form-control" id="curso_id" name="curso_id" required>
+                    <option value="">Selecione um curso</option>
+                    {% for curso in cursos %}
+                        <option value="{{ curso['id'] }}">{{ curso['nome'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="modulo_id">Selecione o Módulo</label>
+                <select class="form-control" id="modulo_id" name="modulo_id" required disabled>
+                    <option value="">Selecione um curso primeiro</option>
+                </select>
+            </div>
+
             <div class="form-group">
                 <label for="titulo_aula">Título da Aula</label>
                 <input type="text" class="form-control" id="titulo_aula" name="titulo" placeholder="Insira o título da aula" required>
@@ -45,14 +63,6 @@
                 <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
             </div>
             <div class="form-group">
-                <label for="modulo_id">Selecione o Módulo</label>
-                <select class="form-control" id="modulo_id" name="modulo_id" required>
-                    {% for modulo in modulos %}
-                        <option value="{{ modulo['id'] }}">{{ modulo['titulo'] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
                 <label for="file">Anexar arquivo</label>
                 <input type="file" class="form-control-file" id="file" name="file" accept=".pdf, .doc, .docx, .txt">
             </div>
@@ -62,6 +72,36 @@
     </div>
 
     <script>
+        // JavaScript para carregar os módulos dinamicamente baseado no curso selecionado
+        document.getElementById('curso_id').addEventListener('change', function() {
+            const cursoId = this.value;
+            const moduloSelect = document.getElementById('modulo_id');
+
+            // Limpa a lista de módulos e desabilita até que um curso seja selecionado
+            moduloSelect.innerHTML = '<option value="">Carregando...</option>';
+            moduloSelect.disabled = true;
+
+            if (cursoId) {
+                fetch(`/api/get_modulos/${cursoId}`).then(response => response.json()).then(data => {
+                    moduloSelect.innerHTML = '<option value="">Selecione um módulo</option>';
+                    data.modulos.forEach(modulo => {
+                        const option = document.createElement('option');
+                        option.value = modulo.id;
+                        option.textContent = modulo.titulo;
+                        moduloSelect.appendChild(option);
+                    });
+                    moduloSelect.disabled = false;
+                }).catch(() => {
+                    moduloSelect.innerHTML = '<option value="">Erro ao carregar módulos</option>';
+                    moduloSelect.disabled = true;
+                });
+            } else {
+                moduloSelect.innerHTML = '<option value="">Selecione um curso primeiro</option>';
+                moduloSelect.disabled = true;
+            }
+        });
+
+        // Função para adicionar novas questões
         document.getElementById('add_questao').addEventListener('click', function() {
             const container = document.getElementById('questoes_container');
             const newQuestion = document.createElement('div');

@@ -18,18 +18,19 @@ def dashboard_aluno():
     try:
 
         cursos_inscritos = db.execute('''
-            SELECT c.id, c.nome, c.descricao
+            SELECT c.id, c.nome, c.descricao, c.imagem
             FROM cursos c
             JOIN inscricoes i ON c.id = i.curso_id
             WHERE i.aluno_id = ?
         ''', (user_id,)).fetchall()
         
         cursos_disponiveis = db.execute('''
-            SELECT c.id, c.nome, c.descricao
+            SELECT c.id, c.nome, c.descricao, c.imagem
             FROM cursos c
             LEFT JOIN inscricoes i ON c.id = i.curso_id AND i.aluno_id = ?
             WHERE i.id IS NULL
         ''', (user_id,)).fetchall()
+        print(cursos_disponiveis)
 
         return render_template('dashboard_aluno.html', user=user_info, cursos_inscritos=cursos_inscritos, cursos_disponiveis=cursos_disponiveis)
 
@@ -87,22 +88,6 @@ def ver_aula(aula_id):
             flash(f"Erro ao enviar respostas: {str(e)}", "error")
 
     return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
-@student_bp.route('/inscrever_curso/<int:curso_id>', methods=["POST"])
-def inscrever_curso(curso_id):
-    if 'user' not in session or session['tipo'] != 'aluno':
-        return redirect(url_for('auth.login'))
-
-    aluno_id = session['user']
-    resultado = inscrever_aluno_curso(aluno_id, curso_id)
-
-    if resultado == "sucesso":
-        flash("Inscrição realizada com sucesso!", "success")
-    elif resultado == "inscrito":
-        flash("Você já está inscrito neste curso.", "info")
-    else:
-        flash("Erro ao tentar inscrever-se no curso.", "error")
-
-    return redirect(url_for('student.cursos_disponiveis'))
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])
 def concluir_aula(aula_id):
@@ -226,3 +211,58 @@ def update_progress():
     except Exception as e:
         db.rollback()
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500
+@student_bp.route('/inscrever_curso/<int:curso_id>', methods=["POST"])
+def inscrever_curso(curso_id):
+    if 'user' not in session or session['tipo'] != 'aluno':
+        return redirect(url_for('auth.login'))
+
+    aluno_id = session['user']
+    resultado = inscrever_aluno_curso(aluno_id, curso_id)
+
+    if resultado == "sucesso":
+        flash("Inscrição realizada com sucesso!", "success")
+    elif resultado == "inscrito":
+        flash("Você já está inscrito neste curso.", "info")
+    else:
+        flash("Erro ao tentar inscrever-se no curso.", "error")
+
+    return redirect(url_for('student.dashboard_aluno'))
+
+@student_bp.route('/ver_curso/<int:curso_id>', methods=["GET"])
+def ver_curso(curso_id):
+    user_id = session.get("user")
+    if not user_id:
+        return redirect(url_for('auth.login'))
+
+    db = get_db()
+
+    # Buscar o curso
+    curso = db.execute('SELECT * FROM cursos WHERE id = ?', (curso_id,)).fetchone()
+    if not curso:
+        flash("Curso não encontrado.", "error")
+        return redirect(url_for('student.dashboard_aluno'))
+    modulos = db.execute('''
+        SELECT id, titulo, descricao
+        FROM modulos
+        WHERE curso_id = ?
+    ''', (curso_id,)).fetchall()
+    print(modulos)
+    for i in modulos:
+        for c in i:
+             print(c)
+
+    modulos_com_aulas = []
+    for modulo in modulos:
+        print(modulo["id"])
+        aulas = db.execute('''
+            SELECT id, titulo
+            FROM aulas
+            WHERE modulo_id = ?
+        ''', (modulo['id'],)).fetchall()
+        modulos_com_aulas.append({
+            'modulo': modulo,
+            'aulas': aulas
+        })
+        print(modulos_com_aulas)
+    return render_template('ver_curso.html', curso=curso, modulos_com_aulas=modulos_com_aulas)
+
