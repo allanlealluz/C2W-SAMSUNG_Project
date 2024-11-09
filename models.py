@@ -183,13 +183,22 @@ def create_module(curso_id, titulo, descricao):
     except sqlite3.Error as e:
         print(f"Erro ao criar módulo: {e}")
 
+<<<<<<< HEAD
 def criar_aula(modulo_id,curso_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
+=======
+def criar_aula(modulo_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
+>>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
     db = get_db()
     if db is None:
         return None
     try:
+<<<<<<< HEAD
         db.execute('INSERT INTO aulas (modulo_id,curso_id, titulo, descricao, conteudo_nome, arquivo) VALUES (?, ?, ?,?, ?, ?)',
                    (modulo_id,curso_id, titulo, descricao, conteudo_nome, arquivo))
+=======
+        db.execute('INSERT INTO aulas (modulo_id, titulo, descricao, conteudo_nome, arquivo) VALUES (?, ?, ?, ?, ?)',
+                   (modulo_id, titulo, descricao, conteudo_nome, arquivo))
+>>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
         aula_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
         
         for pergunta in perguntas:
