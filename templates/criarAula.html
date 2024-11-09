@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Aula</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/criar_aula.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Adicionar Aula ao Módulo</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulário para Criar Aula -->
+        <form action="{{ url_for('teacher.criarAula') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="curso_id">Selecione o Curso</label>
+                <select class="form-control" id="curso_id" name="curso_id" required>
+                    <option value="">Selecione um curso</option>
+                    {% for curso in cursos %}
+                        <option value="{{ curso['id'] }}">{{ curso['nome'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="modulo_id">Selecione o Módulo</label>
+                <select class="form-control" id="modulo_id" name="modulo_id" required disabled>
+                    <option value="">Selecione um curso primeiro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="titulo_aula">Título da Aula</label>
+                <input type="text" class="form-control" id="titulo_aula" name="titulo" placeholder="Insira o título da aula" required>
+            </div>
+            <div class="form-group">
+                <label for="descricao_aula">Descrição</label>
+                <textarea class="form-control" id="descricao_aula" name="descricao" rows="3" placeholder="Descrição breve sobre a aula" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="conteudo">Conteúdo da Aula</label>
+                <textarea class="form-control" id="conteudo" name="conteudo" rows="5" placeholder="Detalhe o conteúdo principal da aula" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Questões</label>
+                <div id="questoes_container">
+                    <div class="questao-item">
+                        <input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão" required>
+                    </div>
+                </div>
+                <button type="button" id="add_questao" class="btn btn-secondary">Adicionar Questão</button>
+            </div>
+            <div class="form-group">
+                <label for="file">Anexar arquivo</label>
+                <input type="file" class="form-control-file" id="file" name="file" accept=".pdf, .doc, .docx, .txt">
+            </div>
+            <button type="submit" class="btn btn-success">Criar Aula</button>
+            <a href="{{ url_for('teacher.dashboard_professor') }}" class="btn btn-secondary ml-2">Cancelar</a>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript para carregar os módulos dinamicamente baseado no curso selecionado
+        document.getElementById('curso_id').addEventListener('change', function() {
+            const cursoId = this.value;
+            const moduloSelect = document.getElementById('modulo_id');
+
+            // Limpa a lista de módulos e desabilita até que um curso seja selecionado
+            moduloSelect.innerHTML = '<option value="">Carregando...</option>';
+            moduloSelect.disabled = true;
+
+            if (cursoId) {
+                fetch(`/api/get_modulos/${cursoId}`).then(response => response.json()).then(data => {
+                    moduloSelect.innerHTML = '<option value="">Selecione um módulo</option>';
+                    data.modulos.forEach(modulo => {
+                        const option = document.createElement('option');
+                        option.value = modulo.id;
+                        option.textContent = modulo.titulo;
+                        moduloSelect.appendChild(option);
+                    });
+                    moduloSelect.disabled = false;
+                }).catch(() => {
+                    moduloSelect.innerHTML = '<option value="">Erro ao carregar módulos</option>';
+                    moduloSelect.disabled = true;
+                });
+            } else {
+                moduloSelect.innerHTML = '<option value="">Selecione um curso primeiro</option>';
+                moduloSelect.disabled = true;
+            }
+        });
+
+        // Função para adicionar novas questões
+        document.getElementById('add_questao').addEventListener('click', function() {
+            const container = document.getElementById('questoes_container');
+            const newQuestion = document.createElement('div');
+            newQuestion.classList.add('questao-item');
+            newQuestion.innerHTML = '<input type="text" class="form-control mb-3" name="perguntas[]" placeholder="Insira uma questão" required>';
+            container.appendChild(newQuestion);
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

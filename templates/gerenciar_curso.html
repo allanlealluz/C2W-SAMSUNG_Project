@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Cursos</title>
+    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/gerenciar_cursos.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Gerenciar Cursos</h2>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Descrição</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for curso in cursos %}
+                <tr>
+                    <td>{{ curso['id'] }}</td>
+                    <td>{{ curso['nome'] }}</td>
+                    <td>{{ curso['descricao'] }}</td>
+                    <td>
+                        <a href="/dashboard_admin/editar_curso/{{curso['id']}}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="/dashboard_admin/excluir_curso/{{curso['id']}}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este curso?');">Excluir</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <a href="{{ url_for('admin.criar_curso') }}" class="btn btn-primary mt-3">Adicionar Novo Curso</a>
+        <a href="{{ url_for('admin.dashboard_admin') }}" class="btn btn-secondary mt-3 ml-2">Voltar ao Dashboard</a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
