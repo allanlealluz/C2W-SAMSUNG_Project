@@ -3,9 +3,9 @@ import os
 import numpy as np
 from werkzeug.utils import secure_filename
 from models import (
-    find_user_by_id, criar_aula, get_aulas_by_professor,
+    find_user_by_id, criar_aula, get_cursos,get_modulos_by_curso_id,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_db, get_cursos, criar_modulos
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_db, criar_modulos, get_aulas_por_modulo
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
@@ -158,74 +158,62 @@ def criar_modulo():
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
         user_id = session.get('user')
-
-        feedbacks = {}
+        feedbacks = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         progresso_por_aluno = {}
         total_alunos = set()
-        notas_por_topico = defaultdict(list)
+        notas_por_curso = defaultdict(lambda: defaultdict(list))
         notas_por_aula = defaultdict(list)
         alunos_scores = get_student_scores()
         plot_url = None
         previsoes = {}
+        medias_por_curso = {}
         medias_por_aula = {}
-        medias_por_topico = {}
         feedback_texto = ['']
-        print("Start processing feedbacks")
 
         try:
-            aulas = get_aulas_by_professor(user_id)
-            print(f"Aulas encontradas: {aulas}")
-            if not aulas:
-                print("Nenhuma aula encontrada para o professor.")
+            cursos = get_cursos()
+            if not cursos:
                 return redirect(url_for('teacher.dashboard_professor'))
 
-            for aula in aulas:
-                aula_id = aula[0]
-                titulo_aula = aula[2]
-                topico = aula[5]
-                print(f"Processing aula_id: {aula_id}, titulo: {titulo_aula}")
+            for curso in cursos:
+                curso_id, curso_nome = curso[:2]
+                modulos = get_modulos_by_curso_id(curso_id)
+                medias_por_curso[curso_nome] = {}
 
-                respostas = get_respostas_by_aula(aula_id)
-                print(f"Respostas para aula {aula_id} ({titulo_aula}): {respostas}")
+                for modulo in modulos:
+                    modulo_id, modulo_nome = modulo[:2]
+                    aulas = get_aulas_por_modulo(modulo_id)
+                    medias_por_curso[curso_nome][modulo_nome] = {}
 
-                if respostas is None:
-                    print(f"Erro ao buscar respostas para a aula {titulo_aula}.")
-                    continue
+                    for aula in aulas:
+                        aula_id, titulo_aula = aula[0], aula[3]
+                        respostas = get_respostas_by_aula(aula_id)
+                        feedbacks[curso_nome][modulo_nome][titulo_aula] = respostas if respostas else []
 
-                feedbacks[titulo_aula] = respostas if respostas else []
-                progresso = get_progresso_by_aula(aula_id)
-                print(f"Progresso para aula {aula_id}: {progresso}")
+                        progresso = get_progresso_by_aula(aula_id)
+                        for aluno in progresso:
+                            nome = aluno['nome']
+                            total_alunos.add(nome)
+                            progresso_por_aluno[nome] = aluno['concluida']
 
-                if progresso is None:
-                    print(f"Erro ao buscar progresso para a aula {titulo_aula}.")
-                    continue
+                        for resposta in respostas:
+                            aluno_id = resposta['user_id']
+                            nota = resposta['nota']
+                            if isinstance(nota, (int, float)):
+                                notas_por_aula[aula_id].append(nota)
+                                notas_por_curso[curso_nome][modulo_nome].append(nota)
 
-                for aluno in progresso:
-                    nome = aluno['nome']
-                    total_alunos.add(nome)
-                    progresso_por_aluno[nome] = aluno['concluida']
-                for resposta in respostas:
-                    aluno_id = resposta['user_id']
-                    nota = resposta['nota']
-    
-                    if isinstance(nota, (int, float)):
-                        notas_por_aula[aula_id].append(nota)
-                        if topico:
-                            notas_por_topico[topico].append(nota)
-            
             medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
-            medias_por_topico = {topico: (sum(notas) / len(notas)) if notas else 0 for topico, notas in notas_por_topico.items()}
-
-            alunos_data = {}
+            medias_por_curso = {
+                curso: {modulo: (sum(notas) / len(notas)) if notas else 0 for modulo, notas in modulos.items()}
+                for curso, modulos in notas_por_curso.items()
+            }
+            print(f"Notas por aula: {medias_por_aula}")
+            alunos_data = defaultdict(lambda: {'historico': [], 'id': None})
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
-                if nome not in alunos_data:
-                    alunos_data[nome] = {'historico': [], 'id': aluno_id}
-                alunos_data[nome]['historico'].append({
-                    'nota': nota,
-                    'progresso': progresso,
-                    'aula': aula
-                })
-
+                if alunos_data[nome]['id'] is None:
+                    alunos_data[nome]['id'] = aluno_id
+                alunos_data[nome]['historico'].append({'nota': nota, 'progresso': progresso, 'aula': aula})
             notas = np.array([entry['nota'] for aluno in alunos_data.values() for entry in aluno['historico']])
             progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
             if len(notas) == len(progresso) and len(notas) > 0:
@@ -234,45 +222,42 @@ def ver_feedbacks():
                 kmeans.fit(X)
                 labels = kmeans.labels_
 
-                grupos_alunos = {i: [] for i in range(3)}
-
+                grupos_alunos = defaultdict(list)
                 for i, aluno in enumerate(alunos_data.keys()):
                     grupos_alunos[labels[i]].append(aluno)
-                previsoes = prever_notas(alunos_data)
 
+                previsoes = prever_notas(alunos_data)
                 for nome, dados in previsoes.items():
                     notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico']]
-                    classificacao = classificar_aluno(notas_historico)
-                    previsoes[nome]['classificacao'] = classificacao
+                    previsoes[nome]['classificacao'] = classificar_aluno(notas_historico)
 
                 if alunos_data:
                     plot_url = generate_performance_plot(alunos_data, previsoes)
-            else:
-                print("Erro: As dimensões dos arrays 'notas' e 'progresso' não correspondem ou estão vazias.")
-            
-            feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progresso_por_aluno)
-            print("Feedback textual: ", feedback_texto)
+
+            feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_curso, previsoes, progresso_por_aluno)
+
             return render_template(
                 'feedbacks_professor.html',
-                feedbacks=feedbacks,
+                feedbacks=dict(feedbacks),
                 plot_respostas_url=plot_url,
                 previsoes=previsoes,
                 total_alunos=len(total_alunos),
                 feedback_texto=feedback_texto,
                 medias_por_aula=medias_por_aula,
-                medias_por_topico=medias_por_topico
+                medias_por_curso=medias_por_curso
             )
+
         except Exception as e:
             print(f"Erro ao carregar feedbacks: {e}")
             return render_template(
                 'feedbacks_professor.html',
-                feedbacks=feedbacks,
+                feedbacks=dict(feedbacks),
                 plot_respostas_url=plot_url,
                 previsoes=previsoes,
                 total_alunos=len(total_alunos),
                 feedback_texto=feedback_texto,
                 medias_por_aula=medias_por_aula,
-                medias_por_topico=medias_por_topico
+                medias_por_curso=medias_por_curso
             )
     return redirect(url_for('auth.login'))
 
@@ -288,20 +273,35 @@ def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progre
     feedback = []
 
     try:
+        # Médias por Aula
         if medias_por_aula:
             feedback.append("Médias por Aula:")
             for aula, media in medias_por_aula.items():
-                feedback.append(f"Aula {aula}: Média {media:.2f}")
+                # Garantir que a média seja numérica antes de formatar
+                if isinstance(media, (int, float)):
+                    feedback.append(f"Aula {aula}: Média {media:.2f}")
+                else:
+                    feedback.append(f"Aula {aula}: Média inválida")
+
+        # Médias por Tópico
         if medias_por_topico:
             feedback.append("\nMédias por Tópico:")
             for topico, media in medias_por_topico.items():
-                feedback.append(f"Tópico {topico}: Média {media:.2f}")
+                # Garantir que a média seja numérica antes de formatar
+                if isinstance(media, (int, float)):
+                    feedback.append(f"Tópico {topico}: Média {media:.2f}")
+                else:
+                    feedback.append(f"Tópico {topico}: Média inválida")
+
+        # Previsões
         if previsoes:
-            print(previsoes)
+            print(previsoes)  # Pode ser útil para depuração
             feedback.append("\nPrevisões:")
             for aluno, dados in previsoes.items():
                 nota_arredondada = round(dados.get('proxima_nota', 0), 2)
                 feedback.append(f"Aluno {aluno}: Previsão {nota_arredondada}")
+
+        # Progresso por Aluno
         if progresso_por_aluno:
             feedback.append("\nProgresso por Aluno:")
             for aluno, progresso in progresso_por_aluno.items():

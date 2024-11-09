@@ -22,22 +22,20 @@ def get_db():
             print(f"Erro ao conectar ao banco de dados: {e}")
             return None
     return g.db
+
 def execute_query(query, params=None):
     conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
-
     try:
         if params:
             cursor.execute(query, params)
         else:
-            cursor.execute(query)
-        
+            cursor.execute(query)  
         if query.strip().lower().startswith("select"):
             result = cursor.fetchall()
         else:
             conn.commit()
             result = cursor.lastrowid  
-
         return result
     except sqlite3.Error as e:
         print(f"Erro ao executar query: {e}")
@@ -45,6 +43,7 @@ def execute_query(query, params=None):
     finally:
         cursor.close()
         conn.close()
+        
 def create_user(nome, email, senha, tipo):
     db = get_db()
     if db is None:
@@ -85,12 +84,11 @@ def inserir_resposta(user_id, section, resposta, aula_id):
         db.commit()
     except sqlite3.Error as e:
         print(f"Erro ao inserir resposta: {e}")
+        
 def inscrever_aluno_curso(aluno_id, curso_id):
     db = get_db()
     if db is None:
         return "erro"
-
-    # Verificar se o aluno já está inscrito no curso
     inscricao = db.execute(
         "SELECT * FROM inscricoes WHERE aluno_id = ? AND curso_id = ?", 
         (aluno_id, curso_id)
@@ -116,7 +114,6 @@ def get_aulas_por_modulo(modulo_id):
     db = get_db()
     return db.execute('SELECT * FROM aulas WHERE modulo_id = ?', (modulo_id,)).fetchall()
 
-# Funções para gerenciamento de progresso
 def atualizar_progresso_atividade(user_id, modulo_id, aula_id, completou):
     db = get_db()
     if db is None:
@@ -139,7 +136,6 @@ def atualizar_progresso_curso(user_id, curso_id, progresso):
     except sqlite3.Error as e:
         print(f"Erro ao atualizar progresso do curso: {e}")
 
-# Funções de consulta de progresso e notas
 def get_progresso_por_aula(aula_id):
     db = get_db()
     try:
@@ -155,7 +151,6 @@ def get_progresso_por_aula(aula_id):
 def get_modulos_by_professor(professor_id):
     db = get_db()
     try:
-        # Consulta para obter módulos criados pelo professor logado
         modulos = db.execute('''
             SELECT id, titulo
             FROM modulos
@@ -183,22 +178,13 @@ def create_module(curso_id, titulo, descricao):
     except sqlite3.Error as e:
         print(f"Erro ao criar módulo: {e}")
 
-<<<<<<< HEAD
 def criar_aula(modulo_id,curso_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
-=======
-def criar_aula(modulo_id, titulo, descricao, conteudo_nome, perguntas, arquivo):
->>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
     db = get_db()
     if db is None:
         return None
     try:
-<<<<<<< HEAD
         db.execute('INSERT INTO aulas (modulo_id,curso_id, titulo, descricao, conteudo_nome, arquivo) VALUES (?, ?, ?,?, ?, ?)',
                    (modulo_id,curso_id, titulo, descricao, conteudo_nome, arquivo))
-=======
-        db.execute('INSERT INTO aulas (modulo_id, titulo, descricao, conteudo_nome, arquivo) VALUES (?, ?, ?, ?, ?)',
-                   (modulo_id, titulo, descricao, conteudo_nome, arquivo))
->>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
         aula_id = db.execute('SELECT last_insert_rowid()').fetchone()[0]
         
         for pergunta in perguntas:
@@ -227,7 +213,10 @@ def get_cursos():
     db = get_db()
     cursos = db.execute('SELECT * FROM cursos').fetchall()
     return cursos
-      
+def get_modulos_by_curso_id(curso_id):
+    db = get_db()
+    curso = db.execute('SELECT curso_id,titulo,descricao FROM modulos WHERE curso_id = ?', (curso_id,)).fetchall()
+    return curso
 def get_aulas(user_id):
     db = get_db()
     aula = db.execute('''SELECT aulas.id, aulas.titulo, aulas.descricao, aulas.conteudo_nome, aulas.arquivo 
@@ -251,14 +240,21 @@ def verificar_tabelas():
         print(f"Erro ao verificar tabelas: {e}")
         
 def get_aulas_by_professor(user_id, topico=None):
-    query = "SELECT * FROM aulas WHERE professor_id = ?"
-    params = [user_id]
-
-    if topico:
-        query += " AND topico = ?"
-        params.append(topico)
-
-    return execute_query(query, params)
+    db = get_db()
+    if db is None:
+        print("Erro ao conectar ao banco de dados para verificar as tabelas.")
+        return
+    try:
+        return db.execute("""
+        SELECT a.* 
+        FROM aulas a
+        JOIN modulos m ON a.modulo_id = m.id
+        JOIN cursos c ON a.curso_id = c.id
+        WHERE c.professor_id = ?
+    """, (user_id,)).fetchall()
+    except sqlite3.Error as e:
+        print(f"Erro ao verificar tabelas: {e}")
+    return None
 def get_respostas_by_aula(aula_id):
     db = get_db()
     return db.execute('''
@@ -280,7 +276,7 @@ def get_resposta_by_aluno_aula(aluno_id, aula_id):
 
 def get_alunos():
     db = get_db()
-    return db.execute("SELECT * FROM usuarios where tipo != 'professor'").fetchall()
+    return db.execute("SELECT * FROM usuarios where tipo != 'professor' and tipo != 'admin'").fetchall()
 def resp_aluno(aluno_id):
       db = get_db()
       return db.execute("SELECT * FROM respostas where user_id = ?", (aluno_id,)).fetchall()

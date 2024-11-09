@@ -10,10 +10,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/feedback_professor.css') }}">
 </head>
 <body>
-   
-    <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand" href="#">C2W</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light c2wColor">
+        <a class="navbar-brand text-light" href="#">C2W</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -21,86 +21,113 @@
                 <li class="nav-item"><a class="nav-link" href="/">Início</a></li>
                 <li class="nav-item"><a class="nav-link" href="/Criar_Aula">Criar Aula</a></li>
                 <li class="nav-item"><a class="nav-link" href="/dashboard_professor/avaliar_alunos">Avaliar Alunos</a></li>
-                <li class="nav-item"><a class="nav-link" href="/dashboard_professor/feedbacks">Ver Feedbacks</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/dashboard_professor/feedbacks">Ver Feedbacks</a></li>
                 <li class="nav-item"><a class="nav-link" href="/dashboard_professor/analisar_desempenho">Desempenho</a></li>
                 <li class="nav-item"><a class="nav-link" href="/logout">Sair</a></li>
             </ul>
         </div>
     </nav>
 
+    <!-- Main Container -->
     <main class="container mt-5">
-        <h1 class="mb-4 text-center">Feedback dos Alunos</h1>
+        <h1 class="text-center mb-4">Feedback dos Alunos</h1>
 
-        <section>
-            <div class="card mb-4 shadow-sm">
+        <!-- Gráfico de Progresso -->
+        <section class="text-center mb-5">
+            <h3>Gráfico de Progresso dos Alunos</h3>
+            <div class="card shadow-sm">
                 <div class="card-body">
-                    <h3 class="card-title">Gráfico de Progresso dos Alunos</h3>
-                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Progresso dos Alunos" class="img-fluid">
+                    <img src="{{ url_for('static', filename='images/performance_plot.png') }}" alt="Gráfico de Progresso" class="img-fluid">
                 </div>
             </div>
         </section>
 
+        <!-- Feedback por Curso, Módulo e Aula -->
         <section>
-            <h3>Feedback por Aula</h3>
+            <h3 class="mb-4">Feedback por Curso</h3>
             {% if feedbacks %}
-                {% for aula, respostas in feedbacks.items() %}
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-header bg-dark text-white">{{ aula }}</div>
-                    <div class="card-body">
-                        {% if respostas %}
-                            <ul class="list-unstyled">
-                                {% for resposta in respostas %}
-                                    <li><strong>{{ resposta['nome'] }}</strong>: {{ resposta['resposta'] }}</li>
+                {% for curso_nome, modulos in feedbacks.items() %}
+                    <div class="card shadow-sm">
+                        <div class="card-header c2wColor" data-toggle="collapse" href="#curso-{{ loop.index }}">
+                            {{ curso_nome }}
+                        </div>
+                        <div id="curso-{{ loop.index }}" class="collapse show">
+                            <div class="card-body">
+                                {% for modulo_nome, aulas in modulos.items() %}
+                                    <div class="container-fluid mb-3">
+                                        <h5 class="c2wColor p-2">{{ modulo_nome }}</h5>
+                                        {% for aula_nome, respostas in aulas.items() %}
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-dark text-white">{{ aula_nome }}</div>
+                                                <div class="card-body">
+                                                    {% if respostas %}
+                                                        <ul class="list-group">
+                                                            {% for resposta in respostas %}
+                                                                <li class="list-group-item"><strong>{{ resposta['nome'] }}:</strong> {{ resposta['resposta'] }}</li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    {% else %}
+                                                        <p>Sem feedback disponível.</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>Sem feedback disponível.</p>
-                        {% endif %}
+                            </div>
+                        </div>
                     </div>
-                </div>
                 {% endfor %}
             {% else %}
-                <p>Nenhum feedback disponível.</p>
+                <p class="text-muted">Nenhum feedback disponível.</p>
             {% endif %}
         </section>
 
-        <section class="mt-4">
-            <div class="container-fluid c2wColor">
-                 <h3>Médias das Notas</h3>
-            </div>
+        <!-- Médias das Notas -->
+        <section class="mt-5">
+            <h3>Médias das Notas</h3>
             <div class="row">
                 <div class="col-md-6">
                     <h4>Por Aula</h4>
                     <ul class="list-group">
                         {% if medias_por_aula %}
                             {% for aula, media in medias_por_aula.items() %}
-                                <li class="list-group-item"><strong>{{ aula }}:</strong> {{ media | round(2) }}</li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <strong>{{ aula }}</strong><span>{{ media | round(2) }}</span>
+                                </li>
                             {% endfor %}
                         {% else %}
-                            <p>Nenhuma média disponível.</p>
+                            <p class="text-muted">Nenhuma média disponível.</p>
                         {% endif %}
                     </ul>
                 </div>
                 <div class="col-md-6">
                     <h4>Por Tópico</h4>
                     <ul class="list-group">
-                        {% if medias_por_topico %}
-                            {% for topico, media in medias_por_topico.items() %}
-                                <li class="list-group-item"><strong>{{ topico }}:</strong> {{ media | round(2) }}</li>
+                        {% if medias_por_curso %}
+                            {% for curso, topicos in medias_por_curso.items() %}
+                                <li class="list-group-item"><strong>{{ curso }}</strong>
+                                    <ul class="list-unstyled ml-3">
+                                        {% for topico, media in topicos.items() %}
+                                            <li><strong>{{ topico }}:</strong> {{ media | round(2) }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
                             {% endfor %}
                         {% else %}
-                            <p>Nenhuma média disponível.</p>
+                            <p class="text-muted">Nenhuma média disponível.</p>
                         {% endif %}
                     </ul>
                 </div>
             </div>
         </section>
 
-        <section class="mt-4">
+        <!-- Previsões de Desempenho -->
+        <section class="mt-5">
             <h3>Previsões de Desempenho</h3>
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group">
                         {% if previsoes %}
                             {% for aluno, dados in previsoes.items() %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -110,7 +137,7 @@
                                 </li>
                             {% endfor %}
                         {% else %}
-                            <p>Nenhuma previsão disponível.</p>
+                            <p class="text-muted">Nenhuma previsão disponível.</p>
                         {% endif %}
                     </ul>
                 </div>
@@ -118,6 +145,7 @@
         </section>
     </main>
 
+    <!-- Footer -->
     <footer class="mt-5 text-center">
         <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
     </footer>

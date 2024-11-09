@@ -107,3 +107,6 @@ img {
     color:#fff;
     background-color:#7b01a3;
 }
+.section-header { font-weight: bold; padding: 10px; }
+.card { margin-bottom: 20px; }
+.list-group-item { border: none; }

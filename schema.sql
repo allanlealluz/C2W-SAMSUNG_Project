@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-drop table aulas;
-=======
->>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
 CREATE TABLE IF NOT EXISTS usuarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -37,10 +33,7 @@ CREATE TABLE IF NOT EXISTS modulos (
 CREATE TABLE IF NOT EXISTS aulas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     modulo_id INTEGER NOT NULL,
-<<<<<<< HEAD
     curso_id INTEGER NOT NULL,
-=======
->>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
     titulo TEXT NOT NULL,
     descricao TEXT,
     conteudo_nome TEXT,
@@ -61,11 +54,8 @@ CREATE TABLE IF NOT EXISTS respostas (
     pergunta_id INTEGER NOT NULL,
     resposta TEXT NOT NULL,
     nota INTEGER,
-<<<<<<< HEAD
     aula_id INTEGER NOT NULL,
     FOREIGN KEY (aula_id) REFERENCES aulas(id),
-=======
->>>>>>> eae1b1ee41c28084051d633ad75d956fcdc5922e
     FOREIGN KEY (user_id) REFERENCES usuarios(id),
     FOREIGN KEY (pergunta_id) REFERENCES perguntas(id)
 );
