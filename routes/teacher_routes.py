@@ -356,16 +356,13 @@ def analisar_desempenho():
             print("Nenhum dado disponível para análise.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
         performance_by_topic_plot_url = generate_performance_by_module_plot(alunos_data)
-        print("por enquanto ok")
         X, labels, centroids = kmeans_clustering(alunos_data)
 
         if X is None or labels is None or centroids is None:
             print("Erro ao realizar clustering. Verifique os dados.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
-        print("por enquanto ok")
         plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
         student_performance_plot_url = generate_student_performance_plot(alunos_data)
-        print("por enquanto ok")
         return render_template('analisar_desempenho.html',
                                plot_url=plot_url,
                                student_performance_plot_url=student_performance_plot_url,
