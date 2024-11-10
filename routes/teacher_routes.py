@@ -5,12 +5,12 @@ from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_cursos,get_modulos_by_curso_id,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_student_scores_topic,get_db, criar_modulos, get_aulas_por_modulo
+    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_db, criar_modulos, get_aulas_por_modulo, get_student_scores_by_module
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
     generate_cluster_plot, generate_student_performance_plot,
-    prever_notas,generate_performance_by_topic_plot
+    prever_notas, generate_performance_by_module_plot
 )
 from sklearn.cluster import KMeans
 import sqlite3
@@ -181,7 +181,7 @@ def ver_feedbacks():
 
                     aulas = get_aulas_por_modulo(modulo_id)
 
-                    aulas_processadas = set()  # Conjunto para rastrear aulas processadas e evitar duplicação
+                    aulas_processadas = set() 
                     for aula in aulas:
                         aula_id, titulo_aula = aula[0], aula[3]
                         if aula_id in aulas_processadas:
@@ -260,35 +260,29 @@ def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progre
     feedback = []
 
     try:
-        # Médias por Aula
         if medias_por_aula:
             feedback.append("Médias por Aula:")
             for aula, media in medias_por_aula.items():
-                # Garantir que a média seja numérica antes de formatar
                 if isinstance(media, (int, float)):
                     feedback.append(f"Aula {aula}: Média {media:.2f}")
                 else:
                     feedback.append(f"Aula {aula}: Média inválida")
 
-        # Médias por Tópico
         if medias_por_topico:
             feedback.append("\nMédias por Tópico:")
             for topico, media in medias_por_topico.items():
-                # Garantir que a média seja numérica antes de formatar
                 if isinstance(media, (int, float)):
                     feedback.append(f"Tópico {topico}: Média {media:.2f}")
                 else:
                     feedback.append(f"Tópico {topico}: Média inválida")
 
-        # Previsões
         if previsoes:
-            print(previsoes)  # Pode ser útil para depuração
+            print(previsoes) 
             feedback.append("\nPrevisões:")
             for aluno, dados in previsoes.items():
                 nota_arredondada = round(dados.get('proxima_nota', 0), 2)
                 feedback.append(f"Aluno {aluno}: Previsão {nota_arredondada}")
 
-        # Progresso por Aluno
         if progresso_por_aluno:
             feedback.append("\nProgresso por Aluno:")
             for aluno, progresso in progresso_por_aluno.items():
@@ -357,23 +351,21 @@ def analisar_desempenho():
         return redirect(url_for('auth.login'))
 
     try:
-        alunos_data = get_student_scores_topic()
-
+        alunos_data = get_student_scores_by_module()
         if not alunos_data:
             print("Nenhum dado disponível para análise.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
-
-        performance_by_topic_plot_url = generate_performance_by_topic_plot(alunos_data)
-
+        performance_by_topic_plot_url = generate_performance_by_module_plot(alunos_data)
+        print("por enquanto ok")
         X, labels, centroids = kmeans_clustering(alunos_data)
 
         if X is None or labels is None or centroids is None:
             print("Erro ao realizar clustering. Verifique os dados.", "error")
             return redirect(url_for('teacher.dashboard_professor'))
-
+        print("por enquanto ok")
         plot_url = generate_cluster_plot(X, labels, centroids, alunos_data)
         student_performance_plot_url = generate_student_performance_plot(alunos_data)
-
+        print("por enquanto ok")
         return render_template('analisar_desempenho.html',
                                plot_url=plot_url,
                                student_performance_plot_url=student_performance_plot_url,
