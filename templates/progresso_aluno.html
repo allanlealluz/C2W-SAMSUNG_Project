@@ -1,15 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progresso Aluno</title>
-    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/feedback_professor.css') }}">
+    <title>Progresso do Aluno</title>
 </head>
 <body>
-    
+    <h1>Progresso do Aluno</h1>
+
+    {% for curso, dados_curso in progresso_aluno['cursos'].items() %}
+        <h2>Curso: {{ curso }} (Média: {{ dados_curso['media_curso'] | round(2) }})</h2>
+
+        {% for modulo, dados_modulo in dados_curso['modulos'].items() %}
+            <h3>Módulo: {{ modulo }} (Média: {{ dados_modulo['media_modulo'] | round(2) }})</h3>
+            <ul>
+                {% for aula, dados_aula in dados_modulo['aulas'].items() %}
+                    <li>Aula: {{ aula }} - Nota: {{ dados_aula['nota'] }} - Status: {{ dados_aula['concluida'] }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endfor %}
 </body>
 </html>

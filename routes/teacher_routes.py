@@ -54,8 +54,6 @@ def dashboard_professor():
             else:
                 media = data['total_notas'] / data['num_notas']
                 alunos_media.append({'nome': nome, 'media': media})
-
-        # Ordena alunos com base na média
         alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], float) else 0, reverse=True)
 
         return render_template(
@@ -75,7 +73,7 @@ def criarAula():
         titulo = request.form.get("titulo")
         descricao = request.form.get("descricao")
         modulo_id = request.form.get("modulo_id")
-        curso_id = request.form.get("curso_id")  # Curso selecionado
+        curso_id = request.form.get("curso_id")
 
         conteudo = request.form.get("conteudo")
         perguntas = request.form.getlist("perguntas[]")
@@ -92,14 +90,12 @@ def criarAula():
                 print(f"Erro ao salvar o arquivo: {e}", "error")
                 return redirect(url_for('teacher.criar_aula'))
 
-        # Verifica se todos os campos obrigatórios foram preenchidos
         if not titulo or not descricao or not modulo_id or not curso_id:
             print("Todos os campos são obrigatórios", "error")
             return redirect(url_for('teacher.criar_aula'))
 
         conteudo = conteudo or conteudo_nome
 
-        # Cria a aula
         try:
             criar_aula(modulo_id,curso_id, titulo, descricao, conteudo, perguntas, conteudo_nome)
             print("Aula criada com sucesso!", "success")
@@ -108,15 +104,12 @@ def criarAula():
             print(f"Erro ao criar a aula: {e}", "error")
             return redirect(url_for('teacher.criar_aula'))
 
-    # Carregar os cursos do professor
-    cursos = get_cursos()  # Função que retorna os cursos do professor
+    cursos = get_cursos() 
 
     return render_template("criarAula.html", cursos=cursos)
 @teacher_bp.route('/api/get_modulos/<int:curso_id>', methods=["GET"])
 def get_modulos(curso_id):
     db = get_db()
-    
-    # Executa a consulta para obter os módulos do curso
     modulos = db.execute('''
         SELECT id, titulo
         FROM modulos

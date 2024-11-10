@@ -52,6 +52,8 @@
                                     <div class="aula-card">
                                         <h5>{{ aula['titulo'] }}</h5>
                                         <p>{{ aula['descricao'] }}</p>
+                                        <p><strong>Status:</strong> {{ aula['status_conclusao'] }}</p>
+                                        
                                         <a class="btn-link" href="{{ url_for('student.ver_aula', aula_id=aula['id']) }}">Ir para a Aula</a>
                                     </div>
                                 </div>

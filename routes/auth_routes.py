@@ -14,6 +14,7 @@ def login():
     if request.method == "POST":
         email = request.form['email']
         senha = sha256(request.form['senha'].encode('utf-8')).hexdigest()
+        print(f"Senha {senha}")
         user = find_user(email)
         if user and user['senha'] == senha:
             session["user"] = user['id']

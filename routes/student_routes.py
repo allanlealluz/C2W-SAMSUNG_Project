@@ -235,8 +235,6 @@ def ver_curso(curso_id):
         return redirect(url_for('auth.login'))
 
     db = get_db()
-
-    # Buscar o curso
     curso = db.execute('SELECT * FROM cursos WHERE id = ?', (curso_id,)).fetchone()
     if not curso:
         flash("Curso não encontrado.", "error")
@@ -246,23 +244,96 @@ def ver_curso(curso_id):
         FROM modulos
         WHERE curso_id = ?
     ''', (curso_id,)).fetchall()
-    print(modulos)
-    for i in modulos:
-        for c in i:
-             print(c)
 
     modulos_com_aulas = []
     for modulo in modulos:
-        print(modulo["id"])
         aulas = db.execute('''
-            SELECT id, titulo
-            FROM aulas
-            WHERE modulo_id = ?
-        ''', (modulo['id'],)).fetchall()
+            SELECT a.id, a.titulo, 
+                   CASE WHEN pa.concluida = 1 THEN 'Concluída' ELSE 'Não concluída' END AS status_conclusao
+            FROM aulas a
+            LEFT JOIN progresso_aulas pa 
+            ON a.id = pa.aula_id AND pa.user_id = ?
+            WHERE a.modulo_id = ?
+        ''', (user_id, modulo['id'])).fetchall()
         modulos_com_aulas.append({
             'modulo': modulo,
             'aulas': aulas
         })
-        print(modulos_com_aulas)
-    return render_template('ver_curso.html', curso=curso, modulos_com_aulas=modulos_com_aulas)
+    return render_template('Ver_curso.html', curso=curso, modulos_com_aulas=modulos_com_aulas)
+@student_bp.route('/progresso_aluno', methods=["GET"])
+def progresso_aluno():
+    db = get_db()
+    user_id = session.get('user')
+    progresso_aluno = {
+        'cursos': {}
+    }
+    cursos = db.execute('''
+        SELECT DISTINCT c.id, c.nome 
+        FROM cursos c
+        JOIN modulos m ON m.curso_id = c.id
+        JOIN aulas a ON a.modulo_id = m.id
+        JOIN progresso_aulas pa ON pa.aula_id = a.id
+        WHERE pa.user_id = ?
+    ''', (user_id,)).fetchall()
+
+    for curso in cursos:
+        curso_id = curso['id']
+        curso_nome = curso['nome']
+        progresso_aluno['cursos'][curso_nome] = {
+            'modulos': {},
+            'media_curso': None
+        }
+        modulos = db.execute('''
+            SELECT DISTINCT m.id, m.titulo 
+            FROM modulos m
+            WHERE m.curso_id = ?
+        ''', (curso_id,)).fetchall()
+
+        total_media_modulos = 0
+        modulo_count = 0
+
+        for modulo in modulos:
+            modulo_id = modulo['id']
+            modulo_titulo = modulo['titulo']
+            progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo] = {
+                'aulas': {},
+                'media_modulo': None
+            }
+            aulas = db.execute('''
+                SELECT a.id, a.titulo 
+                FROM aulas a
+                WHERE a.modulo_id = ?
+            ''', (modulo_id,)).fetchall()
+
+            total_media_aulas = 0
+            aula_count = 0
+
+            for aula in aulas:
+                aula_id = aula['id']
+                aula_titulo = aula['titulo']
+                progresso = db.execute('''
+                    SELECT r.nota, pa.concluida
+                    FROM progresso_aulas pa
+                    LEFT JOIN respostas r ON r.aula_id = pa.aula_id AND r.user_id = pa.user_id
+                    WHERE pa.aula_id = ? AND pa.user_id = ?
+                ''', (aula_id, user_id)).fetchone()
+
+                nota = progresso['nota'] if progresso['nota'] is not None else 0
+                concluida = 'Concluída' if progresso['concluida'] else 'Não concluída'
+
+                progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo]['aulas'][aula_titulo] = {
+                    'nota': nota,
+                    'concluida': concluida
+                }
+                total_media_aulas += nota
+                aula_count += 1
+            media_modulo = total_media_aulas / aula_count if aula_count > 0 else 0
+            progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo]['media_modulo'] = media_modulo
+            total_media_modulos += media_modulo
+            modulo_count += 1
+        media_curso = total_media_modulos / modulo_count if modulo_count > 0 else 0
+        progresso_aluno['cursos'][curso_nome]['media_curso'] = media_curso
+
+    return render_template('progresso_aluno.html', progresso_aluno=progresso_aluno)
+
 
