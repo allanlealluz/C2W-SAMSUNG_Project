@@ -354,7 +354,6 @@ def get_student_scores_by_module():
         r.user_id, 
         u.nome, 
         r.nota, 
-        pa.concluida, 
         a.titulo AS aula_nome, 
         m.titulo AS modulo_nome, 
         c.nome AS curso_nome
@@ -364,19 +363,19 @@ def get_student_scores_by_module():
         JOIN modulos m ON a.modulo_id = m.id
         JOIN cursos c ON m.curso_id = c.id
         JOIN usuarios u ON r.user_id = u.id
-        JOIN progresso_aulas pa ON pa.user_id = u.id AND pa.aula_id = a.id;
+    ORDER BY c.nome, m.titulo, a.titulo;
     """
     
     cursor.execute(query)
     scores = cursor.fetchall()
     
     alunos_data = []
-    for aluno_id, nome, nota, concluida, aula_nome, modulo_nome, curso_nome in scores:
-        progresso = 1 if concluida else 0
-        alunos_data.append((aluno_id, nome, nota, progresso, aula_nome, modulo_nome, curso_nome))
+    for aluno_id, nome, nota, aula_nome, modulo_nome, curso_nome in scores:
+        alunos_data.append((aluno_id, nome, nota, aula_nome, modulo_nome, curso_nome))
 
     conn.close()
     return alunos_data
+
 
 if __name__ == '__main__':
     init_db()

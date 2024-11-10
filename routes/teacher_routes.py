@@ -197,11 +197,12 @@ def ver_feedbacks():
                         for resposta in respostas:
                             aluno_id = resposta['user_id']
                             nota = resposta['nota']
-                            if isinstance(nota, (int, float)):
-                                notas_por_aula[aula_id].append(nota)
-                                notas_por_curso[curso_nome][modulo_nome].append(nota)
+                            notas_por_aula[titulo_aula].append(nota)
+                            print([(id,nota) for id,nota in notas_por_aula.items()])
+                            notas_por_curso[curso_nome][modulo_nome].append(nota)
 
-            medias_por_aula = {titulo_aula: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
+            medias_por_aula = {titulo_aula: (sum(notas) / len(notas)) for titulo_aula,notas in notas_por_aula.items()}
+            print(f"medias por aula: {medias_por_aula}")
             medias_por_curso = {
                 curso: {modulo: (sum(notas) / len(notas)) if notas else 0 for modulo, notas in modulos.items()}
                 for curso, modulos in notas_por_curso.items()
