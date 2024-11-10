@@ -20,14 +20,8 @@ def kmeans_clustering(alunos_data):
 
     return notas, labels, centroids
 
-import matplotlib.pyplot as plt
-import numpy as np
-from collections import defaultdict
-
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.figure(figsize=(16, 12))
-
-    # Agrupar módulos por cursos
     cursos_modulos = defaultdict(list)
     for aluno in alunos_data:
         if len(aluno) < 6:
@@ -36,21 +30,15 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         modulo = aluno[4]
         if modulo not in cursos_modulos[curso]:
             cursos_modulos[curso].append(modulo)
-
-    # Organizar a estrutura de cursos e módulos para o eixo Y
     cursos_modulos_indices = {}
     index = 0
     for curso, modulos in sorted(cursos_modulos.items()):
         for modulo in sorted(modulos):
             cursos_modulos_indices[(curso, modulo)] = index
             index += 1
-
-    # Define cores únicas para cada aluno
     unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
     colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))  
     aluno_colors = {nome: colors[i] for i, nome in enumerate(unique_alunos)}
-
-    # Jitter no eixo Y para melhorar visualização
     jitter_strength_y = 0.1  
     notas_por_aluno = defaultdict(list)
 
@@ -63,26 +51,18 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         modulo = aluno[4]  
         curso = aluno[5]  
         notas_por_aluno[nome].append((nota, modulo, curso)) 
-
-    # Criação do gráfico de dispersão com as notas de cada aluno por módulo/curso
     for aluno, notas in notas_por_aluno.items():
         for nota, modulo, curso in notas:
             y_pos = cursos_modulos_indices[(curso, modulo)]
             x_pos = float(nota)
-            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)  # Jitter no eixo Y apenas
+            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
             plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
-
-    # Legenda com nome dos alunos
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
     plt.legend(title="Alunos", loc="upper right", bbox_to_anchor=(1.10, 1))
-
-    # Configurações dos eixos e título
     plt.title('Notas dos Alunos por Cursos e Módulos')
     plt.xlabel('Notas')
     plt.ylabel('Cursos e Módulos')
-
-    # Eixo Y com pares Curso-Módulo
     y_labels = [f"{curso} - {modulo}" for curso, modulo in sorted(cursos_modulos_indices.keys())]
     plt.yticks(range(len(y_labels)), y_labels)
 
