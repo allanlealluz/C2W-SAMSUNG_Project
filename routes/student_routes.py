@@ -268,25 +268,24 @@ def progresso_aluno():
         'cursos': {}
     }
     cursos = db.execute('''
-        SELECT DISTINCT c.id, c.nome 
+        SELECT c.id, c.nome
         FROM cursos c
-        JOIN modulos m ON m.curso_id = c.id
-        JOIN aulas a ON a.modulo_id = m.id
-        JOIN progresso_aulas pa ON pa.aula_id = a.id
-        WHERE pa.user_id = ?
+        JOIN inscricoes i ON i.curso_id = c.id
+        WHERE i.aluno_id = ?
     ''', (user_id,)).fetchall()
 
     for curso in cursos:
         curso_id = curso['id']
         curso_nome = curso['nome']
+
         progresso_aluno['cursos'][curso_nome] = {
             'modulos': {},
             'media_curso': None
         }
         modulos = db.execute('''
-            SELECT DISTINCT m.id, m.titulo 
-            FROM modulos m
-            WHERE m.curso_id = ?
+            SELECT id, titulo
+            FROM modulos
+            WHERE curso_id = ?
         ''', (curso_id,)).fetchall()
 
         total_media_modulos = 0
@@ -295,14 +294,15 @@ def progresso_aluno():
         for modulo in modulos:
             modulo_id = modulo['id']
             modulo_titulo = modulo['titulo']
+
             progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo] = {
                 'aulas': {},
                 'media_modulo': None
             }
             aulas = db.execute('''
-                SELECT a.id, a.titulo 
-                FROM aulas a
-                WHERE a.modulo_id = ?
+                SELECT id, titulo
+                FROM aulas
+                WHERE modulo_id = ?
             ''', (modulo_id,)).fetchall()
 
             total_media_aulas = 0
@@ -311,6 +311,7 @@ def progresso_aluno():
             for aula in aulas:
                 aula_id = aula['id']
                 aula_titulo = aula['titulo']
+
                 progresso = db.execute('''
                     SELECT r.nota, pa.concluida
                     FROM progresso_aulas pa
@@ -318,13 +319,14 @@ def progresso_aluno():
                     WHERE pa.aula_id = ? AND pa.user_id = ?
                 ''', (aula_id, user_id)).fetchone()
 
-                nota = progresso['nota'] if progresso['nota'] is not None else 0
-                concluida = 'Concluída' if progresso['concluida'] else 'Não concluída'
+                nota = progresso['nota'] if progresso and progresso['nota'] is not None else 0
+                concluida = 'Concluída' if progresso and progresso['concluida'] else 'Não concluída'
 
                 progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo]['aulas'][aula_titulo] = {
                     'nota': nota,
                     'concluida': concluida
                 }
+
                 total_media_aulas += nota
                 aula_count += 1
             media_modulo = total_media_aulas / aula_count if aula_count > 0 else 0
@@ -335,5 +337,6 @@ def progresso_aluno():
         progresso_aluno['cursos'][curso_nome]['media_curso'] = media_curso
 
     return render_template('progresso_aluno.html', progresso_aluno=progresso_aluno)
+
 
 
