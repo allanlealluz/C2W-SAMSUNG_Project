@@ -215,7 +215,7 @@ def get_cursos():
     return cursos
 def get_modulos_by_curso_id(curso_id):
     db = get_db()
-    curso = db.execute('SELECT curso_id,titulo,descricao FROM modulos WHERE curso_id = ?', (curso_id,)).fetchall()
+    curso = db.execute('SELECT id,titulo,descricao, curso_id FROM modulos WHERE curso_id = ?', (curso_id,)).fetchall()
     return curso
 def get_aulas(user_id):
     db = get_db()

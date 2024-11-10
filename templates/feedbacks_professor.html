@@ -45,6 +45,7 @@
         <!-- Feedback por Curso, Módulo e Aula -->
         <section>
             <h3 class="mb-4">Feedback por Curso</h3>
+            <h4 class="mb-3">Respostas dos alunos</h4>
             {% if feedbacks %}
                 {% for curso_nome, modulos in feedbacks.items() %}
                     <div class="card shadow-sm">
@@ -56,9 +57,9 @@
                                 {% for modulo_nome, aulas in modulos.items() %}
                                     <div class="container-fluid mb-3">
                                         <h5 class="c2wColor p-2">{{ modulo_nome }}</h5>
-                                        {% for aula_nome, respostas in aulas.items() %}
+                                        {% for aula_id, respostas in aulas.items() %}
                                             <div class="card mb-3">
-                                                <div class="card-header bg-dark text-white">{{ aula_nome }}</div>
+                                                <div class="card-header bg-dark text-white">{{ aula_id }}</div>
                                                 <div class="card-body">
                                                     {% if respostas %}
                                                         <ul class="list-group">
@@ -102,7 +103,7 @@
                     </ul>
                 </div>
                 <div class="col-md-6">
-                    <h4>Por Tópico</h4>
+                    <h4>Por Módulo</h4>
                     <ul class="list-group">
                         {% if medias_por_curso %}
                             {% for curso, topicos in medias_por_curso.items() %}

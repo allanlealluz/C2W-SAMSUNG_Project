@@ -122,11 +122,9 @@ def get_modulos(curso_id):
         FROM modulos
         WHERE curso_id = ?
     ''', (curso_id,)).fetchall()
-    
-    # Converte cada linha em um dicionário
+
     modulos_list = [{'id': modulo['id'], 'titulo': modulo['titulo']} for modulo in modulos]
 
-    # Retorna a lista de módulos em JSON
     return jsonify({'modulos': modulos_list})
 @teacher_bp.route('/criar_modulo', methods=["GET", "POST"])
 def criar_modulo():
@@ -149,11 +147,8 @@ def criar_modulo():
             flash(f"Erro ao criar o módulo: {e}", "error")
             return redirect(url_for('teacher.criar_modulo'))
 
-    # Carregar cursos para exibir na seleção
     cursos = get_cursos()
     return render_template("criar_modulo.html", cursos=cursos)
-
-
 @teacher_bp.route('/dashboard_professor/feedbacks')
 def ver_feedbacks():
     if session.get('user') and session.get('tipo') == 'professor':
@@ -181,21 +176,24 @@ def ver_feedbacks():
                 medias_por_curso[curso_nome] = {}
 
                 for modulo in modulos:
-                    modulo_id, modulo_nome = modulo[:2]
-                    aulas = get_aulas_por_modulo(modulo_id)
+                    modulo_id, modulo_nome = modulo[0], modulo[1]
                     medias_por_curso[curso_nome][modulo_nome] = {}
 
+                    aulas = get_aulas_por_modulo(modulo_id)
+
+                    aulas_processadas = set()  # Conjunto para rastrear aulas processadas e evitar duplicação
                     for aula in aulas:
                         aula_id, titulo_aula = aula[0], aula[3]
+                        if aula_id in aulas_processadas:
+                            continue
+                        aulas_processadas.add(aula_id)
                         respostas = get_respostas_by_aula(aula_id)
                         feedbacks[curso_nome][modulo_nome][titulo_aula] = respostas if respostas else []
-
                         progresso = get_progresso_by_aula(aula_id)
                         for aluno in progresso:
                             nome = aluno['nome']
                             total_alunos.add(nome)
                             progresso_por_aluno[nome] = aluno['concluida']
-
                         for resposta in respostas:
                             aluno_id = resposta['user_id']
                             nota = resposta['nota']
@@ -203,37 +201,25 @@ def ver_feedbacks():
                                 notas_por_aula[aula_id].append(nota)
                                 notas_por_curso[curso_nome][modulo_nome].append(nota)
 
-            medias_por_aula = {aula_id: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
+            medias_por_aula = {titulo_aula: (sum(notas) / len(notas)) if notas else 0 for aula_id, notas in notas_por_aula.items()}
             medias_por_curso = {
                 curso: {modulo: (sum(notas) / len(notas)) if notas else 0 for modulo, notas in modulos.items()}
                 for curso, modulos in notas_por_curso.items()
             }
-            print(f"Notas por aula: {medias_por_aula}")
+
             alunos_data = defaultdict(lambda: {'historico': [], 'id': None})
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
                 if alunos_data[nome]['id'] is None:
                     alunos_data[nome]['id'] = aluno_id
                 alunos_data[nome]['historico'].append({'nota': nota, 'progresso': progresso, 'aula': aula})
-            notas = np.array([entry['nota'] for aluno in alunos_data.values() for entry in aluno['historico']])
-            progresso = np.array([entry['progresso'] for aluno in alunos_data.values() for entry in aluno['historico']])
-            if len(notas) == len(progresso) and len(notas) > 0:
-                kmeans = KMeans(n_clusters=3)
-                X = np.column_stack((notas, progresso))
-                kmeans.fit(X)
-                labels = kmeans.labels_
 
-                grupos_alunos = defaultdict(list)
-                for i, aluno in enumerate(alunos_data.keys()):
-                    grupos_alunos[labels[i]].append(aluno)
-
+            if alunos_data:
                 previsoes = prever_notas(alunos_data)
                 for nome, dados in previsoes.items():
                     notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico']]
                     previsoes[nome]['classificacao'] = classificar_aluno(notas_historico)
-
-                if alunos_data:
-                    plot_url = generate_performance_plot(alunos_data, previsoes)
-
+                plot_url = generate_performance_plot(alunos_data, previsoes)
+                
             feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_curso, previsoes, progresso_por_aluno)
 
             return render_template(
@@ -260,6 +246,7 @@ def ver_feedbacks():
                 medias_por_curso=medias_por_curso
             )
     return redirect(url_for('auth.login'))
+
 
 def classificar_aluno(notas):
     media_nota = np.mean(notas) if notas else 0
