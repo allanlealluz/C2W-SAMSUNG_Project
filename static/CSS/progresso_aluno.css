@@ -73,3 +73,6 @@ h1 {
     color:#fff;
     background-color:#7b01a3;
 }
+.navbar-brand, .nav-link {
+    color: #fff;
+}

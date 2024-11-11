@@ -65,11 +65,19 @@ p {
     background-color: #1a1a3d;
     border-radius: 8px;
     overflow: hidden;
+    height: 300px;
     color: #ffffff;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s;
     margin: 15px 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-body {
+    flex-grow: 1;
 }
 
 .card:hover {
