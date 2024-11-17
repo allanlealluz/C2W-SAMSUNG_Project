@@ -73,7 +73,7 @@ def gerenciar_usuarios():
 
     try:
         db = get_db()
-        usuarios = db.execute('SELECT id, nome, email, tipo FROM usuarios').fetchall()
+        usuarios = db.execute('SELECT id, nome, email, tipo FROM usuarios where tipo != "admin"').fetchall()
         usuarios = [dict(id=user[0], nome=user[1], email=user[2], tipo=user[3]) for user in usuarios]
     except sqlite3.Error as e:
         print(f"Erro ao buscar usuários: {e}")
@@ -109,7 +109,7 @@ def excluir_usuario(user_id):
 
     flash("Usuário excluído com sucesso.")
     return redirect(url_for('admin.gerenciar_usuarios'))
-
+@admin_bp.route('/dashboard_admin/editar_curso/<int:curso_id>', methods=['POST',"GET"])
 def editar_curso(curso_id):
     if request.method == "POST":
         novo_nome = request.form["nome"]

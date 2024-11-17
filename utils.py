@@ -121,8 +121,14 @@ def generate_performance_plot(alunos_data, previsoes):
     cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
     max_aulas = 0
-
+    notas = [
+        nota if nota is not None else 0
+        for aluno, dados in alunos_data.items()
+        for entry in dados['historico']
+        for nota in [entry['nota']]
+    ]
     for i, (nome, dados) in enumerate(alunos_data.items()):
+        
         notas = [entry['nota'] for entry in dados['historico']]
         max_aulas = max(max_aulas, len(notas))
         cor_aluno = cores[i]

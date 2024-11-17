@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_cursos,get_modulos_by_curso_id,
     get_respostas_by_aula, get_progresso_by_aula, get_alunos,get_perguntas_by_id,
-    Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_db, criar_modulos, get_aulas_por_modulo, get_student_scores_by_module
+    resp_aluno, update_nota_resposta, get_student_scores,get_db, criar_modulos, get_aulas_por_modulo, get_student_scores_by_module
 )
 from utils import (
     generate_performance_plot, kmeans_clustering,
@@ -44,17 +44,13 @@ def dashboard_professor():
             if nota is not None:
                 alunos_dict[nome]['total_notas'] += nota
                 alunos_dict[nome]['num_notas'] += 1
-            else:
-                alunos_dict[nome]['total_notas'] = 0
-                alunos_dict[nome]['num_notas'] = 0
+
         alunos_media = []
         for nome, data in alunos_dict.items():
-            if data['num_notas'] == 0:
-                alunos_media.append({'nome': nome, 'media': 0})
-            else:
-                media = data['total_notas'] / data['num_notas']
-                alunos_media.append({'nome': nome, 'media': media})
-        alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], float) else 0, reverse=True)
+            media = data['total_notas'] / data['num_notas'] if data['num_notas'] > 0 else None
+            alunos_media.append({'nome': nome, 'media': media or "Sem respostas"})
+        alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], float) else -1, reverse=True)
+
 
         return render_template(
             'dashboard_professor.html',
@@ -194,12 +190,21 @@ def ver_feedbacks():
                             print([(id,nota) for id,nota in notas_por_aula.items()])
                             notas_por_curso[curso_nome][modulo_nome].append(nota)
 
-            medias_por_aula = {titulo_aula: (sum(notas) / len(notas)) for titulo_aula,notas in notas_por_aula.items()}
-            print(f"medias por aula: {medias_por_aula}")
-            medias_por_curso = {
-                curso: {modulo: (sum(notas) / len(notas)) if notas else 0 for modulo, notas in modulos.items()}
-                for curso, modulos in notas_por_curso.items()
-            }
+                            medias_por_aula = {
+                                titulo_aula: (sum([n for n in notas if n is not None]) / len([n for n in notas if n is not None]))
+                                if any(notas) else 0
+                                for titulo_aula, notas in notas_por_aula.items()
+                            }
+
+                    medias_por_curso = {
+                        curso: {
+                            modulo: (sum([n for n in notas if n is not None]) / len([n for n in notas if n is not None]))
+                            if any(notas) else 0
+                            for modulo, notas in modulos.items()
+                        }
+                        for curso, modulos in notas_por_curso.items()
+                    }
+
 
             alunos_data = defaultdict(lambda: {'historico': [], 'id': None})
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
@@ -260,7 +265,8 @@ def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progre
                 if isinstance(media, (int, float)):
                     feedback.append(f"Aula {aula}: Média {media:.2f}")
                 else:
-                    feedback.append(f"Aula {aula}: Média inválida")
+                    feedback.append(f"Aula {aula}: Sem respostas suficientes")
+
 
         if medias_por_topico:
             feedback.append("\nMédias por Tópico:")
