@@ -34,7 +34,6 @@ def dashboard_professor():
     if user_id and session['tipo'] == 'professor':
         userData = find_user_by_id(user_id)
 
-
         alunos_data = get_student_scores()
         alunos_dict = {}
 
@@ -48,9 +47,9 @@ def dashboard_professor():
         alunos_media = []
         for nome, data in alunos_dict.items():
             media = data['total_notas'] / data['num_notas'] if data['num_notas'] > 0 else None
-            alunos_media.append({'nome': nome, 'media': media or "Sem respostas"})
-        alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], float) else -1, reverse=True)
-
+            alunos_media.append({'nome': nome, 'media': media})
+        
+        alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], (int, float)) else -1, reverse=True)
 
         return render_template(
             'dashboard_professor.html',
@@ -59,6 +58,7 @@ def dashboard_professor():
         )
 
     return redirect(url_for('auth.login'))
+
 
 @teacher_bp.route('/Criar_Aula', methods=["GET", "POST"])
 def criarAula():

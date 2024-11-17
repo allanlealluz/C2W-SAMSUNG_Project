@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard do Professor</title>
-    <link rel="icon" href="{{url_for('static',filename='/img/C2W.png')}}">
+    <link rel="icon" href="{{ url_for('static', filename='/img/C2W.png') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{url_for('static',filename='/CSS/dashboard_professor.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/dashboard_professor.css') }}">
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <a class="navbar-brand" href="#">C2W</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+            aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
@@ -28,9 +31,9 @@
         </div>
     </nav>
 
-    <div class="container container-custom text-center mt-5">
+    <div class="container container-custom text-center mt-5 pt-5">
         <h1>Dashboard do Professor</h1>
-        <h2>Bem-vindo, {{user['nome']}}</h2>
+        <h2>Bem-vindo, {{ user['nome'] }}</h2>
 
         <div class="mt-4">
             <h3>Desempenho dos Alunos</h3>
@@ -45,7 +48,13 @@
                     {% for aluno in alunos %}
                         <tr>
                             <td>{{ aluno['nome'] }}</td>
-                            <td>{{ aluno['media'] | round(2) }}</td>
+                            <td>
+                                {% if aluno['media'] is not None %}
+                                    {{ aluno['media'] | round(2) }}
+                                {% else %}
+                                    Sem respostas
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -58,4 +67,5 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>
