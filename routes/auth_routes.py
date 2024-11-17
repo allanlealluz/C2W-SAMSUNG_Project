@@ -8,17 +8,27 @@ def index():
     init_db()
     verificar_tabelas()
     return render_template("home.html")
+
 @auth_bp.route("/login", methods=["POST", "GET"])
 def login():
     if request.method == "POST":
         email = request.form['email']
         senha = sha256(request.form['senha'].encode('utf-8')).hexdigest()
+        print(f"Senha {senha}")
         user = find_user(email)
         if user and user['senha'] == senha:
             session["user"] = user['id']
             session["tipo"] = user['tipo']
-            return redirect(url_for('teacher.dashboard_professor') if user['tipo'] == 'professor' else url_for('student.dashboard_aluno'))
-        return render_template("errorPage.html")
+            
+            if user['tipo'] == 'admin':
+                return redirect(url_for('admin.dashboard_admin'))
+            elif user['tipo'] == 'professor':
+                return redirect(url_for('teacher.dashboard_professor'))
+            else:
+                return redirect(url_for('student.dashboard_aluno'))
+        else:
+            return render_template("errorPage.html", mensagem="Email ou senha incorretos")
+    
     return render_template("login.html")
 
 @auth_bp.route("/cadastro", methods=["POST", "GET"])
@@ -27,11 +37,12 @@ def cadastro():
         nome = request.form['nome']
         email = request.form['email']
         senha = sha256(request.form['senha'].encode('utf-8')).hexdigest()
-        tipo = request.form['tipo']  # 'professor' ou 'aluno'
+        tipo = request.form['tipo']
         create_user(nome, email, senha, tipo)
         return redirect(url_for('auth.login'))
     return render_template("cadastro.html")
 @auth_bp.route('/logout')
+
 def logout():
     session.clear()
     return redirect(url_for('auth.login'))

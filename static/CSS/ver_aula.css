@@ -4,38 +4,47 @@ body {
     font-family: 'Arial', sans-serif;
 }
 
-.content {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.navbar {
+    background-color: #6a0dad;
 }
 
-.btn-primary {
-    background-color: #6a5acd;
-    border: none;
+.navbar-brand {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link {
     color: #ffffff;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+    transition: color 0.3s;
 }
 
-.btn-primary:hover {
-    background-color: #483d8b;
+.navbar-nav .nav-link:hover {
+    color: #d3d3e8;
 }
 
-.interaction {
-    background-color: #f2f2f2;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 20px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+.content {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
     color: #6a5acd;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-top: 1.5rem;
+    border-bottom: 2px solid #6a5acd;
+    padding-bottom: 0.5rem;
 }
 
 p {
@@ -45,8 +54,59 @@ p {
 a {
     color: #6a5acd;
     text-decoration: none;
+    transition: color 0.3s;
 }
 
 a:hover {
+    color: #483d8b;
     text-decoration: underline;
+}
+
+.btn-primary, .btn-success {
+    background-color: #6a5acd;
+    border: none;
+    color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.btn-primary:hover, .btn-success:hover {
+    background-color: #483d8b;
+    transform: translateY(-3px);
+}
+
+.interaction {
+    background-color: #f4f6fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+}
+
+.progress {
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.progress-bar {
+    background-color: #6a5acd;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.form-control {
+    border-radius: 5px;
+    border-color: #d3d3e8;
+}
+
+.form-control-static {
+    background-color: #eef2ff;
+    padding: 0.8rem;
+    border-radius: 5px;
+    color: #495057;
 }

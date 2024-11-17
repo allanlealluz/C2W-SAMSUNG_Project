@@ -7,7 +7,7 @@ matplotlib.use('Agg')
 from collections import defaultdict
 
 def kmeans_clustering(alunos_data):
-    notas = np.array([nota for _, _, nota, _, _ in alunos_data if isinstance(nota, (int, float))]).reshape(-1, 1)
+    notas = np.array([nota for _, _, nota, _, _, _ in alunos_data if isinstance(nota, (int, float))]).reshape(-1, 1)
 
     if notas.size == 0:
         return None, None, None
@@ -22,52 +22,55 @@ def kmeans_clustering(alunos_data):
 
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.figure(figsize=(16, 12))
-
-    topicos = sorted(set(aluno[4] for aluno in alunos_data if len(aluno) > 4))
-    if not topicos:
-        return None
-
-    topico_indices = {topico: i for i, topico in enumerate(topicos)}
-
+    cursos_modulos = defaultdict(list)
+    for aluno in alunos_data:
+        if len(aluno) < 6:
+            continue
+        curso = aluno[5]
+        modulo = aluno[4]
+        if modulo not in cursos_modulos[curso]:
+            cursos_modulos[curso].append(modulo)
+    cursos_modulos_indices = {}
+    index = 0
+    for curso, modulos in sorted(cursos_modulos.items()):
+        for modulo in sorted(modulos):
+            cursos_modulos_indices[(curso, modulo)] = index
+            index += 1
     unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
-    colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))
+    colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))  
     aluno_colors = {nome: colors[i] for i, nome in enumerate(unique_alunos)}
-
-    jitter_strength_x = 0.1
-    jitter_strength_y = 0.1
-
+    jitter_strength_y = 0.1  
     notas_por_aluno = defaultdict(list)
 
     for aluno in alunos_data:
-        if len(aluno) < 4:
+        if len(aluno) < 6:
             continue
 
-        nome = aluno[1]
-        nota = aluno[2]
-        topico = aluno[4]
-        notas_por_aluno[nome].append((nota, topico))
-
+        nome = aluno[1]  
+        nota = aluno[2] 
+        modulo = aluno[4]  
+        curso = aluno[5]  
+        notas_por_aluno[nome].append((nota, modulo, curso)) 
     for aluno, notas in notas_por_aluno.items():
-        for nota, topico in notas:
-            y_pos = topico_indices[topico]
-            x_pos = float(nota) + np.random.uniform(-jitter_strength_x, jitter_strength_x)  # Jitter em X
-            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)  # Jitter em Y
+        for nota, modulo, curso in notas:
+            y_pos = cursos_modulos_indices[(curso, modulo)]
+            x_pos = float(nota)
+            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
             plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
-
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
     plt.legend(title="Alunos", loc="upper right", bbox_to_anchor=(1.10, 1))
-
-    plt.title('Notas dos Alunos por Aulas')
+    plt.title('Notas dos Alunos por Cursos e Módulos')
     plt.xlabel('Notas')
-    plt.ylabel('Aulas')
-    plt.yticks(range(len(topicos)), topicos)
+    plt.ylabel('Cursos e Módulos')
+    y_labels = [f"{curso} - {modulo}" for curso, modulo in sorted(cursos_modulos_indices.keys())]
+    plt.yticks(range(len(y_labels)), y_labels)
 
     plt.xlim(0, 11)
     plt.grid(True, linestyle='--', linewidth=0.5)
 
     plot_path = 'static/images/cluster_plot.png'
-    plt.savefig(plot_path)
+    plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
 
     return 'cluster_plot.png'
@@ -118,8 +121,14 @@ def generate_performance_plot(alunos_data, previsoes):
     cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
     max_aulas = 0
-
+    notas = [
+        nota if nota is not None else 0
+        for aluno, dados in alunos_data.items()
+        for entry in dados['historico']
+        for nota in [entry['nota']]
+    ]
     for i, (nome, dados) in enumerate(alunos_data.items()):
+        
         notas = [entry['nota'] for entry in dados['historico']]
         max_aulas = max(max_aulas, len(notas))
         cor_aluno = cores[i]
@@ -190,42 +199,45 @@ def prever_notas(alunos_data):
 
     return previsoes
 
-def generate_performance_by_topic_plot(alunos_data):
+def generate_performance_by_module_plot(alunos_data):
     if not alunos_data or not isinstance(alunos_data, list):
         raise ValueError("alunos_data deve ser uma lista.")
 
-    notas_por_topico = defaultdict(list)
+    notas_por_curso_modulo = defaultdict(list)
 
     for aluno in alunos_data:
-        nome = aluno[1]
-        nota = aluno[2]
-        topico = aluno[4]
-
+        nome = aluno[1] 
+        nota = aluno[2]   
+        curso = aluno[4]  
+        modulo = aluno[5] 
+        print(f"dados gerais do aluno: {nome}, {nota}, {curso}, {modulo}")
         try:
             nota = float(nota)
         except ValueError:
             raise ValueError(f"A nota '{nota}' para o aluno '{nome}' não é um número válido.")
-
-        notas_por_topico[topico].append(nota)
-
-    medias_por_topico = {topico: np.mean(notas) for topico, notas in notas_por_topico.items()}
-    topicos = list(medias_por_topico.keys())
-    medias = list(medias_por_topico.values())
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.barh(topicos, medias, color='skyblue')
+        notas_por_curso_modulo[(curso, modulo)].append(nota)
+        print(f"notas_por_curso_modulo: {notas_por_curso_modulo}")
+    medias_por_curso_modulo = {
+        (curso, modulo): np.mean(notas) for (curso,modulo), notas in notas_por_curso_modulo.items()
+    }
+    print(f"medias_por_curso_modulo: {medias_por_curso_modulo}")
+    cursos_modulos = [f"{curso} - {modulo}" for curso, modulo in medias_por_curso_modulo.keys()]
+    medias = list(medias_por_curso_modulo.values())
+    fig, ax = plt.subplots(figsize=(16, 10))
+    ax.barh(cursos_modulos, medias, color='skyblue')
     ax.set_xlabel('Média das Notas')
-    ax.set_ylabel('Tópicos')
-    ax.set_title('Desempenho dos Alunos por Tópico')
+    ax.set_ylabel('Cursos e Módulos')
+    ax.set_title('Desempenho dos Alunos por Curso e Módulo')
 
     for index, value in enumerate(medias):
         ax.text(value, index, f"{value:.2f}")
-
-    plot_path = 'static/images/performance_by_topic_plot.png'
+    plt.subplots_adjust(left=0.2)
+    plot_path = 'static/images/performance_by_module_plot.png'
     plt.savefig(plot_path)
     plt.close()
 
-    return 'performance_by_topic_plot.png'
+    return 'performance_by_module_plot.png'
+
 
 def classificar_alunos_por_grupos(notas):
     media_nota = np.mean(notas) if notas else 0

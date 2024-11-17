@@ -97,3 +97,16 @@ img {
 .navbar {
     color:#7b01a3;
 }
+.nav-link{
+    color:#fff !important;
+}
+.navbar-brand{
+    color:#fff;
+}
+.c2wColor{
+    color:#fff;
+    background-color:#7b01a3;
+}
+.section-header { font-weight: bold; padding: 10px; }
+.card { margin-bottom: 20px; }
+.list-group-item { border: none; }

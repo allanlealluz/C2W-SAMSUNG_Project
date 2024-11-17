@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
-from models import get_db, find_user_by_id, get_aulas
+from models import get_db, find_user_by_id, inscrever_aluno_curso
 
 student_bp = Blueprint('student', __name__)
 
@@ -11,20 +11,33 @@ def dashboard_aluno():
 
     user_info = find_user_by_id(user_id)
 
+    if not user_info:  
+        return redirect(url_for('auth.login'))
+
     db = get_db()
-    cursos_programacao = db.execute('''
-        SELECT a.* FROM aulas a
-        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Programação' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
-    ''', (user_id,)).fetchall()
+    try:
 
-    cursos_robotica = db.execute('''
-        SELECT a.* FROM aulas a
-        LEFT JOIN progresso_aulas pa ON a.id = pa.aula_id AND pa.user_id = ?
-        WHERE a.topico = 'Robótica' AND (pa.concluida IS NULL OR pa.concluida = 0) LIMIT 1
-    ''', (user_id,)).fetchall()
+        cursos_inscritos = db.execute('''
+            SELECT c.id, c.nome, c.descricao, c.imagem
+            FROM cursos c
+            JOIN inscricoes i ON c.id = i.curso_id
+            WHERE i.aluno_id = ?
+        ''', (user_id,)).fetchall()
+        
+        cursos_disponiveis = db.execute('''
+            SELECT c.id, c.nome, c.descricao, c.imagem
+            FROM cursos c
+            LEFT JOIN inscricoes i ON c.id = i.curso_id AND i.aluno_id = ?
+            WHERE i.id IS NULL
+        ''', (user_id,)).fetchall()
+        print(cursos_disponiveis)
 
-    return render_template('dashboard_aluno.html', user=user_info, cursos_programacao=cursos_programacao, cursos_robotica=cursos_robotica)
+        return render_template('dashboard_aluno.html', user=user_info, cursos_inscritos=cursos_inscritos, cursos_disponiveis=cursos_disponiveis)
+
+    except Exception as e:
+        print(e)
+        return render_template('dashboard_aluno.html', user=user_info)
+
 
 
 @student_bp.route('/ver_aula/<int:aula_id>', methods=["GET", "POST"])
@@ -40,12 +53,16 @@ def ver_aula(aula_id):
     if not aula:
         flash("Aula não encontrada.", "error")
         return redirect(url_for('student.dashboard_aluno'))
+    respostas_aluno = db.execute(
+        'SELECT pergunta_id, resposta FROM respostas WHERE user_id = ? AND aula_id = ?',
+        (user_id, aula_id)
+    ).fetchall()
+    respostas_aluno_dict = {resposta['pergunta_id']: resposta['resposta'] for resposta in respostas_aluno}
 
     if request.method == "POST":
         respostas = request.form.to_dict()
         
         try:
-            # Salvar as respostas
             for pergunta_id, resposta in respostas.items():
                 if resposta.strip():
                     exists = db.execute(
@@ -73,9 +90,9 @@ def ver_aula(aula_id):
         except Exception as e:
             db.rollback()
             flash(f"Erro ao enviar respostas: {str(e)}", "error")
+    todas_respondidas = all(pergunta['id'] in respostas_aluno for pergunta in perguntas)
 
-    return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
-
+    return render_template('ver_aula.html', aula=aula, perguntas=perguntas, respostas_aluno=respostas_aluno_dict, todas_respondidas = todas_respondidas)
 
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])
@@ -99,7 +116,7 @@ def concluir_aula(aula_id):
     else:
         flash("Aula já foi concluída anteriormente.", "info")
     
-    return redirect(url_for('student.dashboard_aluno'))
+    return redirect(url_for('student.ver_curso'))
 
 @student_bp.route('/responder_atividade/<int:aula_id>', methods=["POST"])
 def responder_atividade(aula_id):
@@ -200,3 +217,132 @@ def update_progress():
     except Exception as e:
         db.rollback()
         return jsonify({'error': 'Erro ao atualizar progresso: ' + str(e)}), 500
+@student_bp.route('/inscrever_curso/<int:curso_id>', methods=["POST"])
+def inscrever_curso(curso_id):
+    if 'user' not in session or session['tipo'] != 'aluno':
+        return redirect(url_for('auth.login'))
+
+    aluno_id = session['user']
+    resultado = inscrever_aluno_curso(aluno_id, curso_id)
+
+    if resultado == "sucesso":
+        flash("Inscrição realizada com sucesso!", "success")
+    elif resultado == "inscrito":
+        flash("Você já está inscrito neste curso.", "info")
+    else:
+        flash("Erro ao tentar inscrever-se no curso.", "error")
+
+    return redirect(url_for('student.dashboard_aluno'))
+
+@student_bp.route('/ver_curso/<int:curso_id>', methods=["GET"])
+def ver_curso(curso_id):
+    user_id = session.get("user")
+    if not user_id:
+        return redirect(url_for('auth.login'))
+
+    db = get_db()
+    curso = db.execute('SELECT * FROM cursos WHERE id = ?', (curso_id,)).fetchone()
+    if not curso:
+        flash("Curso não encontrado.", "error")
+        return redirect(url_for('student.dashboard_aluno'))
+    modulos = db.execute('''
+        SELECT id, titulo, descricao
+        FROM modulos
+        WHERE curso_id = ?
+    ''', (curso_id,)).fetchall()
+
+    modulos_com_aulas = []
+    for modulo in modulos:
+        aulas = db.execute('''
+            SELECT a.id, a.titulo, 
+                   CASE WHEN pa.concluida = 1 THEN 'Concluída' ELSE 'Não concluída' END AS status_conclusao
+            FROM aulas a
+            LEFT JOIN progresso_aulas pa 
+            ON a.id = pa.aula_id AND pa.user_id = ?
+            WHERE a.modulo_id = ?
+        ''', (user_id, modulo['id'])).fetchall()
+        modulos_com_aulas.append({
+            'modulo': modulo,
+            'aulas': aulas
+        })
+    return render_template('Ver_curso.html', curso=curso, modulos_com_aulas=modulos_com_aulas)
+@student_bp.route('/progresso_aluno', methods=["GET"])
+def progresso_aluno():
+    db = get_db()
+    user_id = session.get('user')
+    progresso_aluno = {
+        'cursos': {}
+    }
+    cursos = db.execute('''
+        SELECT c.id, c.nome
+        FROM cursos c
+        JOIN inscricoes i ON i.curso_id = c.id
+        WHERE i.aluno_id = ?
+    ''', (user_id,)).fetchall()
+
+    for curso in cursos:
+        curso_id = curso['id']
+        curso_nome = curso['nome']
+
+        progresso_aluno['cursos'][curso_nome] = {
+            'modulos': {},
+            'media_curso': None
+        }
+        modulos = db.execute('''
+            SELECT id, titulo
+            FROM modulos
+            WHERE curso_id = ?
+        ''', (curso_id,)).fetchall()
+
+        total_media_modulos = 0
+        modulo_count = 0
+
+        for modulo in modulos:
+            modulo_id = modulo['id']
+            modulo_titulo = modulo['titulo']
+
+            progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo] = {
+                'aulas': {},
+                'media_modulo': None
+            }
+            aulas = db.execute('''
+                SELECT id, titulo
+                FROM aulas
+                WHERE modulo_id = ?
+            ''', (modulo_id,)).fetchall()
+
+            total_media_aulas = 0
+            aula_count = 0
+
+            for aula in aulas:
+                aula_id = aula['id']
+                aula_titulo = aula['titulo']
+
+                progresso = db.execute('''
+                    SELECT r.nota, pa.concluida
+                    FROM progresso_aulas pa
+                    LEFT JOIN respostas r ON r.aula_id = pa.aula_id AND r.user_id = pa.user_id
+                    WHERE pa.aula_id = ? AND pa.user_id = ?
+                ''', (aula_id, user_id)).fetchone()
+
+                nota = progresso['nota'] if progresso and progresso['nota'] is not None else 0
+                concluida = 'Concluída' if progresso and progresso['concluida'] else 'Não concluída'
+
+                progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo]['aulas'][aula_titulo] = {
+                    'nota': nota,
+                    'concluida': concluida
+                }
+
+                total_media_aulas += nota
+                aula_count += 1
+            media_modulo = total_media_aulas / aula_count if aula_count > 0 else 0
+            progresso_aluno['cursos'][curso_nome]['modulos'][modulo_titulo]['media_modulo'] = media_modulo
+            total_media_modulos += media_modulo
+            modulo_count += 1
+        media_curso = total_media_modulos / modulo_count if modulo_count > 0 else 0
+        progresso_aluno['cursos'][curso_nome]['media_curso'] = media_curso
+
+    return render_template('progresso_aluno.html', progresso_aluno=progresso_aluno)
+
+
+

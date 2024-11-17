@@ -12,24 +12,29 @@
 
     <div class="card col-md-4">
         <h2 class="text-center mb-4">Cadastro - C2W</h2>
-        <form method="POST">
+        <form method="POST" onsubmit="return validateForm()">
             <div class="mb-3">
                 <label for="username" class="form-label">Nome de Usuário</label>
-                <input type="text" class="form-control" id="username" name="nome" placeholder="Digite seu nome de usuário">
+                <input type="text" class="form-control" id="username" name="nome" placeholder="Digite seu nome de usuário" required>
             </div>
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu email">
+                <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu email" required>
+                <div id="emailError" class="text-danger" style="display:none;">Email inválido.</div>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Senha</label>
-                <input type="password" class="form-control" id="password" name="senha" placeholder="Digite sua senha">
+                <input type="password" class="form-control" id="password" name="senha" placeholder="Digite sua senha" required>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirmar Senha</label>
+                <input type="password" class="form-control" id="confirm_password" placeholder="Confirme sua senha" required>
+                <div id="passwordError" class="text-danger" style="display:none;">As senhas não coincidem.</div>
             </div>
             <div class="mb-3">
                 <label for="user_type" class="form-label">Você é:</label>
                 <select class="form-control" id="user_type" name="tipo" required>
                     <option value="aluno">Aluno</option>
-                    <option value="professor">Professor</option>
                 </select>
             </div>
             <div class="d-grid">
@@ -40,6 +45,29 @@
             <a href="/login" class="text-light">Já tem uma conta? Faça login</a>
         </div>
     </div>
+
+    <script>
+        function validateForm() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm_password").value;
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            if (!emailPattern.test(email)) {
+                document.getElementById("emailError").style.display = "block";
+                return false;
+            } else {
+                document.getElementById("emailError").style.display = "none";
+            }
+            if (password !== confirmPassword) {
+                document.getElementById("passwordError").style.display = "block";
+                return false;
+            } else {
+                document.getElementById("passwordError").style.display = "none";
+            }
+
+            return true;
+        }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
