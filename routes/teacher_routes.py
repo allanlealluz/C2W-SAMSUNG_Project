@@ -4,7 +4,7 @@ import numpy as np
 from werkzeug.utils import secure_filename
 from models import (
     find_user_by_id, criar_aula, get_cursos,get_modulos_by_curso_id,
-    get_respostas_by_aula, get_progresso_by_aula, get_alunos,
+    get_respostas_by_aula, get_progresso_by_aula, get_alunos,get_perguntas_by_id,
     Adicionar_nota, resp_aluno, update_nota_resposta, get_student_scores,get_db, criar_modulos, get_aulas_por_modulo, get_student_scores_by_module
 )
 from utils import (
@@ -307,20 +307,54 @@ def analisar_aluno(aluno_id):
 
     if request.method == "POST":
         nota = request.form.get('nota')
-        if nota:
+        resposta_id = request.form.get('resposta_id')
+
+        if nota and resposta_id:
             try:
-                Adicionar_nota(1, aluno_id, nota)
-                print("Nota adicionada com sucesso!", "success")
+                db = get_db()
+                db.execute(
+                    "UPDATE respostas SET nota = ? WHERE id = ? AND user_id = ?",
+                    (nota, resposta_id, aluno_id)
+                )
+                db.commit()
+
+                respostas_pendentes = [
+                    resp for resp in resp_aluno(aluno_id) if resp["nota"] is None
+                ]
+                if not respostas_pendentes:
+                    return {"redirect": url_for('teacher.avaliar_alunos')}, 200
+
+                return {"status": "Nota adicionada com sucesso!"}, 200
             except Exception as e:
-                print(f"Erro ao adicionar nota: {e}", "error")
-            return redirect(url_for('teacher.avaliar_alunos'))
+                return {"error": f"Erro ao adicionar nota: {e}"}, 500
 
     try:
-        resposta = [resp for resp in resp_aluno(aluno_id) if resp["nota"] is None]
-        return render_template('analisar_aluno.html', resposta=resposta, aluno_id=aluno_id)
+        respostas_pendentes = [
+            resp for resp in resp_aluno(aluno_id) if resp["nota"] is None
+        ]
+        perguntas = []
+        for resp in respostas_pendentes:
+            pergunta = get_perguntas_by_id(resp["pergunta_id"])
+            if not pergunta:
+                flash(f"Pergunta não encontrada para a resposta ID {resp['id']}.", "warning")
+                continue
+
+            perguntas.append({
+                "resposta_id": resp["id"],
+                "pergunta_texto": pergunta[0]["texto"], 
+                "resposta_texto": resp["resposta"]
+            })
+
+        return render_template(
+            'analisar_aluno.html',
+            perguntas=perguntas,
+            aluno_id=aluno_id
+        )
+
     except Exception as e:
-        print(f"Erro ao analisar aluno: {e}", "error")
-        return redirect(url_for('teacher.avaliar_alunos'))
+        flash(f"Erro ao analisar aluno: {e}", "error")
+        return redirect(url_for('teacher.analisar_aluno'))
+
 
 
 @teacher_bp.route('/dashboard_professor/update_nota_resposta', methods=["GET", "POST"])

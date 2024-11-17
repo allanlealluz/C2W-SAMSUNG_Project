@@ -53,12 +53,16 @@ def ver_aula(aula_id):
     if not aula:
         flash("Aula não encontrada.", "error")
         return redirect(url_for('student.dashboard_aluno'))
+    respostas_aluno = db.execute(
+        'SELECT pergunta_id, resposta FROM respostas WHERE user_id = ? AND aula_id = ?',
+        (user_id, aula_id)
+    ).fetchall()
+    respostas_aluno_dict = {resposta['pergunta_id']: resposta['resposta'] for resposta in respostas_aluno}
 
     if request.method == "POST":
         respostas = request.form.to_dict()
         
         try:
-            # Salvar as respostas
             for pergunta_id, resposta in respostas.items():
                 if resposta.strip():
                     exists = db.execute(
@@ -86,8 +90,10 @@ def ver_aula(aula_id):
         except Exception as e:
             db.rollback()
             flash(f"Erro ao enviar respostas: {str(e)}", "error")
+    todas_respondidas = all(pergunta['id'] in respostas_aluno for pergunta in perguntas)
 
-    return render_template('ver_aula.html', aula=aula, perguntas=perguntas)
+    return render_template('ver_aula.html', aula=aula, perguntas=perguntas, respostas_aluno=respostas_aluno_dict, todas_respondidas = todas_respondidas)
+
 
 @student_bp.route('/concluir_aula/<int:aula_id>', methods=["POST"])
 def concluir_aula(aula_id):

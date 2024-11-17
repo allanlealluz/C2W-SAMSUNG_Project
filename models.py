@@ -277,6 +277,9 @@ def get_resposta_by_aluno_aula(aluno_id, aula_id):
 def get_alunos():
     db = get_db()
     return db.execute("SELECT * FROM usuarios where tipo != 'professor' and tipo != 'admin'").fetchall()
+def get_perguntas_by_id(id):
+    db = get_db()
+    return db.execute("SELECT * FROM perguntas where id = ?",(id,)).fetchall()
 def resp_aluno(aluno_id):
       db = get_db()
       return db.execute("SELECT * FROM respostas where user_id = ?", (aluno_id,)).fetchall()

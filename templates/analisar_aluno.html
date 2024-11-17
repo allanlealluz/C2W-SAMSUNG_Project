@@ -1,113 +1,89 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisar Aluno</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 600px;
-            margin-top: 40px;
-        }
-        .card {
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .card-title {
-            color: #333;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .response-text {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #555;
-        }
-        .form-group label {
-            font-weight: bold;
-        }
-        .btn-submit {
-            width: 100%;
-            background-color: #007bff;
-            color: #fff;
-        }
-    </style>
+    <title>Analisar Respostas</title>
+    <link rel="icon" href="{{ url_for('static', filename='/img/C2W.png') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/dashboard_professor.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/analisar_aluno.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            {% if resposta and resposta|length > 0 %}
-                <h1 class="card-title">Analisando Respostas de: {{ resposta[0]["nome"] }} - Aula {{ aula_id }}</h1>
-                
-                {% for resp in resposta %}
-                <div class="response-block mb-4">
-                    <p class="response-text"><strong>Resposta do Aluno:</strong> {{ resp.resposta }}</p>
-                    
-                    <form class="nota-form" data-id="{{ resp.id }}" onsubmit="submitNota(event, {{ resp.id }})">
+    <div class="main-container">
+        <div class="content-box">
+            <h1>Analisar Respostas do Aluno</h1>
+
+            {% if not perguntas %}
+                <p class="text-center text-muted">Não há perguntas para analisar.</p>
+            {% else %}
+                {% for pergunta in perguntas %}
+                <div class="response-container">
+                    <h5 class="text-primary">Pergunta:</h5>
+                    <p class="font-weight-bold">{{ pergunta.pergunta_texto }}</p>
+                    <h6 class="text-secondary">Resposta do aluno:</h6>
+                    <p>{{ pergunta.resposta_texto }}</p>
+                    <form 
+                        method="POST" 
+                        action="{{ url_for('teacher.analisar_aluno', aluno_id=aluno_id) }}" 
+                        class="nota-form"
+                    >
+                        <input type="hidden" name="resposta_id" value="{{ pergunta.resposta_id }}">
                         <div class="form-group">
-                            <label for="nota-{{ resp.id }}">Nota:</label>
-                            <input type="number" class="form-control" id="nota-{{ resp.id }}" name="nota" min="0" max="10" step="0.1" required placeholder="Insira a nota de 0 a 10">
+                            <label for="nota_{{ pergunta.resposta_id }}">Atribuir Nota:</label>
+                            <input 
+                                type="number" 
+                                id="nota_{{ pergunta.resposta_id }}" 
+                                name="nota" 
+                                class="form-control" 
+                                required 
+                                min="0" 
+                                max="10" 
+                                step="0.1"
+                            >
                         </div>
-                        <button type="submit" class="btn btn-primary btn-submit mt-3">Adicionar Nota</button>
+                        <button type="submit" class="btn btn-purple">Salvar Nota</button>
                     </form>
                 </div>
+                <hr>
                 {% endfor %}
-            {% else %}
-                <h1 class="card-title">Nenhuma resposta encontrada para análise.</h1>
             {% endif %}
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
     <script>
-        const totalFormularios = document.querySelectorAll('.nota-form').length;
-        let formulariosEnviados = 0;
+        document.querySelectorAll('.nota-form').forEach(form => {
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formData = new FormData(form);
 
-        async function submitNota(event, respostaId) {
-            event.preventDefault();
-            
-            const notaInput = document.querySelector(`#nota-${respostaId}`);
-            const nota = notaInput.value;
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-            try {
-                const response = await fetch('/dashboard_professor/update_nota_resposta', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        resposta_id: respostaId,
-                        nota: nota
-                    })
-                });
+                    const result = await response.json();
 
-                if (response.ok) {
-                    formulariosEnviados++;
-                    alert("Nota atualizada com sucesso!");
-
-                    if (formulariosEnviados === totalFormularios) {
-                        window.location.href = '/dashboard_professor';
+                    if (result.redirect) {
+                        window.location.href = result.redirect;
+                    } else if (result.status) {
+                        alert(result.status);
+                        form.querySelector('button').disabled = true;
+                        form.querySelector('input').disabled = true;
+                    } else if (result.error) {
+                        alert(result.error);
                     }
-                } else {
-                    alert("Erro ao atualizar a nota.");
+                } catch (error) {
+                    console.error('Erro:', error);
+                    alert('Erro ao processar a nota.');
                 }
-            } catch (error) {
-                console.error("Erro ao enviar a nota:", error);
-                alert("Erro ao enviar a nota.");
-            }
-        }
+            });
+        });
     </script>
-    <footer>
-        <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
-    </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.4.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

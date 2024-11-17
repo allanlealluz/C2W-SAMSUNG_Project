@@ -5,7 +5,9 @@ body, html {
     font-family: 'Roboto', sans-serif;
     color: #343a40;
 }
-
+body {
+    padding-top: 100px;
+}
 
 .sidebar {
     height: 100%;
@@ -38,12 +40,18 @@ body, html {
 }
 
 .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     background-color: #7b01a3;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1030;
+    padding: 10px 0;
 }
 
 .navbar-brand {
-    font-size: 2.5rem;
+    font-size: 2.0rem;
     color: #ffffff;
 }
 
@@ -121,7 +129,6 @@ p {
     background-color: #7b01a3;
     border: 1px solid white;
     border-radius: 5px;
-    padding: 10px 20px;
     transition: background-color 0.3s;
 }
 
