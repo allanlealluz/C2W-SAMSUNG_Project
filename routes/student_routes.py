@@ -116,7 +116,7 @@ def concluir_aula(aula_id):
     else:
         flash("Aula já foi concluída anteriormente.", "info")
     
-    return redirect(url_for('student.ver_curso'))
+    return redirect(url_for('student.dashboard_aluno'))
 
 @student_bp.route('/responder_atividade/<int:aula_id>', methods=["POST"])
 def responder_atividade(aula_id):

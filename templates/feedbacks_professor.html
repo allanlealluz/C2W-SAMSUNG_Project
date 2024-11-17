@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/feedback_professor.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light c2wColor">
         <a class="navbar-brand text-light" href="#">C2W</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
@@ -27,6 +27,7 @@
             </ul>
         </div>
     </nav>
+
     <main class="container mt-5">
         <h1 class="text-center mb-4">Feedback dos Alunos</h1>
         <section class="text-center mb-5">
@@ -37,36 +38,46 @@
                 </div>
             </div>
         </section>
+
         <section>
             <h3 class="mb-4">Feedback por Curso</h3>
             <h4 class="mb-3">Respostas dos alunos</h4>
             {% if feedbacks %}
                 {% for curso_nome, modulos in feedbacks.items() %}
                     <div class="card shadow-sm">
-                        <div class="card-header c2wColor" data-toggle="collapse" href="#curso-{{ loop.index }}">
-                            {{ curso_nome }}
+                        <div class="card-header c2wColor" data-toggle="collapse" href="#curso-{{ loop.index }}" aria-expanded="false" aria-controls="curso-{{ loop.index }}">
+                            <i class="fas fa-chevron-down mr-2"></i> {{ curso_nome }}
+                            <span class="text-muted">Clique para ver mais</span>
                         </div>
-                        <div id="curso-{{ loop.index }}" class="collapse show">
+                        <div id="curso-{{ loop.index }}" class="collapse">
                             <div class="card-body">
                                 {% for modulo_nome, aulas in modulos.items() %}
                                     <div class="container-fluid mb-3">
-                                        <h5 class="c2wColor p-2">{{ modulo_nome }}</h5>
-                                        {% for aula_id, respostas in aulas.items() %}
-                                            <div class="card mb-3">
-                                                <div class="card-header bg-dark text-white">{{ aula_id }}</div>
-                                                <div class="card-body">
-                                                    {% if respostas %}
-                                                        <ul class="list-group">
-                                                            {% for resposta in respostas %}
-                                                                <li class="list-group-item"><strong>{{ resposta['nome'] }}:</strong> {{ resposta['resposta'] }}</li>
-                                                            {% endfor %}
-                                                        </ul>
-                                                    {% else %}
-                                                        <p>Sem feedback disponível.</p>
-                                                    {% endif %}
+                                        <h5 class="c2wColor p-2" data-toggle="collapse" href="#modulo-{{ loop.index }}-{{ loop.index0 }}" aria-expanded="false" aria-controls="modulo-{{ loop.index }}-{{ loop.index0 }}">
+                                            <i class="fas fa-chevron-right mr-2"></i> {{ modulo_nome }}
+                                        </h5>
+                                        <div id="modulo-{{ loop.index }}-{{ loop.index0 }}" class="collapse">
+                                            {% for aula_id, respostas in aulas.items() %}
+                                                <div class="card mb-3">
+                                                    <div class="card-header bg-dark text-white" data-toggle="collapse" href="#aula-{{ loop.index }}-{{ loop.index0 }}-{{ loop.index1 }}" aria-expanded="false" aria-controls="aula-{{ loop.index }}-{{ loop.index0 }}-{{ loop.index1 }}">
+                                                        <i class="fas fa-chevron-right mr-2"></i> Aula {{ aula_id }}
+                                                    </div>
+                                                    <div id="aula-{{ loop.index }}-{{ loop.index0 }}-{{ loop.index1 }}" class="collapse">
+                                                        <div class="card-body">
+                                                            {% if respostas %}
+                                                                <ul class="list-group">
+                                                                    {% for resposta in respostas %}
+                                                                        <li class="list-group-item"><strong>{{ resposta['nome'] }}:</strong> {{ resposta['resposta'] }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            {% else %}
+                                                                <p>Sem feedback disponível.</p>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        {% endfor %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -134,7 +145,9 @@
                 </div>
             </div>
         </section>
+
     </main>
+
     <footer class="mt-5 text-center">
         <p>&copy; 2024 C2W. Todos os direitos reservados.</p>
     </footer>

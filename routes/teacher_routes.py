@@ -12,10 +12,8 @@ from utils import (
     generate_cluster_plot, generate_student_performance_plot,
     prever_notas, generate_performance_by_module_plot
 )
-from sklearn.cluster import KMeans
 import sqlite3
 from collections import defaultdict
-import os
 
 teacher_bp = Blueprint('teacher', __name__)
 
@@ -48,7 +46,6 @@ def dashboard_professor():
         for nome, data in alunos_dict.items():
             media = data['total_notas'] / data['num_notas'] if data['num_notas'] > 0 else None
             alunos_media.append({'nome': nome, 'media': media})
-        
         alunos_media = sorted(alunos_media, key=lambda x: x['media'] if isinstance(x['media'], (int, float)) else -1, reverse=True)
 
         return render_template(
@@ -100,7 +97,7 @@ def criarAula():
             print(f"Erro ao criar a aula: {e}", "error")
             return redirect(url_for('teacher.criar_aula'))
 
-    cursos = get_cursos() 
+    cursos = get_cursos()
 
     return render_template("criarAula.html", cursos=cursos)
 @teacher_bp.route('/api/get_modulos/<int:curso_id>', methods=["GET"])
@@ -170,7 +167,7 @@ def ver_feedbacks():
 
                     aulas = get_aulas_por_modulo(modulo_id)
 
-                    aulas_processadas = set() 
+                    aulas_processadas = set()
                     for aula in aulas:
                         aula_id, titulo_aula = aula[0], aula[3]
                         if aula_id in aulas_processadas:
@@ -186,25 +183,22 @@ def ver_feedbacks():
                         for resposta in respostas:
                             aluno_id = resposta['user_id']
                             nota = resposta['nota']
-                            notas_por_aula[titulo_aula].append(nota)
-                            print([(id,nota) for id,nota in notas_por_aula.items()])
-                            notas_por_curso[curso_nome][modulo_nome].append(nota)
-
+                            if nota is not None and nota != float('inf') and nota == nota:  # Garantir que a nota é válida
+                                notas_por_aula[titulo_aula].append(nota)
+                                notas_por_curso[curso_nome][modulo_nome].append(nota)
                             medias_por_aula = {
-                                titulo_aula: (sum([n for n in notas if n is not None]) / len([n for n in notas if n is not None]))
+                                titulo_aula: (sum([n for n in notas if n is not None and n != float('inf') and n == n]) / len([n for n in notas if n is not None and n != float('inf') and n == n]))
                                 if any(notas) else 0
                                 for titulo_aula, notas in notas_por_aula.items()
                             }
-
                     medias_por_curso = {
                         curso: {
-                            modulo: (sum([n for n in notas if n is not None]) / len([n for n in notas if n is not None]))
+                            modulo: (sum([n for n in notas if n is not None and n != float('inf') and n == n]) / len([n for n in notas if n is not None and n != float('inf') and n == n]))
                             if any(notas) else 0
                             for modulo, notas in modulos.items()
                         }
                         for curso, modulos in notas_por_curso.items()
                     }
-
 
             alunos_data = defaultdict(lambda: {'historico': [], 'id': None})
             for aluno_id, nome, nota, progresso, aula in alunos_scores:
@@ -215,10 +209,10 @@ def ver_feedbacks():
             if alunos_data:
                 previsoes = prever_notas(alunos_data)
                 for nome, dados in previsoes.items():
-                    notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico']]
+                    notas_historico = [entry['nota'] for entry in alunos_data[nome]['historico'] if entry['nota'] is not None and entry['nota'] == entry['nota']]  # Filtra valores válidos
                     previsoes[nome]['classificacao'] = classificar_aluno(notas_historico)
                 plot_url = generate_performance_plot(alunos_data, previsoes)
-                
+
             feedback_texto = gerar_feedback_textual(medias_por_aula, medias_por_curso, previsoes, progresso_por_aluno)
 
             return render_template(
@@ -245,6 +239,7 @@ def ver_feedbacks():
                 medias_por_curso=medias_por_curso
             )
     return redirect(url_for('auth.login'))
+
 
 
 def classificar_aluno(notas):
@@ -277,7 +272,7 @@ def gerar_feedback_textual(medias_por_aula, medias_por_topico, previsoes, progre
                     feedback.append(f"Tópico {topico}: Média inválida")
 
         if previsoes:
-            print(previsoes) 
+            print(previsoes)
             feedback.append("\nPrevisões:")
             for aluno, dados in previsoes.items():
                 nota_arredondada = round(dados.get('proxima_nota', 0), 2)
@@ -347,7 +342,7 @@ def analisar_aluno(aluno_id):
 
             perguntas.append({
                 "resposta_id": resp["id"],
-                "pergunta_texto": pergunta[0]["texto"], 
+                "pergunta_texto": pergunta[0]["texto"],
                 "resposta_texto": resp["resposta"]
             })
 

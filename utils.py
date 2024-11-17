@@ -19,9 +19,9 @@ def kmeans_clustering(alunos_data):
     centroids = kmeans.cluster_centers_
 
     return notas, labels, centroids
-
 def generate_cluster_plot(X, labels, centroids, alunos_data):
     plt.figure(figsize=(16, 12))
+    
     cursos_modulos = defaultdict(list)
     for aluno in alunos_data:
         if len(aluno) < 6:
@@ -30,49 +30,51 @@ def generate_cluster_plot(X, labels, centroids, alunos_data):
         modulo = aluno[4]
         if modulo not in cursos_modulos[curso]:
             cursos_modulos[curso].append(modulo)
+    
     cursos_modulos_indices = {}
     index = 0
     for curso, modulos in sorted(cursos_modulos.items()):
         for modulo in sorted(modulos):
             cursos_modulos_indices[(curso, modulo)] = index
             index += 1
+    
     unique_alunos = sorted(set(aluno[1] for aluno in alunos_data))
-    colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))  
+    colors = plt.cm.viridis(np.linspace(0, 1, len(unique_alunos)))  # Paleta de cores para alunos
     aluno_colors = {nome: colors[i] for i, nome in enumerate(unique_alunos)}
-    jitter_strength_y = 0.1  
+    jitter_strength_y = 0.1
+    
     notas_por_aluno = defaultdict(list)
-
     for aluno in alunos_data:
         if len(aluno) < 6:
             continue
-
-        nome = aluno[1]  
+        nome = aluno[1]
         nota = aluno[2] 
-        modulo = aluno[4]  
-        curso = aluno[5]  
-        notas_por_aluno[nome].append((nota, modulo, curso)) 
+        modulo = aluno[4]
+        curso = aluno[5] 
+        notas_por_aluno[nome].append((nota, modulo, curso))
     for aluno, notas in notas_por_aluno.items():
         for nota, modulo, curso in notas:
             y_pos = cursos_modulos_indices[(curso, modulo)]
             x_pos = float(nota)
-            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)
+            y_pos += np.random.uniform(-jitter_strength_y, jitter_strength_y)  # Jitter para clareza
             plt.scatter(x_pos, y_pos, color=aluno_colors[aluno], marker='o', edgecolor='k', s=100, alpha=0.7)
+
     for aluno, color in aluno_colors.items():
         plt.scatter([], [], color=color, label=aluno, marker='o', s=100)
     plt.legend(title="Alunos", loc="upper right", bbox_to_anchor=(1.10, 1))
-    plt.title('Notas dos Alunos por Cursos e Módulos')
-    plt.xlabel('Notas')
-    plt.ylabel('Cursos e Módulos')
+    plt.title('Distribuição das Notas dos Alunos por Cursos e Módulos', fontsize=16)
+    plt.xlabel('Notas', fontsize=14)
+    plt.ylabel('Cursos e Módulos', fontsize=14)
     y_labels = [f"{curso} - {modulo}" for curso, modulo in sorted(cursos_modulos_indices.keys())]
     plt.yticks(range(len(y_labels)), y_labels)
-
-    plt.xlim(0, 11)
+    plt.xlim(0, 10.5)
+    plt.xticks(np.arange(1, 11, step=1)) 
+    
     plt.grid(True, linestyle='--', linewidth=0.5)
-
     plot_path = 'static/images/cluster_plot.png'
     plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
-
+    
     return 'cluster_plot.png'
 
 def generate_student_performance_plot(alunos_data):
@@ -106,6 +108,10 @@ def generate_student_performance_plot(alunos_data):
     ax.set_ylabel('Alunos')
     ax.set_title('Desempenho dos Alunos (Média das Notas)')
 
+    ax.set_xlim(1, 10)
+
+    ax.set_xticks(range(1, 11))
+
     for index, value in enumerate(alunos_notas_sorted):
         ax.text(value, index, f"{value:.2f}")
 
@@ -115,41 +121,48 @@ def generate_student_performance_plot(alunos_data):
 
     return 'Performance.png'
 
+
+
 def generate_performance_plot(alunos_data, previsoes):
     plt.figure(figsize=(10, 6))
-
+    
     cores = plt.cm.viridis(np.linspace(0, 1, len(alunos_data)))
 
     max_aulas = 0
-    notas = [
-        nota if nota is not None else 0
-        for aluno, dados in alunos_data.items()
-        for entry in dados['historico']
-        for nota in [entry['nota']]
-    ]
     for i, (nome, dados) in enumerate(alunos_data.items()):
-        
         notas = [entry['nota'] for entry in dados['historico']]
         max_aulas = max(max_aulas, len(notas))
-        cor_aluno = cores[i]
-        plt.plot(notas, color=cor_aluno, marker='o', label=f'{nome} (Real)', alpha=0.7)
 
+        cor_aluno = cores[i]
+        # Tornar as linhas mais transparentes
+        plt.plot(notas, color=cor_aluno, marker='o', label=f'{nome} (Real)', alpha=0.5)
+
+        # Plotando a previsão de forma mais destacada
         if nome in previsoes:
             previsao = previsoes[nome]
+            # Alterar o marcador de 'x' para algo mais visível, como um marcador '+'
             plt.scatter(len(notas), previsao['proxima_nota'],
-                        color=cor_aluno, marker='x', s=100, label=f'{nome} (Previsto)', alpha=1)
+                        color=cor_aluno, marker='*', s=150, label=f'{nome} (Previsto)', alpha=1)
 
     plt.title('Desempenho dos Alunos: Notas Históricas e Previstas')
     plt.xlabel('Respostas')
     plt.ylabel('Notas')
+    
+    # Ajustando os ticks para ter um espaçamento mais visível
     plt.xticks(range(max_aulas + 1))
     plt.xlim(-0.5, max_aulas + 0.5)
     plt.ylim(0, 10.5)
-    plt.legend()
-    plt.grid()
 
+    # Melhorando a legenda, eliminando sobreposição
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))  # Remove duplicatas na legenda
+    plt.legend(by_label.values(), by_label.keys(), loc='upper left', bbox_to_anchor=(1.05, 1))
+
+    plt.grid(True)
+    
+    # Salvando a imagem do gráfico
     plot_url = 'static/images/performance_plot.png'
-    plt.savefig(plot_url)
+    plt.savefig(plot_url, bbox_inches='tight')
     plt.close()
 
     return "performance_plot.png"
