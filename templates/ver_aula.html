@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ aula.titulo }}</title>
-    <link rel="icon" href="{{ url_for('static', filename='/img/C2W.png') }}">
+    <link rel="icon" href="{{ url_for('static', filename='img/C2W.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='/CSS/ver_aula.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/ver_aula.css') }}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">C2W - Aluno</a>
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -24,16 +24,15 @@
             </div>
         </div>
     </nav>
-
-    <div class="container content">
+    <div class="container content mt-5">
         <h1>{{ aula.titulo }}</h1>
         <p class="lead text-center">{{ aula.descricao }}</p>
 
         <div class="section" id="section-1">
             <h2>1. Conteúdo da Aula</h2>
             {% if aula.arquivo %}
-                <div class="embed-responsive embed-responsive-1by1S" height="500px">
-                    <embed class="embed-responsive-item w-100" src="{{ url_for('static', filename='/uploads/' + aula.arquivo) }}" height="500px">
+                <div class="embed-responsive" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000;">
+                    <embed class="embed-responsive-item w-100" src="{{ url_for('static', filename='uploads/' + aula.arquivo) }}" height="500px">
                 </div>
             {% endif %}
             <button class="btn btn-primary mt-3" onclick="completeSection(1)">Marcar como Concluída</button>
@@ -65,7 +64,7 @@
         </div>
 
         <form action="{{ url_for('student.concluir_aula', aula_id=aula.id) }}" method="POST" class="mt-4 text-center">
-            <button type="submit" class="btn btn-success" disabled>Concluir Aula</button>
+            <button type="submit" class="btn btn-success" id="concluir-button" disabled>Concluir Aula</button>
         </form>
     </div>
 
@@ -73,7 +72,6 @@
         let completedSections = 0;
         const totalSections = 2;
         const sectionStatus = { 1: false, 2: false };
-
         function completeSection(sectionId) {
             const section = document.getElementById(`section-${sectionId}`);
             if (!sectionStatus[sectionId]) {
@@ -99,7 +97,6 @@
                 updateProgressBar();
             }
         }
-
         document.getElementById('submit-respostas')?.addEventListener('click', function() {
             const form = document.getElementById('form-respostas');
             const formData = new FormData(form);
@@ -125,7 +122,6 @@
             .then(response => response.json())
             .then(data => {
                 console.log('Sucesso:', data);
-                alert(data.message || 'Respostas enviadas com sucesso!');
                 completeSection(2);
             })
             .catch(error => {
@@ -133,7 +129,6 @@
                 alert('Erro ao enviar respostas.');
             });
         });
-        
         function updateProgressBar() {
             const progressBar = document.getElementById("progress-bar");
             const progress = (completedSections / totalSections) * 100;
@@ -141,12 +136,11 @@
             progressBar.innerHTML = `${Math.round(progress)}%`;
 
             if (progress === 100) {
-                alert("Parabéns! Você concluiu todas as seções.");
-                document.querySelector("form[action*='concluir_aula'] button").disabled = false;
+                document.getElementById("concluir-button").disabled = false;
             }
         }
     </script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
